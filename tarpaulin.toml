@@ -1,0 +1,53 @@
+# Tarpaulin configuration for Cap'n Web Rust implementation
+
+[tool.tarpaulin]
+# Output formats
+out = ["Html", "Xml", "Json"]
+
+# Output directory
+output-dir = "target/coverage"
+
+# Source code directories to include
+include-tests = true
+run-types = ["Tests", "Doctests"]
+
+# Workspace configuration
+all-features = true
+workspace = true
+
+# Timeout for tests (5 minutes)
+timeout = "300s"
+
+# Exclude patterns
+exclude = [
+    # Examples and benchmarks
+    "examples/*",
+    "benches/*",
+
+    # Test files themselves
+    "*/tests/*",
+    "**/test_*.rs",
+    "**/*_test.rs",
+
+    # Generated code
+    "target/*",
+
+    # Mock and test utilities
+    "**/mock*.rs",
+    "**/fixture*.rs"
+]
+
+# Follow symbolic links
+follow-symlinks = true
+
+# Include proc-macro code
+count-macro = true
+
+# Verbose output
+verbose = true
+
+# Engine to use for coverage
+engine = "Llvm"
+
+# Target directory
+target-dir = "target/tarpaulin"
