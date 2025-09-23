@@ -29,6 +29,14 @@ impl CapTable {
     pub fn clear(&self) {
         self.caps.clear();
     }
+
+    pub fn len(&self) -> usize {
+        self.caps.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.caps.is_empty()
+    }
 }
 
 impl Default for CapTable {

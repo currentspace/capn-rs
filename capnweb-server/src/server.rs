@@ -4,7 +4,7 @@ use capnweb_core::{RpcError, Message, CallId, CapId, Target, Outcome};
 use std::sync::Arc;
 use axum::{
     Router,
-    routing::post,
+    routing::{post, get},
     extract::State,
     Json,
     response::IntoResponse,
@@ -60,6 +60,7 @@ impl Server {
     pub async fn run(self) -> Result<(), std::io::Error> {
         let app = Router::new()
             .route("/rpc/batch", post(handle_batch))
+            .route("/health", get(handle_health))
             .with_state(Arc::new(self.clone()));
 
         let addr = format!("{}:{}", self.config.host, self.config.port);
@@ -143,6 +144,23 @@ async fn handle_batch(
     }
 
     (StatusCode::OK, Json(responses))
+}
+
+async fn handle_health(State(server): State<Arc<Server>>) -> impl IntoResponse {
+    let capability_count = server.cap_table.len();
+
+    let health_response = serde_json::json!({
+        "status": "healthy",
+        "server": "capnweb-rust",
+        "capabilities": capability_count,
+        "max_batch_size": server.config.max_batch_size,
+        "endpoints": {
+            "batch": "/rpc/batch",
+            "health": "/health"
+        }
+    });
+
+    (StatusCode::OK, Json(health_response))
 }
 
 #[cfg(test)]
