@@ -1,0 +1,84 @@
+[workspace]
+resolver = "2"
+members = [
+    "capnweb-core",
+    "capnweb-transport",
+    "capnweb-server",
+    "capnweb-client",
+    "capnweb-interop-tests",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Your Name <your.email@example.com>"]
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/capn-rs"
+
+[workspace.dependencies]
+# Core dependencies
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Async runtime
+tokio = { version = "1.40", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# HTTP stack
+axum = "0.7"
+hyper = { version = "1.5", features = ["http1", "http2", "server", "client"] }
+tower = "0.5"
+tower-http = "0.6"
+
+# HTTP/3 & QUIC
+quinn = "0.11"
+h3 = "0.0.6"
+h3-quinn = "0.0.7"
+rustls = "0.23"
+rustls-pemfile = "2.0"
+
+# WebSocket
+tokio-tungstenite = "0.26"
+tungstenite = "0.26"
+
+# Utilities
+dashmap = "6.1"
+indexmap = "2.6"
+governor = "0.7"
+nonzero_ext = "0.3"
+bytes = "1.8"
+
+# Validation
+jsonschema = "0.26"
+schemars = "0.8"
+
+# Observability
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Testing
+criterion = "0.5"
+proptest = "1.6"
+mockito = "1.6"
+insta = "1.0"
+
+# Internal crates
+capnweb-core = { path = "capnweb-core" }
+capnweb-transport = { path = "capnweb-transport" }
+capnweb-server = { path = "capnweb-server" }
+capnweb-client = { path = "capnweb-client" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
+[profile.dev]
+opt-level = 0
+
+[profile.test]
+opt-level = 2
