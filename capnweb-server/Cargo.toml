@@ -41,6 +41,8 @@ quinn = { workspace = true, optional = true }
 h3 = { workspace = true, optional = true }
 h3-quinn = { workspace = true, optional = true }
 rustls = { workspace = true, optional = true }
+rcgen = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
 
 [dev-dependencies]
 mockito.workspace = true
@@ -50,4 +52,4 @@ criterion.workspace = true
 [features]
 default = ["all-transports"]
 all-transports = ["capnweb-transport/default"]
-h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls"]
+h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls", "dep:rcgen", "dep:http"]
