@@ -16,6 +16,23 @@ rust-version = "1.75"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/yourusername/capn-rs"
 
+[[example]]
+name = "calculator_server"
+path = "examples/calculator_server.rs"
+
+[[example]]
+name = "calculator_client"
+path = "examples/calculator_client.rs"
+
+[[example]]
+name = "webtransport_server"
+path = "examples/webtransport_server.rs"
+
+[[bench]]
+name = "protocol_benchmarks"
+path = "benches/protocol_benchmarks.rs"
+harness = false
+
 [workspace.dependencies]
 # Core dependencies
 serde = { version = "1.0", features = ["derive"] }
@@ -68,6 +85,9 @@ criterion = "0.5"
 proptest = "1.6"
 mockito = "1.6"
 insta = "1.0"
+
+# Examples
+chrono = { version = "0.4", features = ["serde"] }
 
 # Internal crates
 capnweb-core = { path = "capnweb-core" }
