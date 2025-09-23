@@ -15,7 +15,7 @@ pub enum TransportError {
     Protocol(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum TransportEvent {
     Frame(Bytes),
     Closed(Option<TransportError>),

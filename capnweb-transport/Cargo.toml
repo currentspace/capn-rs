@@ -41,7 +41,7 @@ proptest.workspace = true
 criterion.workspace = true
 
 [features]
-default = ["websocket", "webtransport", "http-batch"]
+default = ["websocket", "http-batch"]
 websocket = ["dep:tokio-tungstenite", "dep:tungstenite"]
 webtransport = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls", "dep:rustls-pemfile"]
 http-batch = ["dep:hyper", "dep:tower"]

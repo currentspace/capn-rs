@@ -48,5 +48,5 @@ criterion.workspace = true
 
 [features]
 default = ["all-transports"]
-all-transports = ["capnweb-transport/default", "h3-server"]
+all-transports = ["capnweb-transport/default"]
 h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls"]
