@@ -48,6 +48,7 @@ http = { workspace = true, optional = true }
 mockito.workspace = true
 proptest.workspace = true
 criterion.workspace = true
+tracing-subscriber.workspace = true
 
 [features]
 default = ["all-transports"]

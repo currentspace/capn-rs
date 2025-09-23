@@ -16,6 +16,10 @@ anyhow.workspace = true
 bytes.workspace = true
 tracing.workspace = true
 indexmap.workspace = true
+async-trait.workspace = true
+dashmap.workspace = true
+tokio = { workspace = true, features = ["sync", "macros"] }
+uuid = { workspace = true, features = ["v4"] }
 
 # Optional dependencies
 jsonschema = { workspace = true, optional = true }
@@ -23,10 +27,11 @@ schemars = { workspace = true, optional = true }
 simd-json = { version = "0.14", optional = true }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["test-util"] }
+tokio = { workspace = true, features = ["test-util", "rt", "macros"] }
 proptest.workspace = true
 insta.workspace = true
 criterion.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 
 [features]
 default = ["validation"]

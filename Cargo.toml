@@ -33,7 +33,7 @@ async-trait = "0.1"
 axum = { version = "0.7", features = ["ws"] }
 hyper = { version = "1.5", features = ["http1", "http2", "server", "client"] }
 tower = "0.5"
-tower-http = "0.6"
+tower-http = { version = "0.6", features = ["cors"] }
 http = "1.1"
 
 # HTTP/3 & QUIC
@@ -55,6 +55,7 @@ governor = "0.7"
 nonzero_ext = "0.3"
 bytes = "1.8"
 uuid = { version = "1.11", features = ["v4"] }
+tokio-util = { version = "0.7", features = ["codec"] }
 
 # Validation
 jsonschema = "0.26"

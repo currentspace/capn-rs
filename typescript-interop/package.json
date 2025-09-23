@@ -12,7 +12,7 @@
     "interop": "npm run build && node dist/interop-tests.js"
   },
   "dependencies": {
-    "capnweb": "^0.1.5",
+    "capnweb": "^0.1.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {

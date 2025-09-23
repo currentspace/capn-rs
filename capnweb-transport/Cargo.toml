@@ -16,7 +16,8 @@ thiserror.workspace = true
 anyhow.workspace = true
 bytes.workspace = true
 tracing.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["io-util"] }
+tokio-util = { workspace = true, features = ["codec"] }
 futures.workspace = true
 async-trait.workspace = true
 
