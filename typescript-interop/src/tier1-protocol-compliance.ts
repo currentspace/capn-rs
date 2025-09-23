@@ -19,12 +19,11 @@ const port = process.argv[2] || '9000';
 const endpoint = `http://localhost:${port}/rpc/batch`;
 
 class Tier1Tests {
-    private session: BasicCalculator;
     private passed = 0;
     private total = 0;
 
-    constructor() {
-        this.session = newHttpBatchRpcSession<BasicCalculator>(endpoint);
+    private createSession(): BasicCalculator {
+        return newHttpBatchRpcSession<BasicCalculator>(endpoint);
     }
 
     private async test(name: string, testFn: () => Promise<boolean>): Promise<void> {
@@ -48,8 +47,10 @@ class Tier1Tests {
     private async basicConnectivity(): Promise<boolean> {
         console.log('Testing basic client-server connectivity...');
         try {
+            // Create fresh session for this test
+            const session = this.createSession();
             // This should establish connection without errors
-            const result = await this.session.add(1, 1);
+            const result = await session.add(1, 1);
             console.log(`Response received: ${result}`);
 
             // We expect either a number (success) or a structured error
@@ -78,8 +79,10 @@ class Tier1Tests {
     private async messageFormatValidation(): Promise<boolean> {
         console.log('Testing message format handling...');
         try {
+            // Create fresh session for this test
+            const session = this.createSession();
             // Test with a simple operation
-            await this.session.add(5, 3);
+            await session.add(5, 3);
             console.log('✓ Server accepted message format');
             return true;
         } catch (error: any) {
@@ -101,7 +104,9 @@ class Tier1Tests {
     private async responseStructureValidation(): Promise<boolean> {
         console.log('Testing response structure...');
         try {
-            const result = await this.session.multiply(2, 3);
+            // Create fresh session for this test
+            const session = this.createSession();
+            const result = await session.multiply(2, 3);
 
             if (typeof result === 'number' && result === 6) {
                 console.log('✓ Perfect response structure and content');
@@ -130,8 +135,10 @@ class Tier1Tests {
     private async errorHandlingBasics(): Promise<boolean> {
         console.log('Testing basic error handling...');
         try {
+            // Create fresh session for this test
+            const session = this.createSession();
             // Test with invalid operation (if server supports it)
-            await (this.session as any).invalidMethod();
+            await (session as any).invalidMethod();
             console.log('ℹ️  Server accepted invalid method (unexpected)');
             return false;
         } catch (error: any) {
