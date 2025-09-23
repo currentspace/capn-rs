@@ -33,6 +33,3 @@ default = ["validation"]
 validation = ["dep:jsonschema", "dep:schemars"]
 simd = ["dep:simd-json"]
 
-[[bench]]
-name = "codec"
-harness = false

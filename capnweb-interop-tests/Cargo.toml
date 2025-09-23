@@ -29,14 +29,3 @@ insta.workspace = true
 criterion.workspace = true
 proptest.workspace = true
 
-[[test]]
-name = "js_client"
-harness = false
-
-[[test]]
-name = "js_server"
-harness = false
-
-[[bench]]
-name = "interop_bench"
-harness = false
