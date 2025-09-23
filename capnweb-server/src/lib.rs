@@ -2,6 +2,8 @@ pub mod server;
 pub mod cap_table;
 pub mod runner;
 pub mod limits;
+pub mod promise_table;
+pub mod lifecycle;
 #[cfg(feature = "all-transports")]
 pub mod ws_h1;
 #[cfg(feature = "h3-server")]
@@ -11,3 +13,5 @@ pub use server::{RpcTarget, ServerConfig, Server};
 pub use cap_table::CapTable;
 pub use runner::PlanRunner;
 pub use limits::RateLimits;
+pub use promise_table::{PromiseTable, PromiseTableStats};
+pub use lifecycle::{CapabilityLifecycle, Disposable, LifecycleStats};
