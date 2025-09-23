@@ -1,15 +1,14 @@
 use axum::{
     extract::{State, Json},
-    http::StatusCode,
+    http::{StatusCode, HeaderMap},
     response::IntoResponse,
     routing::{get, post},
     Router,
 };
 use capnweb_core::{
     protocol::{
-        Message, Expression, ImportId, ExportId,
-        RpcSession, IdAllocator, ImportTable, ExportTable,
-        StubReference, Value,
+        Message, Expression, ImportId,
+        RpcSession, Value, ImportValue,
     },
     RpcTarget,
 };
@@ -37,6 +36,15 @@ impl Default for CapnWebServerConfig {
     }
 }
 
+/// Session with state tracking
+#[derive(Clone)]
+struct SessionState {
+    session: Arc<RpcSession>,
+    next_import_id: Arc<RwLock<i64>>,
+    pending_pulls: Arc<RwLock<HashMap<ImportId, tokio::sync::oneshot::Sender<Message>>>>,
+    last_activity: Arc<RwLock<std::time::Instant>>,
+}
+
 /// Cap'n Web server state
 #[derive(Clone)]
 struct ServerState {
@@ -44,8 +52,8 @@ struct ServerState {
     main_capability: Option<Arc<dyn RpcTarget>>,
     /// Registered capabilities by ID
     capabilities: Arc<RwLock<HashMap<i64, Arc<dyn RpcTarget>>>>,
-    /// Active sessions
-    sessions: Arc<RwLock<HashMap<String, Arc<RpcSession>>>>,
+    /// Active sessions with state tracking
+    sessions: Arc<RwLock<HashMap<String, SessionState>>>,
 }
 
 /// Cap'n Web server
@@ -93,7 +101,17 @@ impl CapnWebServer {
     /// Run the server
     pub async fn run(self) -> Result<(), Box<dyn std::error::Error>> {
         let addr = format!("{}:{}", self.config.host, self.config.port);
+        let state = self.state.clone();
         let app = Self::build_router(self.state);
+
+        // Start session cleanup task
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+            loop {
+                interval.tick().await;
+                cleanup_inactive_sessions(&state).await;
+            }
+        });
 
         println!("🚀 Cap'n Web server listening on http://{}", addr);
 
@@ -109,20 +127,77 @@ async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, "OK")
 }
 
-/// Batch RPC endpoint handler
+/// Batch RPC endpoint handler - handles both JSON array and newline-delimited formats
+#[tracing::instrument(skip(state, headers, body), fields(body_len = body.len()))]
 async fn handle_batch(
     State(state): State<ServerState>,
-    Json(messages): Json<Vec<serde_json::Value>>,
+    headers: HeaderMap,
+    body: String,
 ) -> impl IntoResponse {
-    // Get or create session
-    let session_id = uuid::Uuid::new_v4().to_string();
-    let session = get_or_create_session(&state, &session_id).await;
+    tracing::info!("Received batch RPC request");
+    // Get session ID from headers or create new one
+    let session_id = headers
+        .get("x-session-id")
+        .and_then(|v| v.to_str().ok())
+        .map(String::from)
+        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+
+    tracing::debug!(session_id = %session_id, "Using session");
+
+    let session_state = get_or_create_session(&state, &session_id).await;
+
+    // Update last activity time
+    *session_state.last_activity.write().await = std::time::Instant::now();
 
     let mut responses = Vec::new();
 
-    for msg_json in messages {
+    // Check content type to determine format
+    let content_type = headers.get("content-type")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+
+    tracing::debug!(content_type = %content_type, body_preview = %body.chars().take(200).collect::<String>(), "Parsing request");
+
+    // Parse messages based on format
+    let messages = if content_type.contains("application/json") {
+        // JSON array format (for backward compatibility)
+        match serde_json::from_str::<Vec<serde_json::Value>>(&body) {
+            Ok(msgs) => msgs,
+            Err(e) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    format!("Invalid JSON: {}", e)
+                ).into_response();
+            }
+        }
+    } else {
+        // Newline-delimited format (official Cap'n Web client)
+        let mut msgs = Vec::new();
+        for line in body.lines() {
+            if line.trim().is_empty() {
+                continue;
+            }
+            match serde_json::from_str::<serde_json::Value>(line) {
+                Ok(msg) => msgs.push(msg),
+                Err(e) => {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        format!("Invalid message on line: {}", e)
+                    ).into_response();
+                }
+            }
+        }
+        msgs
+    };
+
+    tracing::debug!(message_count = messages.len(), "Processing messages");
+
+    // Process each message
+    for (i, msg_json) in messages.iter().enumerate() {
+        tracing::debug!(message_index = i, message = ?msg_json, "Processing message");
+
         // Parse message
-        let message = match Message::from_json(&msg_json) {
+        let message = match Message::from_json(msg_json) {
             Ok(msg) => msg,
             Err(e) => {
                 // Return error response
@@ -134,15 +209,19 @@ async fn handle_batch(
             }
         };
 
-        // Process message
-        match process_message(&state, &session, message).await {
+        tracing::debug!(parsed_message = ?message, "Message parsed successfully");
+
+        // Process message with session state
+        match process_message(&state, &session_state, message).await {
             Ok(Some(response)) => {
+                tracing::debug!(response = ?response, "Generated response");
                 responses.push(response.to_json());
             }
             Ok(None) => {
-                // No response needed (e.g., for Push without Pull)
+                tracing::debug!("No response needed (e.g., for Push without Pull)");
             }
             Err(e) => {
+                tracing::error!(error = %e, "Error processing message");
                 responses.push(serde_json::json!([
                     "abort",
                     ["error", "ProcessError", e.to_string()]
@@ -151,7 +230,30 @@ async fn handle_batch(
         }
     }
 
-    Json(responses)
+    tracing::debug!(response_count = responses.len(), "Preparing response");
+
+    // Return in the same format as received
+    if content_type.contains("application/json") {
+        tracing::debug!("Returning JSON array response");
+        // Return as JSON array
+        Json(responses).into_response()
+    } else {
+        tracing::debug!("Returning newline-delimited response");
+        // Return as newline-delimited text (official Cap'n Web format)
+        let response_body = responses
+            .iter()
+            .map(|r| serde_json::to_string(r).unwrap_or_default())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        tracing::debug!(response_body = %response_body, "Final response body");
+
+        (
+            StatusCode::OK,
+            [(axum::http::header::CONTENT_TYPE, "text/plain")],
+            response_body
+        ).into_response()
+    }
 }
 
 /// WebSocket endpoint handler
@@ -164,69 +266,201 @@ async fn handle_websocket(State(_state): State<ServerState>) -> impl IntoRespons
 async fn get_or_create_session(
     state: &ServerState,
     session_id: &str,
-) -> Arc<RpcSession> {
+) -> SessionState {
     let mut sessions = state.sessions.write().await;
 
-    if let Some(session) = sessions.get(session_id) {
-        session.clone()
+    if let Some(session_state) = sessions.get(session_id) {
+        SessionState {
+            session: session_state.session.clone(),
+            next_import_id: session_state.next_import_id.clone(),
+            pending_pulls: session_state.pending_pulls.clone(),
+            last_activity: session_state.last_activity.clone(),
+        }
     } else {
-        let session = Arc::new(RpcSession::new());
-        sessions.insert(session_id.to_string(), session.clone());
-        session
+        let session_state = SessionState {
+            session: Arc::new(RpcSession::new()),
+            next_import_id: Arc::new(RwLock::new(1)), // Start from 1 for imports
+            pending_pulls: Arc::new(RwLock::new(HashMap::new())),
+            last_activity: Arc::new(RwLock::new(std::time::Instant::now())),
+        };
+        sessions.insert(session_id.to_string(), session_state.clone());
+        session_state
     }
 }
 
 /// Process a Cap'n Web message
 async fn process_message(
     state: &ServerState,
-    session: &RpcSession,
+    session_state: &SessionState,
     message: Message,
 ) -> Result<Option<Message>, Box<dyn std::error::Error>> {
     match message {
         Message::Push(expr) => {
-            // For now, just evaluate locally
-            // TODO: Proper push handling with import allocation
-            match evaluate_expression(state, expr).await {
-                Ok(_value) => Ok(None), // Push doesn't return immediate response
-                Err(e) => Ok(Some(Message::Abort(Expression::Error(
-                    capnweb_core::protocol::ErrorExpression {
-                        error_type: "EvalError".to_string(),
-                        message: e.to_string(),
-                        stack: None,
+            // Allocate import ID and evaluate expression asynchronously
+            let mut next_id = session_state.next_import_id.write().await;
+            let import_id = ImportId(*next_id);
+            *next_id += 1;
+            drop(next_id);
+
+            // Clone values for async task
+            let state_clone = state.clone();
+            let session = session_state.session.clone();
+            let expr_clone = expr.clone();
+            let pending_pulls = session_state.pending_pulls.clone();
+
+            // Spawn task to evaluate expression and resolve import
+            tokio::spawn(async move {
+                match evaluate_expression(&state_clone, expr_clone).await {
+                    Ok(value) => {
+                        // Store the value in the import table
+                        let _ = session.imports.insert(
+                            import_id,
+                            ImportValue::Value(value.clone()),
+                        );
+
+                        // Check if there's a pending pull waiting for this import
+                        let mut pulls = pending_pulls.write().await;
+                        if let Some(sender) = pulls.remove(&import_id) {
+                            // Send resolution to waiting pull
+                            let _ = sender.send(Message::Resolve(
+                                import_id.to_export_id(),
+                                value_to_expression(value),
+                            ));
+                        }
                     }
-                )))),
-            }
+                    Err(e) => {
+                        // Store error in import table
+                        let error_expr = Expression::Error(
+                            capnweb_core::protocol::ErrorExpression {
+                                error_type: "EvalError".to_string(),
+                                message: e.to_string(),
+                                stack: None,
+                            },
+                        );
+
+                        let _ = session.imports.insert(
+                            import_id,
+                            ImportValue::Value(Value::Error(
+                                "EvalError".to_string(),
+                                e.to_string(),
+                                None,
+                            )),
+                        );
+
+                        // Notify any waiting pulls
+                        let mut pulls = pending_pulls.write().await;
+                        if let Some(sender) = pulls.remove(&import_id) {
+                            let _ = sender.send(Message::Reject(
+                                import_id.to_export_id(),
+                                error_expr,
+                            ));
+                        }
+                    }
+                }
+            });
+
+            // Push doesn't return immediate response
+            Ok(None)
         }
 
         Message::Pull(import_id) => {
-            // TODO: Implement pull logic
-            Ok(Some(Message::Resolve(
-                import_id.to_export_id(),
-                Expression::String("TODO: Implement pull".to_string()),
-            )))
+            // Check if the import is already resolved
+            if let Some(import_value) = session_state.session.imports.get(import_id) {
+                // Import exists and is resolved
+                match import_value {
+                    ImportValue::Value(value) => {
+                        // Check if it's an error value
+                        if let Value::Error(error_type, message, stack) = value {
+                            Ok(Some(Message::Reject(
+                                import_id.to_export_id(),
+                                Expression::Error(capnweb_core::protocol::ErrorExpression {
+                                    error_type,
+                                    message,
+                                    stack,
+                                }),
+                            )))
+                        } else {
+                            Ok(Some(Message::Resolve(
+                                import_id.to_export_id(),
+                                value_to_expression(value),
+                            )))
+                        }
+                    }
+                    _ => {
+                        // Import is a stub or promise, not yet supported
+                        Ok(Some(Message::Resolve(
+                            import_id.to_export_id(),
+                            Expression::String("Not yet implemented".to_string()),
+                        )))
+                    }
+                }
+            } else {
+                // Import doesn't exist yet (push might still be processing)
+                // Create a channel to wait for resolution
+                let (tx, rx) = tokio::sync::oneshot::channel();
+                session_state.pending_pulls.write().await.insert(import_id, tx);
+
+                // Wait for resolution with timeout
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(30),
+                    rx,
+                ).await {
+                    Ok(Ok(message)) => Ok(Some(message)),
+                    Ok(Err(_)) => {
+                        // Channel closed without sending
+                        Ok(Some(Message::Reject(
+                            import_id.to_export_id(),
+                            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                                error_type: "ChannelError".to_string(),
+                                message: "Resolution channel closed".to_string(),
+                                stack: None,
+                            }),
+                        )))
+                    }
+                    Err(_) => {
+                        // Timeout
+                        session_state.pending_pulls.write().await.remove(&import_id);
+                        Ok(Some(Message::Reject(
+                            import_id.to_export_id(),
+                            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                                error_type: "Timeout".to_string(),
+                                message: "Pull request timed out".to_string(),
+                                stack: None,
+                            }),
+                        )))
+                    }
+                }
+            }
         }
 
-        Message::Resolve(export_id, _expr) => {
-            // Client is resolving an export
-            // TODO: Handle resolution
+        Message::Resolve(export_id, expr) => {
+            // Client is resolving an export - handle through session
+            let _ = session_state.session.handle_message(Message::Resolve(export_id, expr)).await;
             Ok(None)
         }
 
-        Message::Reject(export_id, _expr) => {
-            // Client is rejecting an export
-            // TODO: Handle rejection
+        Message::Reject(export_id, expr) => {
+            // Client is rejecting an export - handle through session
+            let _ = session_state.session.handle_message(Message::Reject(export_id, expr)).await;
             Ok(None)
         }
 
-        Message::Release(import_id, _refcount) => {
-            // Client is releasing an import
-            // TODO: Handle release
+        Message::Release(import_id, refcount) => {
+            // Client is releasing an import - handle through session
+            let _ = session_state.session.handle_message(Message::Release(import_id, refcount)).await;
             Ok(None)
         }
 
-        Message::Abort(_expr) => {
-            // Session is being aborted
-            // TODO: Clean up session
+        Message::Abort(expr) => {
+            // Session is being aborted - handle through session
+            let _ = session_state.session.handle_message(Message::Abort(expr.clone())).await;
+
+            // Clean up any pending pulls
+            let mut pulls = session_state.pending_pulls.write().await;
+            for (_, sender) in pulls.drain() {
+                let _ = sender.send(Message::Abort(expr.clone()));
+            }
+
             Ok(None)
         }
     }
@@ -236,7 +470,7 @@ async fn process_message(
 async fn evaluate_expression(
     state: &ServerState,
     expr: Expression,
-) -> Result<Value, Box<dyn std::error::Error>> {
+) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
     match expr {
         Expression::Null => Ok(Value::Null),
         Expression::Bool(b) => Ok(Value::Bool(b)),
@@ -269,12 +503,37 @@ async fn evaluate_expression(
             Ok(Value::String("Import not implemented".to_string()))
         }
 
+        Expression::Pipeline(pipeline) => {
+            // Handle pipeline expressions (similar to Import but with pipeline semantics)
+            if pipeline.import_id.is_main() {
+                if let Some(main) = &state.main_capability {
+                    // Extract method name from property path
+                    if let Some(path) = &pipeline.property_path {
+                        if let Some(capnweb_core::protocol::PropertyKey::String(method)) = path.first() {
+                            // Extract call arguments
+                            let args = if let Some(args_expr) = &pipeline.call_arguments {
+                                extract_args(&**args_expr)?
+                            } else {
+                                Vec::new()
+                            };
+
+                            // Call the method
+                            return main.call(method, args).await
+                                .map_err(|e| e.to_string().into());
+                        }
+                    }
+                }
+            }
+
+            Ok(Value::String("Pipeline not implemented".to_string()))
+        }
+
         _ => Ok(Value::String("Expression type not implemented".to_string())),
     }
 }
 
 /// Extract arguments from an expression
-fn extract_args(expr: &Expression) -> Result<Vec<Value>, Box<dyn std::error::Error>> {
+fn extract_args(expr: &Expression) -> Result<Vec<Value>, Box<dyn std::error::Error + Send + Sync>> {
     match expr {
         Expression::Array(elements) => {
             let mut args = Vec::new();
@@ -288,7 +547,7 @@ fn extract_args(expr: &Expression) -> Result<Vec<Value>, Box<dyn std::error::Err
 }
 
 /// Convert expression to value
-fn expr_to_value(expr: &Expression) -> Result<Value, Box<dyn std::error::Error>> {
+fn expr_to_value(expr: &Expression) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
     match expr {
         Expression::Null => Ok(Value::Null),
         Expression::Bool(b) => Ok(Value::Bool(*b)),
@@ -303,6 +562,55 @@ fn expr_to_value(expr: &Expression) -> Result<Value, Box<dyn std::error::Error>>
         }
         _ => Err("Unsupported expression type for conversion".into()),
     }
+}
+
+/// Convert value back to expression
+fn value_to_expression(value: Value) -> Expression {
+    match value {
+        Value::Null => Expression::Null,
+        Value::Bool(b) => Expression::Bool(b),
+        Value::Number(n) => Expression::Number(n),
+        Value::String(s) => Expression::String(s),
+        Value::Array(values) => {
+            let elements = values.into_iter().map(value_to_expression).collect();
+            Expression::Array(elements)
+        }
+        Value::Object(obj) => {
+            // Convert object to Object expression
+            let mut map = std::collections::HashMap::new();
+            for (key, val) in obj {
+                map.insert(key, Box::new(value_to_expression(*val)));
+            }
+            Expression::Object(map)
+        }
+        Value::Date(timestamp) => Expression::Date(timestamp),
+        Value::Error(error_type, message, stack) => {
+            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                error_type,
+                message,
+                stack,
+            })
+        }
+        Value::Stub(_) | Value::Promise(_) => {
+            // For now, return a placeholder
+            Expression::String("[Stub/Promise not yet supported]".to_string())
+        }
+    }
+}
+
+/// Clean up inactive sessions
+async fn cleanup_inactive_sessions(state: &ServerState) {
+    let mut sessions = state.sessions.write().await;
+    let now = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(300); // 5 minute timeout
+
+    sessions.retain(|_id, session_state| {
+        if let Ok(last_activity) = session_state.last_activity.try_read() {
+            now.duration_since(*last_activity) < timeout
+        } else {
+            true // Keep if we can't read the timestamp
+        }
+    });
 }
 
 #[cfg(test)]

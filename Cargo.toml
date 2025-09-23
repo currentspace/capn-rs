@@ -63,7 +63,8 @@ schemars = "0.8"
 
 # Observability
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "chrono"] }
+tracing-appender = "0.2"
 
 # Testing
 criterion = "0.5"
