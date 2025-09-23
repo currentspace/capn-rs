@@ -165,12 +165,12 @@ mod tests {
 
     #[test]
     fn test_encode_decode_message() {
-        let msg = Message::Call {
-            id: CallId::new(1),
-            target: Target::Cap(CapId::new(42)),
-            member: "test".to_string(),
-            args: vec![json!("hello"), json!(123)],
-        };
+        let msg = Message::call(
+            CallId::new(1),
+            Target::cap(CapId::new(42)),
+            "test".to_string(),
+            vec![json!("hello"), json!(123)],
+        );
 
         let encoded = encode_message(&msg).unwrap();
         let decoded = decode_message(&encoded).unwrap();
@@ -179,9 +179,7 @@ mod tests {
 
     #[test]
     fn test_encode_decode_frame_newline() {
-        let msg = Message::CapRef {
-            id: CapId::new(99),
-        };
+        let msg = Message::cap_ref(CapId::new(99));
 
         let frame = encode_frame(&msg, FrameFormat::NewlineDelimited).unwrap();
         assert!(frame[frame.len() - 1] == b'\n');
@@ -193,9 +191,7 @@ mod tests {
 
     #[test]
     fn test_encode_decode_frame_length_prefixed() {
-        let msg = Message::Dispose {
-            caps: vec![CapId::new(1), CapId::new(2), CapId::new(3)],
-        };
+        let msg = Message::dispose(vec![CapId::new(1), CapId::new(2), CapId::new(3)]);
 
         let frame = encode_frame(&msg, FrameFormat::LengthPrefixed).unwrap();
         assert!(frame.len() > 4);
@@ -210,16 +206,16 @@ mod tests {
         use std::io::Cursor;
 
         let messages = vec![
-            Message::Call {
-                id: CallId::new(1),
-                target: Target::Cap(CapId::new(10)),
-                member: "method".to_string(),
-                args: vec![json!("test")],
-            },
-            Message::Result {
-                id: CallId::new(1),
-                outcome: Outcome::Success { value: json!({"result": true}) },
-            },
+            Message::call(
+                CallId::new(1),
+                Target::cap(CapId::new(10)),
+                "method".to_string(),
+                vec![json!("test")],
+            ),
+            Message::result(
+                CallId::new(1),
+                Outcome::Success { value: json!({"result": true}) },
+            ),
         ];
 
         let mut buffer = Vec::new();
@@ -243,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_incomplete_frame() {
-        let msg = Message::CapRef { id: CapId::new(42) };
+        let msg = Message::cap_ref(CapId::new(42));
         let frame = encode_frame(&msg, FrameFormat::LengthPrefixed).unwrap();
 
         let result = decode_frame(&frame[..2], FrameFormat::LengthPrefixed);
@@ -255,8 +251,8 @@ mod tests {
 
     #[test]
     fn test_multiple_frames_in_buffer() {
-        let msg1 = Message::CapRef { id: CapId::new(1) };
-        let msg2 = Message::CapRef { id: CapId::new(2) };
+        let msg1 = Message::cap_ref(CapId::new(1));
+        let msg2 = Message::cap_ref(CapId::new(2));
 
         let frame1 = encode_frame(&msg1, FrameFormat::NewlineDelimited).unwrap();
         let frame2 = encode_frame(&msg2, FrameFormat::NewlineDelimited).unwrap();

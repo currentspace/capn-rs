@@ -8,16 +8,16 @@ pub fn test_plan_serialization() -> Result<(), Box<dyn std::error::Error>> {
     // Create a simple plan with a capability call
     let plan = Plan::new(
         vec![CapId::new(1)],
-        vec![Op::Call {
-            target: Source::Capture { index: 0 },
-            member: "add".to_string(),
-            args: vec![
-                Source::ByValue { value: json!(5) },
-                Source::ByValue { value: json!(3) },
+        vec![Op::call(
+            Source::capture(0),
+            "add".to_string(),
+            vec![
+                Source::by_value(json!(5)),
+                Source::by_value(json!(3)),
             ],
-            result: 0,
-        }],
-        Source::Result { index: 0 },
+            0,
+        )],
+        Source::result(0),
     );
 
     // Serialize to JSON
@@ -85,12 +85,12 @@ pub fn test_plan_deserialization() -> Result<(), Box<dyn std::error::Error>> {
 /// Test message serialization compatibility
 pub fn test_message_serialization() -> Result<(), Box<dyn std::error::Error>> {
     // Test Call message
-    let call_msg = Message::Call {
-        id: CallId::new(123),
-        target: Target::Cap(CapId::new(42)),
-        member: "testMethod".to_string(),
-        args: vec![json!("hello"), json!(42)],
-    };
+    let call_msg = Message::call(
+        CallId::new(123),
+        Target::cap(CapId::new(42)),
+        "testMethod".to_string(),
+        vec![json!("hello"), json!(42)],
+    );
 
     let serialized = serde_json::to_value(&call_msg)?;
 
@@ -102,10 +102,10 @@ pub fn test_message_serialization() -> Result<(), Box<dyn std::error::Error>> {
     assert!(call_data["args"].is_array());
 
     // Test Result message
-    let result_msg = Message::Result {
-        id: CallId::new(123),
-        outcome: Outcome::Success { value: json!("result") },
-    };
+    let result_msg = Message::result(
+        CallId::new(123),
+        Outcome::Success { value: json!("result") },
+    );
 
     let serialized = serde_json::to_value(&result_msg)?;
     assert!(serialized.get("result").is_some());
@@ -118,13 +118,13 @@ pub fn test_message_serialization() -> Result<(), Box<dyn std::error::Error>> {
 pub fn test_complex_structures() -> Result<(), Box<dyn std::error::Error>> {
     // Test object construction
     let mut fields = std::collections::BTreeMap::new();
-    fields.insert("name".to_string(), Source::ByValue { value: json!("Alice") });
-    fields.insert("age".to_string(), Source::ByValue { value: json!(30) });
+    fields.insert("name".to_string(), Source::by_value(json!("Alice")));
+    fields.insert("age".to_string(), Source::by_value(json!(30)));
 
     let plan = Plan::new(
         vec![],
-        vec![Op::Object { fields, result: 0 }],
-        Source::Result { index: 0 },
+        vec![Op::object(fields, 0)],
+        Source::result(0),
     );
 
     let serialized = serde_json::to_value(&plan)?;
@@ -137,15 +137,15 @@ pub fn test_complex_structures() -> Result<(), Box<dyn std::error::Error>> {
     // Test array construction
     let plan = Plan::new(
         vec![],
-        vec![Op::Array {
-            items: vec![
-                Source::ByValue { value: json!(1) },
-                Source::ByValue { value: json!(2) },
-                Source::ByValue { value: json!(3) },
+        vec![Op::array(
+            vec![
+                Source::by_value(json!(1)),
+                Source::by_value(json!(2)),
+                Source::by_value(json!(3)),
             ],
-            result: 0,
-        }],
-        Source::Result { index: 0 },
+            0,
+        )],
+        Source::result(0),
     );
 
     let serialized = serde_json::to_value(&plan)?;
@@ -186,13 +186,13 @@ mod tests {
         // Test that we can serialize and deserialize a plan
         let original_plan = Plan::new(
             vec![CapId::new(1)],
-            vec![Op::Call {
-                target: Source::Capture { index: 0 },
-                member: "test".to_string(),
-                args: vec![Source::ByValue { value: json!(42) }],
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+            vec![Op::call(
+                Source::capture(0),
+                "test".to_string(),
+                vec![Source::by_value(json!(42))],
+                0,
+            )],
+            Source::result(0),
         );
 
         let json_value = serde_json::to_value(&original_plan).unwrap();
@@ -205,20 +205,20 @@ mod tests {
 
     #[test]
     fn test_message_roundtrip() {
-        let original_msg = Message::Call {
-            id: CallId::new(42),
-            target: Target::Cap(CapId::new(1)),
-            member: "test".to_string(),
-            args: vec![json!("arg1"), json!(123)],
-        };
+        let original_msg = Message::call(
+            CallId::new(42),
+            Target::cap(CapId::new(1)),
+            "test".to_string(),
+            vec![json!("arg1"), json!(123)],
+        );
 
         let json_value = serde_json::to_value(&original_msg).unwrap();
         let deserialized_msg: Message = serde_json::from_value(json_value).unwrap();
 
         // Verify message types match
         match (&original_msg, &deserialized_msg) {
-            (Message::Call { id: id1, .. }, Message::Call { id: id2, .. }) => {
-                assert_eq!(id1, id2);
+            (Message::Call { call: call1 }, Message::Call { call: call2 }) => {
+                assert_eq!(call1.id, call2.id);
             }
             _ => panic!("Message types should match"),
         }
@@ -226,12 +226,12 @@ mod tests {
 
     #[test]
     fn test_error_outcome_serialization() {
-        let error_msg = Message::Result {
-            id: CallId::new(1),
-            outcome: Outcome::Error {
+        let error_msg = Message::result(
+            CallId::new(1),
+            Outcome::Error {
                 error: capnweb_core::RpcError::bad_request("test error"),
             },
-        };
+        );
 
         let json_value = serde_json::to_value(&error_msg).unwrap();
         assert!(json_value.get("result").is_some());
