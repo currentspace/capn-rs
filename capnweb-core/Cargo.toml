@@ -1,0 +1,38 @@
+[package]
+name = "capnweb-core"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core types and protocol definitions for Cap'n Web"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+bytes.workspace = true
+tracing.workspace = true
+indexmap.workspace = true
+
+# Optional dependencies
+jsonschema = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }
+simd-json = { version = "0.14", optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+proptest.workspace = true
+insta.workspace = true
+criterion.workspace = true
+
+[features]
+default = ["validation"]
+validation = ["dep:jsonschema", "dep:schemars"]
+simd = ["dep:simd-json"]
+
+[[bench]]
+name = "codec"
+harness = false

@@ -1,0 +1,42 @@
+[package]
+name = "capnweb-client"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Client implementation for Cap'n Web protocol"
+
+[dependencies]
+capnweb-core.workspace = true
+capnweb-transport.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+bytes.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+
+# Concurrent data structures
+dashmap.workspace = true
+indexmap.workspace = true
+
+# Macro support
+syn = { version = "2.0", optional = true }
+quote = { version = "1.0", optional = true }
+proc-macro2 = { version = "1.0", optional = true }
+
+[dev-dependencies]
+mockito.workspace = true
+proptest.workspace = true
+criterion.workspace = true
+capnweb-server.workspace = true
+
+[features]
+default = ["all-transports", "macros"]
+all-transports = ["capnweb-transport/default"]
+macros = ["dep:syn", "dep:quote", "dep:proc-macro2"]

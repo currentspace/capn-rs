@@ -1,0 +1,52 @@
+[package]
+name = "capnweb-server"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Server implementation for Cap'n Web protocol"
+
+[dependencies]
+capnweb-core.workspace = true
+capnweb-transport.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+bytes.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+
+# Server framework
+axum.workspace = true
+hyper.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+# Concurrent data structures
+dashmap.workspace = true
+indexmap.workspace = true
+
+# Rate limiting
+governor.workspace = true
+nonzero_ext.workspace = true
+
+# HTTP/3 server
+quinn = { workspace = true, optional = true }
+h3 = { workspace = true, optional = true }
+h3-quinn = { workspace = true, optional = true }
+rustls = { workspace = true, optional = true }
+
+[dev-dependencies]
+mockito.workspace = true
+proptest.workspace = true
+criterion.workspace = true
+
+[features]
+default = ["all-transports"]
+all-transports = ["capnweb-transport/default", "h3-server"]
+h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls"]
