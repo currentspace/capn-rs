@@ -54,12 +54,12 @@ impl Recorder {
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::Call {
+        inner.ops.push(Op::call(
             target,
-            member: method.to_string(),
+            method.to_string(),
             args,
-            result: result_index,
-        });
+            result_index,
+        ));
 
         RecordedResult {
             recorder: self.clone(),
@@ -73,10 +73,10 @@ impl Recorder {
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::Object {
+        inner.ops.push(Op::object(
             fields,
-            result: result_index,
-        });
+            result_index,
+        ));
 
         RecordedResult {
             recorder: self.clone(),
@@ -90,10 +90,10 @@ impl Recorder {
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::Array {
+        inner.ops.push(Op::array(
             items,
-            result: result_index,
-        });
+            result_index,
+        ));
 
         RecordedResult {
             recorder: self.clone(),
@@ -115,7 +115,7 @@ impl Recorder {
     pub fn cap(&self, name: &str) -> Option<Source> {
         let inner = self.inner.lock().unwrap();
         inner.capability_map.get(name).map(|&index| {
-            Source::Capture { index }
+            Source::capture(index)
         })
     }
 }
@@ -138,7 +138,7 @@ impl RecordedCapability {
     /// Call a method on this capability
     pub fn call(&self, method: &str, args: Vec<Source>) -> RecordedResult {
         self.recorder.call(
-            Source::Capture { index: self.index },
+            Source::capture(self.index),
             method,
             args,
         )
@@ -146,7 +146,7 @@ impl RecordedCapability {
 
     /// Get the source for this capability
     pub fn as_source(&self) -> Source {
-        Source::Capture { index: self.index }
+        Source::capture(self.index)
     }
 }
 
@@ -160,7 +160,7 @@ impl RecordedResult {
     /// Call a method on this result
     pub fn call(&self, method: &str, args: Vec<Source>) -> RecordedResult {
         self.recorder.call(
-            Source::Result { index: self.index },
+            Source::result(self.index),
             method,
             args,
         )
@@ -168,7 +168,7 @@ impl RecordedResult {
 
     /// Get the source for this result
     pub fn as_source(&self) -> Source {
-        Source::Result { index: self.index }
+        Source::result(self.index)
     }
 
     /// Access a field of this result
@@ -201,7 +201,7 @@ impl RecordedField {
     pub fn as_source(&self) -> Source {
         // In a real implementation, this would extract the field
         // For now, we'll use the parent result
-        Source::Result { index: self.result_index }
+        Source::result(self.result_index)
     }
 }
 
@@ -211,14 +211,14 @@ pub struct Param;
 impl Param {
     /// Create a parameter source from a path
     pub fn path(segments: &[&str]) -> Source {
-        Source::Param {
-            path: segments.iter().map(|s| s.to_string()).collect(),
-        }
+        Source::param(
+            segments.iter().map(|s| s.to_string()).collect(),
+        )
     }
 
     /// Create a value source
     pub fn value(val: Value) -> Source {
-        Source::ByValue { value: val }
+        Source::by_value(val)
     }
 }
 

@@ -37,10 +37,14 @@ impl PlanRunner {
             let result = self.execute_op(op, params.as_ref(), captures, &results).await?;
 
             match op {
-                Op::Call { result: idx, .. } |
-                Op::Object { result: idx, .. } |
-                Op::Array { result: idx, .. } => {
-                    results.insert(*idx, result);
+                Op::Call { call } => {
+                    results.insert(call.result, result);
+                }
+                Op::Object { object } => {
+                    results.insert(object.result, result);
+                }
+                Op::Array { array } => {
+                    results.insert(array.result, result);
                 }
             }
         }
@@ -58,8 +62,8 @@ impl PlanRunner {
         results: &HashMap<u32, Value>,
     ) -> Result<Value, RpcError> {
         match op {
-            Op::Call { target, member, args, .. } => {
-                let target_value = self.resolve_source(target, params, captures, results)?;
+            Op::Call { call } => {
+                let target_value = self.resolve_source(&call.target, params, captures, results)?;
 
                 // Get the capability ID from the target value
                 let cap_id = if let Value::Object(obj) = &target_value {
@@ -81,30 +85,30 @@ impl PlanRunner {
 
                 // Resolve arguments
                 let mut resolved_args = Vec::new();
-                for arg_source in args {
+                for arg_source in &call.args {
                     resolved_args.push(self.resolve_source(arg_source, params, captures, results)?);
                 }
 
                 // Call the method on the capability
                 let target = capability.read().await;
-                target.call(member, resolved_args).await
+                target.call(&call.member, resolved_args).await
             }
 
-            Op::Object { fields, .. } => {
-                let mut object = Map::new();
-                for (key, source) in fields {
+            Op::Object { object } => {
+                let mut obj = Map::new();
+                for (key, source) in &object.fields {
                     let value = self.resolve_source(source, params, captures, results)?;
-                    object.insert(key.clone(), value);
+                    obj.insert(key.clone(), value);
                 }
-                Ok(Value::Object(object))
+                Ok(Value::Object(obj))
             }
 
-            Op::Array { items, .. } => {
-                let mut array = Vec::new();
-                for source in items {
-                    array.push(self.resolve_source(source, params, captures, results)?);
+            Op::Array { array } => {
+                let mut arr = Vec::new();
+                for source in &array.items {
+                    arr.push(self.resolve_source(source, params, captures, results)?);
                 }
-                Ok(Value::Array(array))
+                Ok(Value::Array(arr))
             }
         }
     }
@@ -118,42 +122,42 @@ impl PlanRunner {
         results: &HashMap<u32, Value>,
     ) -> Result<Value, RpcError> {
         match source {
-            Source::Capture { index } => {
+            Source::Capture { capture } => {
                 // Convert capability to a reference value
                 captures
-                    .get(index)
+                    .get(&capture.index)
                     .map(|_| {
                         // Return a capability reference
-                        serde_json::json!({ "cap": *index })
+                        serde_json::json!({ "cap": capture.index })
                     })
-                    .ok_or_else(|| RpcError::not_found(format!("Capture {} not found", index)))
+                    .ok_or_else(|| RpcError::not_found(format!("Capture {} not found", capture.index)))
             }
 
-            Source::Result { index } => {
+            Source::Result { result } => {
                 results
-                    .get(index)
+                    .get(&result.index)
                     .cloned()
-                    .ok_or_else(|| RpcError::not_found(format!("Result {} not found", index)))
+                    .ok_or_else(|| RpcError::not_found(format!("Result {} not found", result.index)))
             }
 
-            Source::Param { path } => {
+            Source::Param { param } => {
                 let params = params.ok_or_else(||
                     RpcError::bad_request("No parameters provided")
                 )?;
 
                 // Navigate the path through the params
                 let mut current = params;
-                for segment in path {
+                for segment in &param.path {
                     current = current
                         .get(segment)
                         .ok_or_else(|| RpcError::bad_request(
-                            format!("Parameter path not found: {}", path.join("."))
+                            format!("Parameter path not found: {}", param.path.join("."))
                         ))?;
                 }
                 Ok(current.clone())
             }
 
-            Source::ByValue { value } => Ok(value.clone()),
+            Source::ByValue { byValue } => Ok(byValue.value.clone()),
         }
     }
 }
@@ -200,13 +204,13 @@ mod tests {
 
         let plan = Plan::new(
             vec![CapId::new(1)],
-            vec![Op::Call {
-                target: Source::Capture { index: 0 },
-                member: "getName".to_string(),
-                args: vec![],
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+            vec![Op::call(
+                Source::capture(0),
+                "getName".to_string(),
+                vec![],
+                0,
+            )],
+            Source::result(0),
         );
 
         let mut captures = HashMap::new();
@@ -224,16 +228,16 @@ mod tests {
 
         let plan = Plan::new(
             vec![CapId::new(1)],
-            vec![Op::Call {
-                target: Source::Capture { index: 0 },
-                member: "add".to_string(),
-                args: vec![
-                    Source::Param { path: vec!["a".to_string()] },
-                    Source::Param { path: vec!["b".to_string()] },
+            vec![Op::call(
+                Source::capture(0),
+                "add".to_string(),
+                vec![
+                    Source::param(vec!["a".to_string()]),
+                    Source::param(vec!["b".to_string()]),
                 ],
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+                0,
+            )],
+            Source::result(0),
         );
 
         let mut captures = HashMap::new();
@@ -256,14 +260,14 @@ mod tests {
 
         let plan = Plan::new(
             vec![],
-            vec![Op::Object {
-                fields: vec![
-                    ("name".to_string(), Source::ByValue { value: Value::String("test".to_string()) }),
-                    ("value".to_string(), Source::ByValue { value: serde_json::json!(42) }),
+            vec![Op::object(
+                vec![
+                    ("name".to_string(), Source::by_value(Value::String("test".to_string()))),
+                    ("value".to_string(), Source::by_value(serde_json::json!(42))),
                 ].into_iter().collect(),
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+                0,
+            )],
+            Source::result(0),
         );
 
         let captures = HashMap::new();
@@ -281,15 +285,15 @@ mod tests {
 
         let plan = Plan::new(
             vec![],
-            vec![Op::Array {
-                items: vec![
-                    Source::ByValue { value: serde_json::json!(1) },
-                    Source::ByValue { value: serde_json::json!(2) },
-                    Source::ByValue { value: serde_json::json!(3) },
+            vec![Op::array(
+                vec![
+                    Source::by_value(serde_json::json!(1)),
+                    Source::by_value(serde_json::json!(2)),
+                    Source::by_value(serde_json::json!(3)),
                 ],
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+                0,
+            )],
+            Source::result(0),
         );
 
         let captures = HashMap::new();
@@ -305,21 +309,21 @@ mod tests {
         let plan = Plan::new(
             vec![CapId::new(1)],
             vec![
-                Op::Call {
-                    target: Source::Capture { index: 0 },
-                    member: "echo".to_string(),
-                    args: vec![Source::ByValue { value: Value::String("hello".to_string()) }],
-                    result: 0,
-                },
-                Op::Object {
-                    fields: vec![
-                        ("message".to_string(), Source::Result { index: 0 }),
-                        ("timestamp".to_string(), Source::ByValue { value: serde_json::json!(12345) }),
+                Op::call(
+                    Source::capture(0),
+                    "echo".to_string(),
+                    vec![Source::by_value(Value::String("hello".to_string()))],
+                    0,
+                ),
+                Op::object(
+                    vec![
+                        ("message".to_string(), Source::result(0)),
+                        ("timestamp".to_string(), Source::by_value(serde_json::json!(12345))),
                     ].into_iter().collect(),
-                    result: 1,
-                }
+                    1,
+                )
             ],
-            Source::Result { index: 1 },
+            Source::result(1),
         );
 
         let mut captures = HashMap::new();
@@ -342,13 +346,13 @@ mod tests {
         // Invalid plan with forward reference
         let plan = Plan::new(
             vec![],
-            vec![Op::Call {
-                target: Source::Result { index: 1 }, // Forward reference
-                member: "test".to_string(),
-                args: vec![],
-                result: 0,
-            }],
-            Source::Result { index: 0 },
+            vec![Op::call(
+                Source::result(1), // Forward reference
+                "test".to_string(),
+                vec![],
+                0,
+            )],
+            Source::result(0),
         );
 
         let captures = HashMap::new();

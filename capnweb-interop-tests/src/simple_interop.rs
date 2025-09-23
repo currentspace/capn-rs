@@ -64,13 +64,13 @@ pub fn test_plan_deserialization() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(plan.captures.len(), 1);
     assert_eq!(plan.ops.len(), 1);
 
-    if let Op::Call { target, member, args, result } = &plan.ops[0] {
-        assert_eq!(member, "multiply");
-        assert_eq!(args.len(), 2);
-        assert_eq!(*result, 0);
+    if let Op::Call { call } = &plan.ops[0] {
+        assert_eq!(call.member, "multiply");
+        assert_eq!(call.args.len(), 2);
+        assert_eq!(call.result, 0);
 
-        if let Source::Capture { index } = target {
-            assert_eq!(*index, 0);
+        if let Source::Capture { capture } = &call.target {
+            assert_eq!(capture.index, 0);
         } else {
             panic!("Expected capture target");
         }

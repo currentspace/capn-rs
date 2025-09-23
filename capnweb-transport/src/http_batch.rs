@@ -93,12 +93,12 @@ mod tests {
     async fn test_batch_transport_queue() {
         let mut transport = HttpBatchTransport::new("http://localhost:8080/rpc/batch".to_string());
 
-        let msg = Message::Call {
-            id: CallId::new(1),
-            target: Target::Cap(CapId::new(42)),
-            member: "test".to_string(),
-            args: vec![json!("hello")],
-        };
+        let msg = Message::call(
+            CallId::new(1),
+            Target::cap(CapId::new(42)),
+            "test".to_string(),
+            vec![json!("hello")],
+        );
 
         transport.send(msg.clone()).await.unwrap();
         assert_eq!(transport.pending_outgoing(), 1);
@@ -118,7 +118,7 @@ mod tests {
     async fn test_close_clears_queues() {
         let mut transport = HttpBatchTransport::new("http://localhost:8080/rpc/batch".to_string());
 
-        let msg = Message::CapRef { id: CapId::new(1) };
+        let msg = Message::cap_ref(CapId::new(1));
         transport.send(msg).await.unwrap();
 
         // Note: close will try to execute, which will fail without a server

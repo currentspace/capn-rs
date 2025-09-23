@@ -36,17 +36,17 @@ fn bench_message_serialization(c: &mut Criterion) {
     let mut group = c.benchmark_group("message_serialization");
 
     let messages = vec![
-        Message::Call {
-            id: CallId::new(1),
-            target: Target::Cap(CapId::new(42)),
-            member: "test".to_string(),
-            args: vec![json!("hello"), json!(42)],
-        },
-        Message::Result {
-            id: CallId::new(1),
-            outcome: Outcome::Success { value: json!("result") },
-        },
-        Message::CapRef { id: CapId::new(1) },
+        Message::call(
+            CallId::new(1),
+            Target::cap(CapId::new(42)),
+            "test".to_string(),
+            vec![json!("hello"), json!(42)],
+        ),
+        Message::result(
+            CallId::new(1),
+            Outcome::Success { value: json!("result") },
+        ),
+        Message::cap_ref(CapId::new(1)),
     ];
 
     for (i, message) in messages.iter().enumerate() {
@@ -85,28 +85,28 @@ fn bench_plan_serialization(c: &mut Criterion) {
         let mut fields = BTreeMap::new();
 
         for i in 0..*complexity {
-            ops.push(Op::Call {
-                target: Source::Capture { index: 0 },
-                member: format!("method_{}", i),
-                args: vec![Source::ByValue { value: json!(i) }],
-                result: i as u32,
-            });
+            ops.push(Op::call(
+                Source::capture(0),
+                format!("method_{}", i),
+                vec![Source::by_value(json!(i))],
+                i as u32,
+            ));
 
             fields.insert(
                 format!("field_{}", i),
-                Source::Result { index: i as u32 },
+                Source::result(i as u32),
             );
         }
 
-        ops.push(Op::Object {
+        ops.push(Op::object(
             fields,
-            result: *complexity as u32,
-        });
+            *complexity as u32,
+        ));
 
         let plan = Plan::new(
             vec![CapId::new(1)],
             ops,
-            Source::Result { index: *complexity as u32 },
+            Source::result(*complexity as u32),
         );
 
         group.bench_with_input(

@@ -8,16 +8,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("1. Testing plan serialization...");
     let plan = Plan::new(
         vec![CapId::new(1)],
-        vec![Op::Call {
-            target: Source::Capture { index: 0 },
-            member: "add".to_string(),
-            args: vec![
-                Source::ByValue { value: json!(5) },
-                Source::ByValue { value: json!(3) },
+        vec![Op::call(
+            Source::capture(0),
+            "add".to_string(),
+            vec![
+                Source::by_value(json!(5)),
+                Source::by_value(json!(3)),
             ],
-            result: 0,
-        }],
-        Source::Result { index: 0 },
+            0,
+        )],
+        Source::result(0),
     );
 
     let serialized = serde_json::to_value(&plan)?;
@@ -47,12 +47,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Test 3: Message serialization
     println!("\n3. Testing message serialization...");
-    let msg = Message::Call {
-        id: CallId::new(123),
-        target: Target::Cap(CapId::new(42)),
-        member: "testMethod".to_string(),
-        args: vec![json!("hello"), json!(42)],
-    };
+    let msg = Message::call(
+        CallId::new(123),
+        Target::cap(CapId::new(42)),
+        "testMethod".to_string(),
+        vec![json!("hello"), json!(42)],
+    );
 
     let msg_json = serde_json::to_value(&msg)?;
     println!("   ✓ Message serialized successfully");
@@ -61,13 +61,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Test 4: Complex data structures
     println!("\n4. Testing complex data structures...");
     let mut fields = std::collections::BTreeMap::new();
-    fields.insert("name".to_string(), Source::ByValue { value: json!("Alice") });
-    fields.insert("age".to_string(), Source::ByValue { value: json!(30) });
+    fields.insert("name".to_string(), Source::by_value(json!("Alice")));
+    fields.insert("age".to_string(), Source::by_value(json!(30)));
 
     let object_plan = Plan::new(
         vec![],
-        vec![Op::Object { fields, result: 0 }],
-        Source::Result { index: 0 },
+        vec![Op::object(fields, 0)],
+        Source::result(0),
     );
 
     let object_json = serde_json::to_value(&object_plan)?;
@@ -75,15 +75,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let array_plan = Plan::new(
         vec![],
-        vec![Op::Array {
-            items: vec![
-                Source::ByValue { value: json!(1) },
-                Source::ByValue { value: json!(2) },
-                Source::ByValue { value: json!(3) },
+        vec![Op::array(
+            vec![
+                Source::by_value(json!(1)),
+                Source::by_value(json!(2)),
+                Source::by_value(json!(3)),
             ],
-            result: 0,
-        }],
-        Source::Result { index: 0 },
+            0,
+        )],
+        Source::result(0),
     );
 
     let array_json = serde_json::to_value(&array_plan)?;

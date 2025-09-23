@@ -46,16 +46,16 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             test_type: TestType::PlanExecution,
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
-                vec![Op::Call {
-                    target: Source::Capture { index: 0 },
-                    member: "add".to_string(),
-                    args: vec![
-                        Source::ByValue { value: json!(5) },
-                        Source::ByValue { value: json!(3) },
+                vec![Op::call(
+                    Source::capture(0),
+                    "add".to_string(),
+                    vec![
+                        Source::by_value(json!(5)),
+                        Source::by_value(json!(3)),
                     ],
-                    result: 0,
-                }],
-                Source::Result { index: 0 },
+                    0,
+                )],
+                Source::result(0),
             )),
             js_plan: Some(json!({
                 "captures": [1],
@@ -92,20 +92,20 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
                 vec![
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getUser".to_string(),
-                        args: vec![Source::ByValue { value: json!(123) }],
-                        result: 0,
-                    },
-                    Op::Call {
-                        target: Source::Result { index: 0 },
-                        member: "getName".to_string(),
-                        args: vec![],
-                        result: 1,
-                    },
+                    Op::call(
+                        Source::capture(0),
+                        "getUser".to_string(),
+                        vec![Source::by_value(json!(123))],
+                        0,
+                    ),
+                    Op::call(
+                        Source::result(0),
+                        "getName".to_string(),
+                        vec![],
+                        1,
+                    ),
                 ],
-                Source::Result { index: 1 },
+                Source::result(1),
             )),
             js_plan: Some(json!({
                 "captures": [1],
@@ -156,29 +156,29 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
                 vec![
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getName".to_string(),
-                        args: vec![],
-                        result: 0,
-                    },
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getAge".to_string(),
-                        args: vec![],
-                        result: 1,
-                    },
-                    Op::Object {
-                        fields: {
+                    Op::call(
+                        Source::capture(0),
+                        "getName".to_string(),
+                        vec![],
+                        0,
+                    ),
+                    Op::call(
+                        Source::capture(0),
+                        "getAge".to_string(),
+                        vec![],
+                        1,
+                    ),
+                    Op::object(
+                        {
                             let mut map = std::collections::BTreeMap::new();
-                            map.insert("name".to_string(), Source::Result { index: 0 });
-                            map.insert("age".to_string(), Source::Result { index: 1 });
+                            map.insert("name".to_string(), Source::result(0));
+                            map.insert("age".to_string(), Source::result(1));
                             map
                         },
-                        result: 2,
-                    },
+                        2,
+                    ),
                 ],
-                Source::Result { index: 2 },
+                Source::result(2),
             )),
             js_plan: Some(json!({
                 "captures": [1],
@@ -238,34 +238,34 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
                 vec![
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getValue".to_string(),
-                        args: vec![Source::ByValue { value: json!(1) }],
-                        result: 0,
-                    },
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getValue".to_string(),
-                        args: vec![Source::ByValue { value: json!(2) }],
-                        result: 1,
-                    },
-                    Op::Call {
-                        target: Source::Capture { index: 0 },
-                        member: "getValue".to_string(),
-                        args: vec![Source::ByValue { value: json!(3) }],
-                        result: 2,
-                    },
-                    Op::Array {
-                        items: vec![
-                            Source::Result { index: 0 },
-                            Source::Result { index: 1 },
-                            Source::Result { index: 2 },
+                    Op::call(
+                        Source::capture(0),
+                        "getValue".to_string(),
+                        vec![Source::by_value(json!(1))],
+                        0,
+                    ),
+                    Op::call(
+                        Source::capture(0),
+                        "getValue".to_string(),
+                        vec![Source::by_value(json!(2))],
+                        1,
+                    ),
+                    Op::call(
+                        Source::capture(0),
+                        "getValue".to_string(),
+                        vec![Source::by_value(json!(3))],
+                        2,
+                    ),
+                    Op::array(
+                        vec![
+                            Source::result(0),
+                            Source::result(1),
+                            Source::result(2),
                         ],
-                        result: 3,
-                    },
+                        3,
+                    ),
                 ],
-                Source::Result { index: 3 },
+                Source::result(3),
             )),
             js_plan: Some(json!({
                 "captures": [1],
@@ -338,16 +338,16 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             test_type: TestType::ErrorHandling,
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
-                vec![Op::Call {
-                    target: Source::Capture { index: 0 },
-                    member: "divide".to_string(),
-                    args: vec![
-                        Source::ByValue { value: json!(10) },
-                        Source::ByValue { value: json!(0) },
+                vec![Op::call(
+                    Source::capture(0),
+                    "divide".to_string(),
+                    vec![
+                        Source::by_value(json!(10)),
+                        Source::by_value(json!(0)),
                     ],
-                    result: 0,
-                }],
-                Source::Result { index: 0 },
+                    0,
+                )],
+                Source::result(0),
             )),
             js_plan: Some(json!({
                 "captures": [1],
@@ -393,12 +393,12 @@ pub fn message_serialization_fixtures() -> Vec<(Message, serde_json::Value)> {
     vec![
         // Call message
         (
-            Message::Call {
-                id: CallId::new(1),
-                target: Target::Cap(CapId::new(42)),
-                member: "test".to_string(),
-                args: vec![json!({"param": 123})],
-            },
+            Message::call(
+                CallId::new(1),
+                Target::cap(CapId::new(42)),
+                "test".to_string(),
+                vec![json!({"param": 123})],
+            ),
             json!({
                 "call": {
                     "id": 1,
@@ -410,22 +410,20 @@ pub fn message_serialization_fixtures() -> Vec<(Message, serde_json::Value)> {
         ),
         // Return message
         (
-            Message::Result {
-                id: CallId::new(1),
-                outcome: Outcome::Success { value: json!("success") },
-            },
+            Message::result(
+                CallId::new(1),
+                Outcome::Success { value: json!("success") },
+            ),
             json!({
                 "result": {
                     "id": 1,
-                    "success": {
-                        "value": "success"
-                    }
+                    "value": "success"
                 }
             }),
         ),
         // CapRef message
         (
-            Message::CapRef { id: CapId::new(1) },
+            Message::cap_ref(CapId::new(1)),
             json!({
                 "capRef": {
                     "id": 1

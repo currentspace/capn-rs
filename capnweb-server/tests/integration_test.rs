@@ -34,29 +34,29 @@ async fn test_server_batch_endpoint() {
 
     // Create a batch request
     let batch_request = vec![
-        Message::Call {
-            id: CallId::new(1),
-            target: Target::Cap(CapId::new(1)),
-            member: "add".to_string(),
-            args: vec![json!(5), json!(3)],
-        },
-        Message::Call {
-            id: CallId::new(2),
-            target: Target::Cap(CapId::new(1)),
-            member: "add".to_string(),
-            args: vec![json!(10), json!(20)],
-        },
+        Message::call(
+            CallId::new(1),
+            Target::cap(CapId::new(1)),
+            "add".to_string(),
+            vec![json!(5), json!(3)],
+        ),
+        Message::call(
+            CallId::new(2),
+            Target::cap(CapId::new(1)),
+            "add".to_string(),
+            vec![json!(10), json!(20)],
+        ),
     ];
 
     // Process batch (simulating what the HTTP handler does)
     let mut responses = Vec::new();
     for msg in batch_request {
         let response = match msg {
-            Message::Call { id, target, member, args } => {
-                let result = match target {
-                    Target::Cap(cap_id) => {
-                        match server.cap_table().lookup(&cap_id) {
-                            Some(cap) => match cap.call(&member, args).await {
+            Message::Call { call } => {
+                let result = match &call.target {
+                    Target::Cap { cap } => {
+                        match server.cap_table().lookup(&cap.id) {
+                            Some(cap_target) => match cap_target.call(&call.member, call.args.clone()).await {
                                 Ok(value) => Outcome::Success { value },
                                 Err(error) => Outcome::Error { error },
                             },
@@ -65,11 +65,11 @@ async fn test_server_batch_endpoint() {
                             },
                         }
                     }
-                    Target::Special(_) => Outcome::Error {
+                    Target::Special { .. } => Outcome::Error {
                         error: RpcError::not_found("Special target not implemented"),
                     },
                 };
-                Message::Result { id, outcome: result }
+                Message::result(call.id, result)
             }
             _ => msg,
         };
@@ -80,9 +80,9 @@ async fn test_server_batch_endpoint() {
     assert_eq!(responses.len(), 2);
 
     match &responses[0] {
-        Message::Result { id, outcome } => {
-            assert_eq!(*id, CallId::new(1));
-            match outcome {
+        Message::Result { result } => {
+            assert_eq!(result.id, CallId::new(1));
+            match &result.outcome {
                 Outcome::Success { value } => assert_eq!(*value, json!(8.0)),
                 _ => panic!("Expected success outcome"),
             }
@@ -91,9 +91,9 @@ async fn test_server_batch_endpoint() {
     }
 
     match &responses[1] {
-        Message::Result { id, outcome } => {
-            assert_eq!(*id, CallId::new(2));
-            match outcome {
+        Message::Result { result } => {
+            assert_eq!(result.id, CallId::new(2));
+            match &result.outcome {
                 Outcome::Success { value } => assert_eq!(*value, json!(30.0)),
                 _ => panic!("Expected success outcome"),
             }
@@ -112,23 +112,21 @@ async fn test_dispose_in_batch() {
 
     // Create batch with dispose
     let batch_request = vec![
-        Message::Call {
-            id: CallId::new(1),
-            target: Target::Cap(cap_id),
-            member: "add".to_string(),
-            args: vec![json!(1), json!(2)],
-        },
-        Message::Dispose {
-            caps: vec![cap_id],
-        },
+        Message::call(
+            CallId::new(1),
+            Target::cap(cap_id),
+            "add".to_string(),
+            vec![json!(1), json!(2)],
+        ),
+        Message::dispose(vec![cap_id]),
     ];
 
     // Process batch
     for msg in batch_request {
         match msg {
-            Message::Dispose { caps } => {
-                for id in caps {
-                    server.cap_table().remove(&id);
+            Message::Dispose { dispose } => {
+                for id in &dispose.caps {
+                    server.cap_table().remove(id);
                 }
             }
             _ => {}
@@ -151,12 +149,12 @@ async fn test_batch_size_limit() {
 
     // Create oversized batch
     let batch: Vec<Message> = (0..3)
-        .map(|i| Message::Call {
-            id: CallId::new(i),
-            target: Target::Cap(CapId::new(1)),
-            member: "test".to_string(),
-            args: vec![],
-        })
+        .map(|i| Message::call(
+            CallId::new(i),
+            Target::cap(CapId::new(1)),
+            "test".to_string(),
+            vec![],
+        ))
         .collect();
 
     // Check that batch exceeds limit (we know it's 3 > 2)

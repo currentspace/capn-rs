@@ -271,14 +271,14 @@ mod tests {
         assert_eq!(plan.ops.len(), 3);
 
         // Each operation should depend on the previous one
-        if let capnweb_core::Op::Call { result, .. } = &plan.ops[0] {
-            assert_eq!(*result, 0);
+        if let capnweb_core::Op::Call { call } = &plan.ops[0] {
+            assert_eq!(call.result, 0);
         }
-        if let capnweb_core::Op::Call { result, .. } = &plan.ops[1] {
-            assert_eq!(*result, 1);
+        if let capnweb_core::Op::Call { call } = &plan.ops[1] {
+            assert_eq!(call.result, 1);
         }
-        if let capnweb_core::Op::Call { result, .. } = &plan.ops[2] {
-            assert_eq!(*result, 2);
+        if let capnweb_core::Op::Call { call } = &plan.ops[2] {
+            assert_eq!(call.result, 2);
         }
     }
 }
