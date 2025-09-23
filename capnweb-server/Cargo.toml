@@ -30,6 +30,7 @@ tower-http.workspace = true
 # Concurrent data structures
 dashmap.workspace = true
 indexmap.workspace = true
+uuid.workspace = true
 
 # Rate limiting
 governor.workspace = true

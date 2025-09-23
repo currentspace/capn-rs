@@ -72,7 +72,7 @@ impl Server {
         Ok(())
     }
 
-    async fn process_message(&self, msg: Message) -> Message {
+    pub async fn process_message(&self, msg: Message) -> Message {
         match msg {
             Message::Call { id, target, member, args } => {
                 let result = match target {
