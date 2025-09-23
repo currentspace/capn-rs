@@ -1,0 +1,1 @@
+.pnpm/ws@8.18.3/node_modules/ws

@@ -1,0 +1,38 @@
+{
+  "name": "capnweb-typescript-interop-tests",
+  "version": "1.0.0",
+  "description": "TypeScript interoperability tests for Cap'n Web Rust implementation",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "node --test --experimental-test-coverage dist/**/*.test.js",
+    "test:watch": "node --test --watch dist/**/*.test.js",
+    "test:rust-server": "pnpm build && pnpm start:rust-server & pnpm test:client && kill $!",
+    "test:rust-client": "pnpm build && pnpm start:ts-server & pnpm test:rust-client-connect && kill $!",
+    "test:all": "pnpm test:rust-server && pnpm test:rust-client",
+    "start:rust-server": "cd .. && cargo run --example calculator_server",
+    "start:ts-server": "node dist/typescript-server.js",
+    "test:client": "node dist/client-tests.js",
+    "test:rust-client-connect": "cd .. && cargo run --example calculator_client",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch & node --watch dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.13",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
