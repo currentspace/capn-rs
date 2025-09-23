@@ -1,5 +1,5 @@
 pub mod fixtures;
-pub mod js_client_tests;
-pub mod js_server_tests;
+pub mod simple_interop;
 
 pub use fixtures::{TestFixture, load_fixtures};
+pub use simple_interop::run_all_interop_tests;

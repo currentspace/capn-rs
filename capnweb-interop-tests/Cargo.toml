@@ -28,4 +28,5 @@ insta.workspace = true
 [dev-dependencies]
 criterion.workspace = true
 proptest.workspace = true
+tokio-test = "0.4"
 
