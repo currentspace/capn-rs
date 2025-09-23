@@ -7,7 +7,7 @@ use axum::{
 };
 use capnweb_core::{
     protocol::{
-        Message, Expression, ImportId,
+        Message, Expression, ImportId, ExportId,
         RpcSession, Value, ImportValue,
     },
     RpcTarget,
@@ -323,7 +323,7 @@ async fn process_message(
                         if let Some(sender) = pulls.remove(&import_id) {
                             // Send resolution to waiting pull
                             let _ = sender.send(Message::Resolve(
-                                import_id.to_export_id(),
+                                ExportId(import_id.0),
                                 value_to_expression(value),
                             ));
                         }
@@ -351,7 +351,7 @@ async fn process_message(
                         let mut pulls = pending_pulls.write().await;
                         if let Some(sender) = pulls.remove(&import_id) {
                             let _ = sender.send(Message::Reject(
-                                import_id.to_export_id(),
+                                ExportId(import_id.0),
                                 error_expr,
                             ));
                         }
@@ -372,7 +372,7 @@ async fn process_message(
                         // Check if it's an error value
                         if let Value::Error(error_type, message, stack) = value {
                             Ok(Some(Message::Reject(
-                                import_id.to_export_id(),
+                                ExportId(import_id.0),
                                 Expression::Error(capnweb_core::protocol::ErrorExpression {
                                     error_type,
                                     message,
@@ -381,7 +381,7 @@ async fn process_message(
                             )))
                         } else {
                             Ok(Some(Message::Resolve(
-                                import_id.to_export_id(),
+                                ExportId(import_id.0),
                                 value_to_expression(value),
                             )))
                         }
@@ -389,7 +389,7 @@ async fn process_message(
                     _ => {
                         // Import is a stub or promise, not yet supported
                         Ok(Some(Message::Resolve(
-                            import_id.to_export_id(),
+                            ExportId(import_id.0),
                             Expression::String("Not yet implemented".to_string()),
                         )))
                     }
