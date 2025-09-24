@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
+    "postinstall": "(cd node_modules/capnweb && pnpm install && pnpm run build) || echo 'Capnweb build will be attempted during first use'",
+    "build:capnweb": "cd node_modules/.pnpm/*/node_modules/capnweb && pnpm install && pnpm run build",
     "build": "tsup",
     "build:tsc": "tsc",
     "test": "pnpm build && node dist/test-runner.js",
@@ -21,8 +23,11 @@
     "test:tier3-extreme": "pnpm build && node dist/tier3-extreme-stress.js",
     "test:tier3-capability": "pnpm build && node dist/tier3-capability-composition.js",
     "test:advanced-features": "pnpm build && node dist/advanced-features-demo.js",
+    "test:complete": "./run-complete-tests.sh",
+    "test:complete-advanced": "pnpm build && node dist/complete-advanced-features-test.js",
     "test:all": "pnpm test:comprehensive",
     "test:ultimate": "pnpm test:tier3-extreme",
+    "test:full-validation": "pnpm test:complete",
     "demo:advanced": "pnpm test:advanced-features",
     "clean": "rm -rf dist",
     "start:rust-server": "cd .. && cargo run --example protocol_server -p capnweb-server",
@@ -30,7 +35,7 @@
     "interop": "pnpm build && node dist/interop-tests.js"
   },
   "dependencies": {
-    "capnweb": "^0.1.0",
+    "capnweb": "file:./capnweb-github",
     "ws": "^8.18.0"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: [
     'src/official-client-test.ts',
+    'src/fixed-official-client-test.ts',
     'src/debug-client.ts',
     'src/test-newline-format.ts',
     'src/advanced-server-test.ts',
