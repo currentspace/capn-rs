@@ -12,7 +12,9 @@ export default defineConfig({
     'src/tier1-protocol-compliance.ts',
     'src/tier2-stateful-sessions.ts',
     'src/tier2-websocket-tests.ts',
-    'src/tier3-complex-applications.ts'
+    'src/tier3-complex-applications.ts',
+    'src/tier3-websocket-advanced.ts',
+    'src/cross-transport-interop.ts'
   ],
   format: ['esm'],
   dts: false,
