@@ -11,7 +11,9 @@ use std::pin::Pin;
 
 /// Expression evaluator context
 pub struct ExpressionEvaluator {
+    #[allow(dead_code)]
     imports: Arc<ImportTable>,
+    #[allow(dead_code)]
     exports: Arc<ExportTable>,
     remap_engine: RemapEngine,
 }

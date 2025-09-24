@@ -106,7 +106,7 @@ impl ResumeTokenManager {
     pub fn generate_secret_key() -> Vec<u8> {
         use rand::RngCore;
         let mut key = vec![0u8; 32];
-        rand::thread_rng().fill_bytes(&mut key);
+        rand::rng().fill_bytes(&mut key);
         key
     }
 
@@ -114,9 +114,9 @@ impl ResumeTokenManager {
     pub async fn create_snapshot(
         &self,
         session_id: String,
-        allocator: &Arc<IdAllocator>,
-        imports: &Arc<ImportTable>,
-        exports: &Arc<ExportTable>,
+        _allocator: &Arc<IdAllocator>,
+        _imports: &Arc<ImportTable>,
+        _exports: &Arc<ExportTable>,
         variables: Option<&VariableStateManager>,
     ) -> Result<SessionSnapshot, ResumeTokenError> {
         let now = SystemTime::now()
@@ -242,9 +242,9 @@ impl ResumeTokenManager {
     pub async fn restore_session(
         &self,
         snapshot: SessionSnapshot,
-        allocator: &Arc<IdAllocator>,
-        imports: &Arc<ImportTable>,
-        exports: &Arc<ExportTable>,
+        _allocator: &Arc<IdAllocator>,
+        _imports: &Arc<ImportTable>,
+        _exports: &Arc<ExportTable>,
         variables: Option<&VariableStateManager>,
     ) -> Result<(), ResumeTokenError> {
         tracing::info!(
@@ -323,9 +323,9 @@ pub struct PersistentSessionManager {
 
 #[derive(Debug, Clone)]
 struct SessionInfo {
-    session_id: String,
+    _session_id: String,
     last_activity: u64,
-    variable_manager: Option<Arc<VariableStateManager>>,
+    _variable_manager: Option<Arc<VariableStateManager>>,
 }
 
 impl PersistentSessionManager {
@@ -341,9 +341,9 @@ impl PersistentSessionManager {
     pub async fn snapshot_session(
         &self,
         session_id: &str,
-        allocator: &Arc<IdAllocator>,
-        imports: &Arc<ImportTable>,
-        exports: &Arc<ExportTable>,
+        _allocator: &Arc<IdAllocator>,
+        _imports: &Arc<ImportTable>,
+        _exports: &Arc<ExportTable>,
         variables: Option<&VariableStateManager>,
     ) -> Result<ResumeToken, ResumeTokenError> {
         let snapshot = self.token_manager.create_snapshot(
@@ -361,9 +361,9 @@ impl PersistentSessionManager {
     pub async fn restore_session(
         &self,
         token: &ResumeToken,
-        allocator: &Arc<IdAllocator>,
-        imports: &Arc<ImportTable>,
-        exports: &Arc<ExportTable>,
+        _allocator: &Arc<IdAllocator>,
+        _imports: &Arc<ImportTable>,
+        _exports: &Arc<ExportTable>,
         variables: Option<&VariableStateManager>,
     ) -> Result<String, ResumeTokenError> {
         let snapshot = self.token_manager.parse_token(token)?;

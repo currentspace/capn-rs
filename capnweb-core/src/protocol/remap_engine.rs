@@ -122,6 +122,7 @@ impl RemapEngine {
     /// Resolve a property path on a value
     fn resolve_property_path(&self, value: &Value, path: &[PropertyKey]) -> Result<Value, RemapError> {
         let mut current = value;
+        #[allow(unused_assignments)]
         let mut owned_value: Option<Value> = None;
 
         for key in path {

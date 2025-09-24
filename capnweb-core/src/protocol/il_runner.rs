@@ -19,6 +19,7 @@ pub struct ExecutionContext {
     /// Captured capabilities
     captures: Vec<Arc<dyn RpcTarget>>,
     /// Variable state during execution
+    #[allow(dead_code)]
     variables: HashMap<String, Value>,
 }
 
@@ -127,8 +128,10 @@ impl ExecutionContext {
 #[derive(Debug)]
 pub struct PlanRunner {
     /// Import table for capability resolution
+    #[allow(dead_code)]
     imports: Arc<ImportTable>,
     /// Export table for capability storage
+    #[allow(dead_code)]
     exports: Arc<ExportTable>,
     /// Execution timeout in milliseconds
     timeout_ms: u64,
@@ -307,7 +310,7 @@ impl PlanRunner {
             Source::Capture { capture } => {
                 context.get_capability(capture.index)
             }
-            Source::Result { result } => {
+            Source::Result { result: _ } => {
                 // Check if the result is a capability reference
                 let value = context.get_source_value(source).await?;
                 if let Value::Object(obj) = value {
