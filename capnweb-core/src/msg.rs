@@ -26,7 +26,10 @@ pub enum Outcome {
 pub enum Message {
     Call { call: CallMessage },
     Result { result: ResultMessage },
-    CapRef { capRef: CapRefMessage },
+    CapRef {
+        #[serde(rename = "capRef")]
+        cap_ref: CapRefMessage
+    },
     Dispose { dispose: DisposeMessage },
 }
 
@@ -85,7 +88,7 @@ impl Message {
 
     pub fn cap_ref(id: CapId) -> Self {
         Message::CapRef {
-            capRef: CapRefMessage { id },
+            cap_ref: CapRefMessage { id },
         }
     }
 

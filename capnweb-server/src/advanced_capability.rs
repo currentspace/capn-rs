@@ -551,7 +551,7 @@ impl AdvancedCapability {
             let value = value_obj.get("value")
                 .ok_or_else(|| RpcError::bad_request("ByValue missing value"))?;
             Ok(Source::ByValue {
-                byValue: ValueRef {
+                by_value: ValueRef {
                     value: value.clone()
                 }
             })
@@ -593,7 +593,7 @@ impl AdvancedCapability {
                     let value = json.get("value")
                         .ok_or_else(|| RpcError::bad_request("Literal source missing value"))?;
                     Ok(Source::ByValue {
-                        byValue: ValueRef {
+                        by_value: ValueRef {
                             value: value.clone()
                         }
                     })
@@ -603,7 +603,7 @@ impl AdvancedCapability {
         } else {
             // If no recognized structure, treat as literal value
             Ok(Source::ByValue {
-                byValue: ValueRef {
+                by_value: ValueRef {
                     value: json.clone()
                 }
             })

@@ -9,7 +9,10 @@ pub enum Source {
     Capture { capture: CaptureRef },
     Result { result: ResultRef },
     Param { param: ParamRef },
-    ByValue { byValue: ValueRef },
+    ByValue {
+        #[serde(rename = "byValue")]
+        by_value: ValueRef
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -81,7 +84,7 @@ impl Source {
     }
 
     pub fn by_value(value: Value) -> Self {
-        Source::ByValue { byValue: ValueRef { value } }
+        Source::ByValue { by_value: ValueRef { value } }
     }
 
     pub fn get_capture_index(&self) -> Option<u32> {

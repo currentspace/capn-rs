@@ -157,7 +157,7 @@ impl PlanRunner {
                 Ok(current.clone())
             }
 
-            Source::ByValue { byValue } => Ok(byValue.value.clone()),
+            Source::ByValue { by_value } => Ok(by_value.value.clone()),
         }
     }
 }

@@ -82,8 +82,8 @@ impl ExecutionContext {
             Source::Param { param } => {
                 self.get_nested_parameter(&param.path)
             }
-            Source::ByValue { byValue } => {
-                Ok(self.convert_serde_json_value_to_tables_value(byValue.value.clone()))
+            Source::ByValue { by_value } => {
+                Ok(self.convert_serde_json_value_to_tables_value(by_value.value.clone()))
             }
         }
     }
