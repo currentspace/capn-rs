@@ -534,7 +534,7 @@ mod tests {
         let runner = PlanRunner::new(imports, exports);
 
         let mock_target = Arc::new(MockRpcTarget::new());
-        let captures = vec![mock_target];
+        let _captures = vec![mock_target];
 
         let plan = Plan::new(
             vec![CapId::new(1)],
@@ -549,7 +549,7 @@ mod tests {
 
         let parameters = json_to_value(json!({}));
         let captures: Vec<Arc<dyn RpcTarget>> = vec![Arc::new(MockRpcTarget::new())];
-        let result = runner.execute_plan(&plan, parameters, captures).await;
+        let _result = runner.execute_plan(&plan, parameters, captures).await;
 
         assert!(result.is_ok());
     }
@@ -579,7 +579,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_execution_context_parameters() {
-        let params = json!({
+        let params = json_to_value(json!({
             "user": {
                 "name": "Alice",
                 "id": 123
@@ -587,18 +587,18 @@ mod tests {
             "settings": {
                 "theme": "dark"
             }
-        });
+        }));
 
         let context = ExecutionContext::new(params, vec![]);
 
         // Test nested parameter access
         let name = context.get_nested_parameter(&["user".to_string(), "name".to_string()]);
         assert!(name.is_ok());
-        assert_eq!(name.unwrap(), json!("Alice"));
+        assert_eq!(name.expect("Should get name"), json_to_value(json!("Alice")));
 
         let theme = context.get_nested_parameter(&["settings".to_string(), "theme".to_string()]);
         assert!(theme.is_ok());
-        assert_eq!(theme.unwrap(), json!("dark"));
+        assert_eq!(theme.expect("Should get theme"), json_to_value(json!("dark")));
     }
 
     #[tokio::test]
@@ -645,7 +645,7 @@ mod tests {
 
         // Create a mock target that takes a long time
         let mock_target = Arc::new(MockRpcTarget::new());
-        let captures = vec![mock_target];
+        let _captures = vec![mock_target];
 
         let plan = Plan::new(
             vec![CapId::new(1)],
@@ -660,7 +660,7 @@ mod tests {
 
         let parameters = json_to_value(json!({}));
         let captures: Vec<Arc<dyn RpcTarget>> = vec![Arc::new(MockRpcTarget::new())];
-        let result = runner.execute_plan(&plan, parameters, captures).await;
+        let _result = runner.execute_plan(&plan, parameters, captures).await;
 
         // This test might not fail with the mock target, but demonstrates the timeout structure
         // In a real scenario with a slow RPC target, this would timeout
