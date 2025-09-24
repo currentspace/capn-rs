@@ -58,15 +58,28 @@ impl Server {
     }
 
     pub async fn run(self) -> Result<(), std::io::Error> {
-        let app = Router::new()
+        let mut app = Router::new()
             .route("/rpc/batch", post(handle_batch))
-            .route("/health", get(handle_health))
-            .with_state(Arc::new(self.clone()));
+            .route("/health", get(handle_health));
+
+        // Add WebSocket support if the feature is enabled
+        #[cfg(feature = "all-transports")]
+        {
+            app = app.route("/rpc/ws", get(crate::ws_h1::websocket_handler));
+        }
+
+        let app = app.with_state(Arc::new(self.clone()));
 
         let addr = format!("{}:{}", self.config.host, self.config.port);
         let listener = TcpListener::bind(&addr).await?;
 
         println!("Server listening on {}", addr);
+        println!("  HTTP Batch endpoint: http://{}/rpc/batch", addr);
+
+        #[cfg(feature = "all-transports")]
+        println!("  WebSocket endpoint: ws://{}/rpc/ws", addr);
+
+        println!("  Health endpoint: http://{}/health", addr);
 
         axum::serve(listener, app).await?;
 
@@ -149,15 +162,28 @@ async fn handle_batch(
 async fn handle_health(State(server): State<Arc<Server>>) -> impl IntoResponse {
     let capability_count = server.cap_table.len();
 
+    let mut endpoints = serde_json::json!({
+        "batch": "/rpc/batch",
+        "health": "/health"
+    });
+
+    // Add WebSocket endpoint if available
+    #[cfg(feature = "all-transports")]
+    {
+        endpoints["websocket"] = serde_json::json!("/rpc/ws");
+    }
+
     let health_response = serde_json::json!({
         "status": "healthy",
         "server": "capnweb-rust",
+        "version": env!("CARGO_PKG_VERSION"),
         "capabilities": capability_count,
         "max_batch_size": server.config.max_batch_size,
-        "endpoints": {
-            "batch": "/rpc/batch",
-            "health": "/health"
-        }
+        "features": {
+            "websocket": cfg!(feature = "all-transports"),
+            "h3": cfg!(feature = "h3-server")
+        },
+        "endpoints": endpoints
     });
 
     (StatusCode::OK, Json(health_response))

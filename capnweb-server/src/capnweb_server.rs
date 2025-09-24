@@ -1,7 +1,7 @@
 use axum::{
-    extract::{State, Json},
+    extract::{State, Json, ws::{WebSocket, WebSocketUpgrade, Message as WsMessage}},
     http::{StatusCode, HeaderMap, header},
-    response::IntoResponse,
+    response::{IntoResponse, Response},
     routing::{get, post},
     Router,
 };
@@ -17,6 +17,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
+use futures::{SinkExt, StreamExt};
+use tracing::{debug, error, info, warn};
 
 /// Cap'n Web server configuration
 #[derive(Debug, Clone)]
@@ -90,6 +92,11 @@ impl CapnWebServer {
 
     /// Build the router
     fn build_router(state: ServerState) -> Router {
+        info!("Building Cap'n Web server router with endpoints:");
+        info!("  - GET  /health      (Health check)");
+        info!("  - POST /rpc/batch   (HTTP Batch RPC)");
+        info!("  - GET  /rpc/ws      (WebSocket RPC)");
+
         Router::new()
             .route("/health", get(health_check))
             .route("/rpc/batch", post(handle_batch))
@@ -102,11 +109,21 @@ impl CapnWebServer {
     pub async fn run(self) -> Result<(), Box<dyn std::error::Error>> {
         let addr = format!("{}:{}", self.config.host, self.config.port);
         let state = self.state.clone();
+
+        info!(
+            host = %self.config.host,
+            port = self.config.port,
+            max_batch_size = self.config.max_batch_size,
+            has_main_capability = state.main_capability.is_some(),
+            "Starting Cap'n Web server"
+        );
+
         let app = Self::build_router(self.state);
 
         // Start session cleanup task
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+            info!("Session cleanup task started (60s interval)");
             loop {
                 interval.tick().await;
                 cleanup_inactive_sessions(&state).await;
@@ -114,6 +131,7 @@ impl CapnWebServer {
         });
 
         println!("🚀 Cap'n Web server listening on http://{}", addr);
+        info!("Cap'n Web server ready to accept connections");
 
         let listener = tokio::net::TcpListener::bind(&addr).await?;
         axum::serve(listener, app).await?;
@@ -251,9 +269,302 @@ async fn handle_batch(
 }
 
 /// WebSocket endpoint handler
-async fn handle_websocket(State(_state): State<ServerState>) -> impl IntoResponse {
-    // TODO: Implement WebSocket support
-    (StatusCode::NOT_IMPLEMENTED, "WebSocket not yet implemented")
+async fn handle_websocket(
+    ws: WebSocketUpgrade,
+    State(state): State<ServerState>,
+) -> Response {
+    ws.on_upgrade(move |socket| handle_websocket_connection(socket, state))
+}
+
+/// Handle a WebSocket connection
+async fn handle_websocket_connection(socket: WebSocket, server_state: ServerState) {
+    let session_id = uuid::Uuid::new_v4().to_string();
+    info!(session_id = %session_id, "WebSocket connection established");
+
+    // Create a persistent WebSocket session (unlike HTTP batch which creates fresh sessions)
+    let session_state = create_websocket_session(&server_state, session_id.clone()).await;
+
+    let (mut sender, mut receiver) = socket.split();
+    info!(session_id = %session_id, "WebSocket streams split, ready for message handling");
+
+    // Handle incoming messages
+    while let Some(result) = receiver.next().await {
+        match result {
+            Ok(msg) => {
+                match msg {
+                    WsMessage::Text(text) => {
+                        let msg_len = text.len();
+                        debug!(
+                            session_id = %session_id,
+                            message_length = msg_len,
+                            message_preview = %text.chars().take(100).collect::<String>(),
+                            "WebSocket received text message"
+                        );
+
+                        // Parse JSON message
+                        match serde_json::from_str::<Message>(&text) {
+                            Ok(message) => {
+                                info!(
+                                    session_id = %session_id,
+                                    message_type = ?message,
+                                    "WebSocket message parsed successfully"
+                                );
+
+                                let start_time = std::time::Instant::now();
+
+                                // Process the message using the session
+                                let response_opt = process_websocket_message(message, &session_state, &server_state).await;
+
+                                let processing_duration = start_time.elapsed();
+
+                                match &response_opt {
+                                    Some(response) => {
+                                        info!(
+                                            session_id = %session_id,
+                                            processing_time_ms = processing_duration.as_millis(),
+                                            response_type = ?response,
+                                            "WebSocket message processed with response"
+                                        );
+
+                                        match serde_json::to_string(&response) {
+                                            Ok(response_json) => {
+                                                debug!(
+                                                    session_id = %session_id,
+                                                    response_length = response_json.len(),
+                                                    response_preview = %response_json.chars().take(100).collect::<String>(),
+                                                    "WebSocket sending response"
+                                                );
+
+                                                if let Err(e) = sender.send(WsMessage::Text(response_json)).await {
+                                                    error!(
+                                                        session_id = %session_id,
+                                                        error = %e,
+                                                        "WebSocket failed to send response"
+                                                    );
+                                                    break;
+                                                } else {
+                                                    debug!(
+                                                        session_id = %session_id,
+                                                        "WebSocket response sent successfully"
+                                                    );
+                                                }
+                                            }
+                                            Err(e) => {
+                                                error!(
+                                                    session_id = %session_id,
+                                                    error = %e,
+                                                    "WebSocket failed to serialize response"
+                                                );
+                                            }
+                                        }
+                                    }
+                                    None => {
+                                        debug!(
+                                            session_id = %session_id,
+                                            processing_time_ms = processing_duration.as_millis(),
+                                            "WebSocket message processed with no response needed"
+                                        );
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                error!(
+                                    session_id = %session_id,
+                                    error = %e,
+                                    message_preview = %text.chars().take(200).collect::<String>(),
+                                    "WebSocket failed to parse JSON message"
+                                );
+                                // Could send error response here if needed
+                            }
+                        }
+                    }
+                    WsMessage::Binary(_data) => {
+                        warn!(
+                            session_id = %session_id,
+                            data_length = _data.len(),
+                            "WebSocket received binary message, Cap'n Web expects text/JSON"
+                        );
+                        // Could try to decode as UTF-8 if needed
+                    }
+                    WsMessage::Ping(payload) => {
+                        debug!(
+                            session_id = %session_id,
+                            payload_length = payload.len(),
+                            "WebSocket received ping"
+                        );
+                    }
+                    WsMessage::Pong(payload) => {
+                        debug!(
+                            session_id = %session_id,
+                            payload_length = payload.len(),
+                            "WebSocket received pong"
+                        );
+                    }
+                    WsMessage::Close(frame) => {
+                        info!(
+                            session_id = %session_id,
+                            close_frame = ?frame,
+                            "WebSocket connection closing"
+                        );
+                        break;
+                    }
+                }
+            }
+            Err(e) => {
+                error!(
+                    session_id = %session_id,
+                    error = %e,
+                    "WebSocket connection error occurred"
+                );
+                break;
+            }
+        }
+    }
+
+    // Clean up session
+    info!(
+        session_id = %session_id,
+        "WebSocket connection disconnected, cleaning up session"
+    );
+
+    // TODO: Add session cleanup when lifecycle management is available
+    debug!(
+        session_id = %session_id,
+        "WebSocket session cleanup completed"
+    );
+}
+
+/// Create a WebSocket session (persistent, unlike HTTP batch sessions)
+async fn create_websocket_session(
+    server_state: &ServerState,
+    session_id: String,
+) -> SessionState {
+    info!(
+        session_id = %session_id,
+        "Creating persistent WebSocket session"
+    );
+
+    // Create session similar to batch session but persistent
+    let session = RpcSession::new();
+
+    // Set up main capability at import ID 0 like batch sessions do
+    if let Some(main_cap) = &server_state.main_capability {
+        use capnweb_core::protocol::tables::StubReference;
+        let stub_ref = StubReference::new(main_cap.clone());
+        let _insert_result = session.imports.insert(
+            ImportId(0),
+            ImportValue::Stub(stub_ref),
+        );
+
+        info!(
+            session_id = %session_id,
+            import_id = 0,
+            "WebSocket session: Main capability registered at import ID 0"
+        );
+    } else {
+        warn!(
+            session_id = %session_id,
+            "WebSocket session: No main capability available to register"
+        );
+    }
+
+    let session_state = SessionState {
+        session: Arc::new(session),
+        next_import_id: Arc::new(RwLock::new(1)), // Start from 1 since 0 is main cap
+        pending_pulls: Arc::new(RwLock::new(HashMap::new())),
+        last_activity: Arc::new(RwLock::new(std::time::Instant::now())),
+    };
+
+    info!(
+        session_id = %session_id,
+        next_import_id = 1,
+        "WebSocket session created successfully and ready for message processing"
+    );
+
+    session_state
+}
+
+/// Process a WebSocket message within the persistent session context
+async fn process_websocket_message(
+    message: Message,
+    session_state: &SessionState,
+    server_state: &ServerState,
+) -> Option<Message> {
+    let start_time = std::time::Instant::now();
+
+    // Update last activity time
+    {
+        let mut last_activity = session_state.last_activity.write().await;
+        let previous_activity = *last_activity;
+        *last_activity = std::time::Instant::now();
+
+        debug!(
+            activity_gap_ms = previous_activity.elapsed().as_millis(),
+            "WebSocket session activity time updated"
+        );
+    }
+
+    // Log current session state
+    {
+        let next_import_id = *session_state.next_import_id.read().await;
+        let pending_pulls_count = session_state.pending_pulls.read().await.len();
+
+        debug!(
+            next_import_id = next_import_id,
+            pending_pulls_count = pending_pulls_count,
+            message_type = ?message,
+            "WebSocket processing message in session context"
+        );
+    }
+
+    // Use the existing process_message function
+    let result = match process_message(server_state, session_state, message).await {
+        Ok(response_opt) => {
+            let processing_duration = start_time.elapsed();
+
+            match &response_opt {
+                Some(response) => {
+                    info!(
+                        processing_time_ms = processing_duration.as_millis(),
+                        response_type = ?response,
+                        "WebSocket message processing completed successfully with response"
+                    );
+                }
+                None => {
+                    debug!(
+                        processing_time_ms = processing_duration.as_millis(),
+                        "WebSocket message processing completed successfully with no response"
+                    );
+                }
+            }
+
+            response_opt
+        }
+        Err(e) => {
+            let processing_duration = start_time.elapsed();
+            error!(
+                processing_time_ms = processing_duration.as_millis(),
+                error = %e,
+                "WebSocket message processing failed"
+            );
+            None
+        }
+    };
+
+    // Log final session state after processing
+    {
+        let next_import_id = *session_state.next_import_id.read().await;
+        let pending_pulls_count = session_state.pending_pulls.read().await.len();
+
+        debug!(
+            next_import_id = next_import_id,
+            pending_pulls_count = pending_pulls_count,
+            has_response = result.is_some(),
+            "WebSocket session state after message processing"
+        );
+    }
+
+    result
 }
 
 /// Create a fresh session for HTTP batch requests

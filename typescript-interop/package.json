@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "description": "TypeScript client integration tests for Cap'n Web Rust implementation",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "test": "npm run build && node dist/test-runner.js",
-    "test:watch": "tsc --watch & nodemon dist/test-runner.js",
+    "build": "tsup",
+    "build:tsc": "tsc",
+    "test": "pnpm build && node dist/test-runner.js",
+    "test:watch": "tsup --watch & nodemon dist/test-runner.js",
+    "test:official": "pnpm build && node dist/official-client-test.js",
+    "test:advanced": "pnpm build && node dist/advanced-server-test.js",
+    "test:pipelining": "pnpm build && node dist/promise-pipelining-test.js",
+    "test:comprehensive": "pnpm build && node dist/comprehensive-test-runner.js",
+    "test:tier2": "pnpm build && node dist/tier2-stateful-sessions.js",
+    "test:tier2-websocket": "pnpm build && node dist/tier2-websocket-tests.js",
+    "test:all": "pnpm test:comprehensive",
     "clean": "rm -rf dist",
-    "start:rust-server": "cd .. && cargo run --example basic_server",
-    "interop": "npm run build && node dist/interop-tests.js"
+    "start:rust-server": "cd .. && cargo run --example protocol_server -p capnweb-server",
+    "start:advanced-server": "cd .. && cargo run --example advanced_stateful_server -p capnweb-server",
+    "interop": "pnpm build && node dist/interop-tests.js"
   },
   "dependencies": {
     "capnweb": "^0.1.0",
@@ -18,8 +28,9 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.12",
-    "typescript": "^5.6.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "tsup": "^8.5.0",
+    "typescript": "^5.6.0"
   },
   "keywords": [
     "capnweb",

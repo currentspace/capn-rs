@@ -1,0 +1,403 @@
+2025-09-24T02:47:47.742164+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-24T02:49:38.645516+00:00  INFO ThreadId(16) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:49:38.650895+00:00  INFO ThreadId(16) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:49:38.652242+00:00  INFO ThreadId(16) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:49:38.654501+00:00  INFO ThreadId(16) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:49:38.656100+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:49:38.658406+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:21.085278+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-24T02:52:59.402234+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.402388+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-24T02:52:59.402445+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-24T02:52:59.402486+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-24T02:52:59.402511+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-24T02:52:59.402538+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.402550+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.402561+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.402656+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-24T02:52:59.402678+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-24T02:52:59.402690+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.402710+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-24T02:52:59.407502+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.407556+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[5,5]]]
+["pull",1]
+2025-09-24T02:52:59.407581+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-24T02:52:59.407604+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(5), Number(5)]]]
+2025-09-24T02:52:59.407626+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(5))])) }))
+2025-09-24T02:52:59.407652+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.407667+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.407681+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.407736+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(10.0)))
+2025-09-24T02:52:59.407754+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-24T02:52:59.407766+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.407784+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,10.0]
+2025-09-24T02:52:59.408799+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.408843+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["multiply"],[6,6]]]
+["pull",1]
+2025-09-24T02:52:59.408864+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-24T02:52:59.408881+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(6), Number(6)]]]
+2025-09-24T02:52:59.408903+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(6))])) }))
+2025-09-24T02:52:59.408922+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.408934+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.408945+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.408997+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(36.0)))
+2025-09-24T02:52:59.409011+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-24T02:52:59.409021+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.409037+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,36.0]
+2025-09-24T02:52:59.411389+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.411449+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[2,3]]]
+["push",["pipeline",0,["multiply"],[4,5]]]
+["push",["pipeline",0,["divide"],[20,4]]]
+["push",["pipeline",0,["subtract"],[15,7]]]
+["pull",1]
+["pull",2]
+["pull",3]
+
+2025-09-24T02:52:59.411479+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing messages message_count=8
+2025-09-24T02:52:59.411495+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(2), Number(3)]]]
+2025-09-24T02:52:59.411517+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-24T02:52:59.411539+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.411553+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(4), Number(5)]]]
+2025-09-24T02:52:59.411574+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-24T02:52:59.411596+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.411612+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=2 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("divide")], Array [Number(20), Number(4)]]]
+2025-09-24T02:52:59.411629+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(20)), Number(Number(4))])) }))
+2025-09-24T02:52:59.411647+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.411664+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=3 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("subtract")], Array [Number(15), Number(7)]]]
+2025-09-24T02:52:59.411683+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(15)), Number(Number(7))])) }))
+2025-09-24T02:52:59.411703+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.411717+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=4 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.411730+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.411745+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(5.0)))
+2025-09-24T02:52:59.411760+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=5 Array [String("pull"), Number(2)]
+2025-09-24T02:52:59.411773+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(2))
+2025-09-24T02:52:59.411788+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(2), Number(Number(20.0)))
+2025-09-24T02:52:59.411803+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=6 Array [String("pull"), Number(3)]
+2025-09-24T02:52:59.411818+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(3))
+2025-09-24T02:52:59.411830+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(3), Number(Number(5.0)))
+2025-09-24T02:52:59.411844+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=7 Array [String("pull"), Number(4)]
+2025-09-24T02:52:59.411858+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(4))
+2025-09-24T02:52:59.411913+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(4), Number(Number(8.0)))
+2025-09-24T02:52:59.411931+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Preparing response response_count=4
+2025-09-24T02:52:59.411944+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.411972+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,5.0]
+["resolve",2,20.0]
+["resolve",3,5.0]
+["resolve",4,8.0]
+2025-09-24T02:52:59.414575+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.414628+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-24T02:52:59.414651+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-24T02:52:59.414667+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-24T02:52:59.414692+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-24T02:52:59.414714+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.414724+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.414737+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.414789+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-24T02:52:59.414802+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-24T02:52:59.414812+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.414828+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-24T02:52:59.417224+00:00  INFO ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-24T02:52:59.417271+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-24T02:52:59.417293+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-24T02:52:59.417312+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-24T02:52:59.417336+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-24T02:52:59.417362+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-24T02:52:59.417376+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-24T02:52:59.417387+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-24T02:52:59.417436+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-24T02:52:59.417451+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-24T02:52:59.417460+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-24T02:52:59.417477+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-24T02:54:01.380899+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket connection established: ccf1d628-09ea-4a0f-b768-a50024fbbc9b
+2025-09-24T02:54:01.380926+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: Creating WebSocket session: ccf1d628-09ea-4a0f-b768-a50024fbbc9b
+2025-09-24T02:54:01.383479+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["push",["pipeline",0,["add"],[1,2]]]
+2025-09-24T02:54:01.383530+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-24T02:54:01.383571+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.383580+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.383590+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["pull",1]
+2025-09-24T02:54:01.383603+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.383650+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: Some(Resolve(ExportId(1), Number(Number(3.0))))
+2025-09-24T02:54:01.384214+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["release",1,1]
+2025-09-24T02:54:01.384228+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.384242+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.384250+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.384313+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["push",["pipeline",0,["multiply"],[3,4]]]
+2025-09-24T02:54:01.384340+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(3)), Number(Number(4))])) }))
+2025-09-24T02:54:01.384362+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.384370+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.384403+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["pull",2]
+2025-09-24T02:54:01.384415+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Pull(ImportId(2))
+2025-09-24T02:54:01.384425+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: Some(Resolve(ExportId(2), Number(Number(12.0))))
+2025-09-24T02:54:01.384621+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["release",2,1]
+2025-09-24T02:54:01.384634+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Release(ImportId(2), 1)
+2025-09-24T02:54:01.384646+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.384655+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.384678+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["push",["pipeline",0,["subtract"],[10,5]]]
+2025-09-24T02:54:01.384699+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(10)), Number(Number(5))])) }))
+2025-09-24T02:54:01.384722+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.384729+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.384752+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["pull",3]
+2025-09-24T02:54:01.384764+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Pull(ImportId(3))
+2025-09-24T02:54:01.384776+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: Some(Resolve(ExportId(3), Number(Number(5.0))))
+2025-09-24T02:54:01.384951+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["release",3,1]
+2025-09-24T02:54:01.384962+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Release(ImportId(3), 1)
+2025-09-24T02:54:01.384973+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.384982+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.385030+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.385048+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.385065+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Response: None
+2025-09-24T02:54:01.385073+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: No response needed for this message
+2025-09-24T02:54:01.386356+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket connection established: 2a5f8051-13f1-469c-80de-e4a8e023afaa
+2025-09-24T02:54:01.386371+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: Creating WebSocket session: 2a5f8051-13f1-469c-80de-e4a8e023afaa
+2025-09-24T02:54:01.386520+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket connection established: 436786b7-584f-4e2b-929c-41164dbb314c
+2025-09-24T02:54:01.386530+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: Creating WebSocket session: 436786b7-584f-4e2b-929c-41164dbb314c
+2025-09-24T02:54:01.386689+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Received text message: ["push",["pipeline",0,["multiply"],[6,6]]]
+2025-09-24T02:54:01.386719+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(6))])) }))
+2025-09-24T02:54:01.386745+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Response: None
+2025-09-24T02:54:01.386754+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: No response needed for this message
+2025-09-24T02:54:01.386765+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Received text message: ["pull",1]
+2025-09-24T02:54:01.386774+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.386816+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Response: Some(Resolve(ExportId(1), Number(Number(36.0))))
+2025-09-24T02:54:01.386900+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Received text message: ["push",["pipeline",0,["add"],[5,5]]]
+2025-09-24T02:54:01.386919+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(5))])) }))
+2025-09-24T02:54:01.386935+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Response: None
+2025-09-24T02:54:01.386943+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: No response needed for this message
+2025-09-24T02:54:01.386952+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Received text message: ["pull",1]
+2025-09-24T02:54:01.386962+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.386986+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Response: Some(Resolve(ExportId(1), Number(Number(10.0))))
+2025-09-24T02:54:01.387019+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Received text message: ["release",1,1]
+2025-09-24T02:54:01.387032+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.387043+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Response: None
+2025-09-24T02:54:01.387052+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: No response needed for this message
+2025-09-24T02:54:01.387137+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Received text message: ["release",1,1]
+2025-09-24T02:54:01.387148+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.387159+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Response: None
+2025-09-24T02:54:01.387168+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: No response needed for this message
+2025-09-24T02:54:01.387192+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.387210+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.387226+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Response: None
+2025-09-24T02:54:01.387233+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: No response needed for this message
+2025-09-24T02:54:01.387266+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.387283+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.387299+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Response: None
+2025-09-24T02:54:01.387307+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: No response needed for this message
+2025-09-24T02:54:01.388336+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket connection established: 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf
+2025-09-24T02:54:01.388346+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: Creating WebSocket session: 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf
+2025-09-24T02:54:01.388570+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["push",["pipeline",0,["add"],[2,3]]]
+2025-09-24T02:54:01.388593+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-24T02:54:01.388611+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.388620+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.388630+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["push",["pipeline",0,["multiply"],[4,5]]]
+2025-09-24T02:54:01.388646+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-24T02:54:01.388663+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.388671+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.388707+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["push",["pipeline",0,["divide"],[20,4]]]
+2025-09-24T02:54:01.388735+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(20)), Number(Number(4))])) }))
+2025-09-24T02:54:01.388756+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.388765+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.388775+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["push",["pipeline",0,["subtract"],[15,7]]]
+2025-09-24T02:54:01.388796+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(15)), Number(Number(7))])) }))
+2025-09-24T02:54:01.388816+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.388825+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.388836+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["pull",1]
+2025-09-24T02:54:01.388844+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.388858+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: Some(Resolve(ExportId(1), Number(Number(5.0))))
+2025-09-24T02:54:01.388887+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["pull",2]
+2025-09-24T02:54:01.388896+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Pull(ImportId(2))
+2025-09-24T02:54:01.388907+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: Some(Resolve(ExportId(2), Number(Number(20.0))))
+2025-09-24T02:54:01.388933+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["pull",3]
+2025-09-24T02:54:01.388943+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Pull(ImportId(3))
+2025-09-24T02:54:01.388952+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: Some(Resolve(ExportId(3), Number(Number(5.0))))
+2025-09-24T02:54:01.388972+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["pull",4]
+2025-09-24T02:54:01.388982+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Pull(ImportId(4))
+2025-09-24T02:54:01.389010+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: Some(Resolve(ExportId(4), Number(Number(8.0))))
+2025-09-24T02:54:01.389034+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["release",1,1]
+2025-09-24T02:54:01.389044+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.389054+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.389061+00:00 DEBUG ThreadId(13) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.389092+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["release",2,1]
+2025-09-24T02:54:01.389101+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Release(ImportId(2), 1)
+2025-09-24T02:54:01.389112+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.389121+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.389130+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["release",3,1]
+2025-09-24T02:54:01.389142+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Release(ImportId(3), 1)
+2025-09-24T02:54:01.389151+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.389158+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.389178+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["release",4,1]
+2025-09-24T02:54:01.389189+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Release(ImportId(4), 1)
+2025-09-24T02:54:01.389198+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.389205+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.389227+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.389244+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.389261+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Response: None
+2025-09-24T02:54:01.389268+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: No response needed for this message
+2025-09-24T02:54:01.390563+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket connection established: 66146479-3461-4728-86c5-a5b88e527945
+2025-09-24T02:54:01.390585+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: Creating WebSocket session: 66146479-3461-4728-86c5-a5b88e527945
+2025-09-24T02:54:01.390811+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["push",["pipeline",0,["add"],[1,1]]]
+2025-09-24T02:54:01.390834+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-24T02:54:01.390855+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.390863+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.390872+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["pull",1]
+2025-09-24T02:54:01.390884+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.390916+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: Some(Resolve(ExportId(1), Number(Number(2.0))))
+2025-09-24T02:54:01.391090+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["release",1,1]
+2025-09-24T02:54:01.391101+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.391113+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391120+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.391139+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["push",["pipeline",0,["divide"],[5,0]]]
+2025-09-24T02:54:01.391155+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(0))])) }))
+2025-09-24T02:54:01.391169+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391176+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.391184+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["pull",2]
+2025-09-24T02:54:01.391192+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Pull(ImportId(2))
+2025-09-24T02:54:01.391218+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: Some(Reject(ExportId(2), Error(ErrorExpression { error_type: "EvalError", message: "BadRequest: Division by zero", stack: None })))
+2025-09-24T02:54:01.391417+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["release",2,1]
+2025-09-24T02:54:01.391429+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Release(ImportId(2), 1)
+2025-09-24T02:54:01.391440+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391449+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.391473+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["push",["pipeline",0,["multiply"],[3,4]]]
+2025-09-24T02:54:01.391495+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(3)), Number(Number(4))])) }))
+2025-09-24T02:54:01.391510+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391517+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.391526+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["pull",3]
+2025-09-24T02:54:01.391534+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Pull(ImportId(3))
+2025-09-24T02:54:01.391561+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: Some(Resolve(ExportId(3), Number(Number(12.0))))
+2025-09-24T02:54:01.391692+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["release",3,1]
+2025-09-24T02:54:01.391703+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Release(ImportId(3), 1)
+2025-09-24T02:54:01.391714+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391723+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.391734+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.391751+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.391766+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Response: None
+2025-09-24T02:54:01.391773+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: No response needed for this message
+2025-09-24T02:54:01.393657+00:00  INFO ThreadId(02) capnweb_server::capnweb_server: WebSocket connection established: 2146360a-cc22-48cf-820e-c6a306920dc4
+2025-09-24T02:54:01.393669+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: Creating WebSocket session: 2146360a-cc22-48cf-820e-c6a306920dc4
+2025-09-24T02:54:01.393915+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[0,1]]]
+2025-09-24T02:54:01.393940+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(0)), Number(Number(1))])) }))
+2025-09-24T02:54:01.393957+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.393964+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.393974+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[1,2]]]
+2025-09-24T02:54:01.393991+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-24T02:54:01.394011+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394020+00:00 DEBUG ThreadId(02) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394051+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[2,3]]]
+2025-09-24T02:54:01.394077+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-24T02:54:01.394096+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394105+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394117+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[3,4]]]
+2025-09-24T02:54:01.394134+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(3)), Number(Number(4))])) }))
+2025-09-24T02:54:01.394152+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394162+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394172+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[4,5]]]
+2025-09-24T02:54:01.394187+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-24T02:54:01.394205+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394215+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394225+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[5,6]]]
+2025-09-24T02:54:01.394241+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(6))])) }))
+2025-09-24T02:54:01.394258+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394268+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394277+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[6,7]]]
+2025-09-24T02:54:01.394292+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(7))])) }))
+2025-09-24T02:54:01.394311+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394320+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394329+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[7,8]]]
+2025-09-24T02:54:01.394344+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(7)), Number(Number(8))])) }))
+2025-09-24T02:54:01.394360+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394368+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394379+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[8,9]]]
+2025-09-24T02:54:01.394395+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(8)), Number(Number(9))])) }))
+2025-09-24T02:54:01.394411+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394419+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394429+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["add"],[9,10]]]
+2025-09-24T02:54:01.394445+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(9)), Number(Number(10))])) }))
+2025-09-24T02:54:01.394460+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394468+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394478+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",1]
+2025-09-24T02:54:01.394486+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(1))
+2025-09-24T02:54:01.394498+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(1), Number(Number(1.0))))
+2025-09-24T02:54:01.394526+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",2]
+2025-09-24T02:54:01.394535+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(2))
+2025-09-24T02:54:01.394545+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(2), Number(Number(3.0))))
+2025-09-24T02:54:01.394561+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",3]
+2025-09-24T02:54:01.394570+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(3))
+2025-09-24T02:54:01.394580+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(3), Number(Number(5.0))))
+2025-09-24T02:54:01.394602+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",4]
+2025-09-24T02:54:01.394612+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(4))
+2025-09-24T02:54:01.394624+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(4), Number(Number(7.0))))
+2025-09-24T02:54:01.394645+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",5]
+2025-09-24T02:54:01.394656+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(5))
+2025-09-24T02:54:01.394667+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(5), Number(Number(9.0))))
+2025-09-24T02:54:01.394693+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",6]
+2025-09-24T02:54:01.394703+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(6))
+2025-09-24T02:54:01.394715+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(6), Number(Number(11.0))))
+2025-09-24T02:54:01.394743+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",7]
+2025-09-24T02:54:01.394753+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(7))
+2025-09-24T02:54:01.394762+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(7), Number(Number(13.0))))
+2025-09-24T02:54:01.394782+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",8]
+2025-09-24T02:54:01.394791+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(8))
+2025-09-24T02:54:01.394801+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(8), Number(Number(15.0))))
+2025-09-24T02:54:01.394819+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",9]
+2025-09-24T02:54:01.394829+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(9))
+2025-09-24T02:54:01.394840+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(9), Number(Number(17.0))))
+2025-09-24T02:54:01.394860+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["pull",10]
+2025-09-24T02:54:01.394871+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Pull(ImportId(10))
+2025-09-24T02:54:01.394906+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: Some(Resolve(ExportId(10), Number(Number(19.0))))
+2025-09-24T02:54:01.394930+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",1,1]
+2025-09-24T02:54:01.394941+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(1), 1)
+2025-09-24T02:54:01.394953+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.394960+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.394972+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",2,1]
+2025-09-24T02:54:01.394983+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(2), 1)
+2025-09-24T02:54:01.394993+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395002+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395010+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",3,1]
+2025-09-24T02:54:01.395020+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(3), 1)
+2025-09-24T02:54:01.395031+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395040+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395049+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",4,1]
+2025-09-24T02:54:01.395057+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(4), 1)
+2025-09-24T02:54:01.395072+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395081+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395092+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",5,1]
+2025-09-24T02:54:01.395103+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(5), 1)
+2025-09-24T02:54:01.395113+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395122+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395131+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",6,1]
+2025-09-24T02:54:01.395141+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(6), 1)
+2025-09-24T02:54:01.395152+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395160+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395169+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",7,1]
+2025-09-24T02:54:01.395180+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(7), 1)
+2025-09-24T02:54:01.395190+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395199+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395211+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",8,1]
+2025-09-24T02:54:01.395223+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(8), 1)
+2025-09-24T02:54:01.395233+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395242+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395250+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",9,1]
+2025-09-24T02:54:01.395258+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(9), 1)
+2025-09-24T02:54:01.395266+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395273+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395291+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["release",10,1]
+2025-09-24T02:54:01.395301+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Release(ImportId(10), 1)
+2025-09-24T02:54:01.395312+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395322+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.395332+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Received text message: ["push",["pipeline",0,["close"],[]]]
+2025-09-24T02:54:01.395349+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Parsed message: Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("close")]), call_arguments: Some(Array([])) }))
+2025-09-24T02:54:01.395361+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Response: None
+2025-09-24T02:54:01.395368+00:00 DEBUG ThreadId(15) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: No response needed for this message
+2025-09-24T02:54:01.410053+00:00 ERROR ThreadId(13) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410078+00:00  INFO ThreadId(13) capnweb_server::capnweb_server: WebSocket 2146360a-cc22-48cf-820e-c6a306920dc4 disconnected
+2025-09-24T02:54:01.410156+00:00 ERROR ThreadId(13) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410169+00:00  INFO ThreadId(13) capnweb_server::capnweb_server: WebSocket ccf1d628-09ea-4a0f-b768-a50024fbbc9b disconnected
+2025-09-24T02:54:01.410174+00:00 ERROR ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410183+00:00  INFO ThreadId(02) capnweb_server::capnweb_server: WebSocket 517ebcfe-7e22-4eb1-9f1d-38d6dfb8cfbf disconnected
+2025-09-24T02:54:01.410184+00:00 ERROR ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410194+00:00  INFO ThreadId(15) capnweb_server::capnweb_server: WebSocket 436786b7-584f-4e2b-929c-41164dbb314c disconnected
+2025-09-24T02:54:01.410196+00:00 ERROR ThreadId(13) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410203+00:00  INFO ThreadId(13) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa disconnected
+2025-09-24T02:54:01.410279+00:00 ERROR ThreadId(08) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Error: WebSocket protocol error: Connection reset without closing handshake
+2025-09-24T02:54:01.410295+00:00  INFO ThreadId(08) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945 disconnected

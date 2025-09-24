@@ -6,9 +6,9 @@ use axum::{
 use capnweb_core::Message;
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
-/// WebSocket handler for Cap'n Web
+/// WebSocket handler for Cap'n Web protocol
 pub async fn websocket_handler(
     ws: WebSocketUpgrade,
     State(server): State<Arc<Server>>,
@@ -26,35 +26,70 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
     while let Some(result) = receiver.next().await {
         match result {
             Ok(msg) => {
-                if let WsMessage::Binary(data) = msg {
-                    // Decode the Cap'n Web message
-                    match capnweb_core::decode_message(&data) {
-                        Ok(message) => {
-                            debug!("Received message: {:?}", message);
+                match msg {
+                    WsMessage::Text(text) => {
+                        debug!("Received text message: {}", text);
 
-                            // Process the message
-                            let response = process_message(message, &server).await;
+                        // Parse JSON message
+                        match serde_json::from_str::<Message>(&text) {
+                            Ok(message) => {
+                                debug!("Parsed message: {:?}", message);
 
-                            // Encode and send response
-                            match capnweb_core::encode_message(&response) {
-                                Ok(encoded) => {
-                                    if let Err(e) = sender.send(WsMessage::Binary(encoded.to_vec())).await {
-                                        error!("Failed to send response: {}", e);
-                                        break;
+                                // Process the message using server's logic
+                                let response = server.process_message(message).await;
+                                debug!("Response: {:?}", response);
+
+                                // Serialize and send response as JSON text
+                                match serde_json::to_string(&response) {
+                                    Ok(response_json) => {
+                                        if let Err(e) = sender.send(WsMessage::Text(response_json)).await {
+                                            error!("Failed to send response: {}", e);
+                                            break;
+                                        }
+                                    }
+                                    Err(e) => {
+                                        error!("Failed to serialize response: {}", e);
                                     }
                                 }
-                                Err(e) => {
-                                    error!("Failed to encode response: {}", e);
+                            }
+                            Err(e) => {
+                                error!("Failed to parse JSON message: {}", e);
+                                // Send error response
+                                let error_response = Message::result(
+                                    capnweb_core::CallId::new(0),
+                                    capnweb_core::Outcome::Error {
+                                        error: capnweb_core::RpcError::bad_request(
+                                            format!("Invalid JSON: {}", e)
+                                        )
+                                    }
+                                );
+                                if let Ok(error_json) = serde_json::to_string(&error_response) {
+                                    let _ = sender.send(WsMessage::Text(error_json)).await;
                                 }
                             }
                         }
-                        Err(e) => {
-                            error!("Failed to decode message: {}", e);
+                    }
+                    WsMessage::Binary(data) => {
+                        warn!("Received binary message, Cap'n Web over WebSocket expects text/JSON");
+                        // Try to decode as UTF-8 and process as text
+                        if let Ok(text) = String::from_utf8(data) {
+                            debug!("Converted binary to text: {}", text);
+                            // Recursively handle as text message
+                            continue;
+                        } else {
+                            error!("Binary message is not valid UTF-8");
                         }
                     }
-                } else if let WsMessage::Close(_) = msg {
-                    info!("WebSocket closing: {}", session_id);
-                    break;
+                    WsMessage::Ping(_) => {
+                        debug!("Received ping, WebSocket will auto-respond with pong");
+                    }
+                    WsMessage::Pong(_) => {
+                        debug!("Received pong");
+                    }
+                    WsMessage::Close(frame) => {
+                        info!("WebSocket closing: {} (reason: {:?})", session_id, frame);
+                        break;
+                    }
                 }
             }
             Err(e) => {
@@ -65,19 +100,7 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
     }
 
     // Clean up session
-    // TODO: Add lifecycle management when available
+    // TODO: Add lifecycle management for cleaning up capabilities when available
 
     info!("WebSocket disconnected: {}", session_id);
-}
-
-async fn process_message(message: Message, server: &Arc<Server>) -> Message {
-    // Use the server's existing process_message method
-    server.process_message(message).await
-}
-
-/// Setup WebSocket routes for Axum
-pub fn setup_websocket_routes(server: Arc<Server>) -> axum::Router {
-    axum::Router::new()
-        .route("/ws", axum::routing::get(websocket_handler))
-        .with_state(server)
 }

@@ -1,0 +1,485 @@
+2025-09-23T21:11:10.104375+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-23T21:11:22.006783+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:11:22.006856+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=eef1c962-5041-4523-9bd8-13b70c75dfc1
+2025-09-23T21:11:22.006953+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:11:22.007020+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:11:22.007052+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:11:22.007102+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:11:22.007131+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:11:22.007145+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:11:22.007157+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:11:22.007250+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(-1), String("Expression type not implemented"))
+2025-09-23T21:11:22.007275+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:11:22.007290+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:11:22.007313+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",-1,"Expression type not implemented"]
+2025-09-23T21:12:28.070988+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-23T21:12:38.573433+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:12:38.573506+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=eb0a153a-8f59-4ec1-905b-2758110aebe7
+2025-09-23T21:12:38.573627+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:12:38.573679+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:12:38.573723+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:12:38.573784+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:12:38.573810+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:12:38.573821+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:12:38.573834+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:12:38.573927+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(-1), Number(Number(2.0)))
+2025-09-23T21:12:38.573944+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:12:38.573955+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:12:38.573972+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",-1,2.0]
+2025-09-23T21:15:27.913796+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:15:27.913832+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=e9cc4166-217c-46cc-ad9d-45a4022f69cb
+2025-09-23T21:15:27.913877+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:15:27.913907+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:15:27.913928+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:15:27.913956+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:15:27.913980+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:15:27.913995+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:15:27.914006+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:15:27.914147+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(-1), Number(Number(2.0)))
+2025-09-23T21:15:27.914176+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:15:27.914189+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:15:27.914210+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",-1,2.0]
+2025-09-23T21:15:41.872545+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:15:41.872585+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Using session session_id=f541f4cc-6759-418b-8dd8-9d82343a6bd5
+2025-09-23T21:15:41.872640+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Parsing request content_type=application/json body_preview=[["push",["pipeline",0,["add"],[1,1]]],["pull",1]]
+2025-09-23T21:15:41.872669+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:15:41.872693+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:15:41.872725+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:15:41.872750+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:15:41.872762+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:15:41.872774+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:15:41.872894+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(-1), Number(Number(2.0)))
+2025-09-23T21:15:41.872928+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:15:41.872944+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m50}: capnweb_server::capnweb_server: Returning JSON array response
+2025-09-23T21:19:40.363701+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:19:40.363739+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Using session session_id=4bd860d7-ff6c-4366-a68e-0b8c66a92bcd
+2025-09-23T21:19:40.363781+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Parsing request content_type=text/plain body_preview=["pull",1]
+2025-09-23T21:19:40.363805+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Processing messages message_count=1
+2025-09-23T21:19:40.363822+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("pull"), Number(1)]
+2025-09-23T21:19:40.363837+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:20:10.366695+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Generated response response=Reject(ExportId(-1), Error(ErrorExpression { error_type: "Timeout", message: "Pull request timed out", stack: None }))
+2025-09-23T21:20:10.366761+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:20:10.366787+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:20:10.366837+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m10}: capnweb_server::capnweb_server: Final response body response_body=["reject",-1,["error","Timeout","Pull request timed out"]]
+2025-09-23T21:25:01.534435+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-23T21:25:51.712762+00:00  INFO ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:25:51.712820+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=ffeff44c-ee58-43b8-8517-fa89eb459f19
+2025-09-23T21:25:51.712922+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:25:51.712967+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:25:51.712996+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:25:51.713051+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:25:51.713074+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:25:51.713089+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:25:51.713102+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:25:51.713213+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T21:25:51.713235+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:25:51.713248+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:25:51.713268+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T21:26:06.706771+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:26:06.706811+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=5628cc6e-1828-4fa7-aaeb-8bcb6c17506a
+2025-09-23T21:26:06.706857+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:26:06.706885+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:26:06.706903+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:26:06.706934+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:26:06.706962+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:26:06.706977+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:26:06.706988+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:26:06.707079+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T21:26:06.707104+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:26:06.707118+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:26:06.707142+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T21:33:14.772074+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:33:14.772112+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=aced3bdc-be09-4690-b554-e7e20e51e3fc
+2025-09-23T21:33:14.772160+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:33:14.772189+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:33:14.772210+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:33:14.772238+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:33:14.772291+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:33:14.772305+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:33:14.772317+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:33:14.772419+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T21:33:14.772447+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:33:14.772460+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:33:14.772479+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T21:33:14.778309+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:33:14.778344+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=838336a5-6f93-41a5-ba38-4d45db138284
+2025-09-23T21:33:14.778380+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[5,3]]]
+["pull",1]
+2025-09-23T21:33:14.778406+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:33:14.778427+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(5), Number(3)]]]
+2025-09-23T21:33:14.778452+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(3))])) }))
+2025-09-23T21:33:14.778476+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:33:14.778490+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:33:14.778502+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:33:14.778577+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(8.0)))
+2025-09-23T21:33:14.778597+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:33:14.778611+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:33:14.778628+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,8.0]
+2025-09-23T21:33:14.780900+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:33:14.780925+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Using session session_id=ba057aa9-98dc-42c4-a5dc-3746e517d4e4
+2025-09-23T21:33:14.780963+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["multiply"],[2,3]]]
+["pull",1]
+2025-09-23T21:33:14.780984+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:33:14.781+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(2), Number(3)]]]
+2025-09-23T21:33:14.781025+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-23T21:33:14.781048+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:33:14.781062+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:33:14.781073+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:33:14.781133+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(6.0)))
+2025-09-23T21:33:14.781151+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:33:14.781164+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:33:14.781181+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,6.0]
+2025-09-23T21:33:14.783417+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:33:14.783442+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Using session session_id=a267f95a-d8cd-4746-8de6-e32d8183fe88
+2025-09-23T21:33:14.783480+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["invalidMethod"],[]]]
+["pull",1]
+2025-09-23T21:33:14.783502+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:33:14.783517+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("invalidMethod")], Array []]]
+2025-09-23T21:33:14.783540+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("invalidMethod")]), call_arguments: Some(Array([])) }))
+2025-09-23T21:33:14.783558+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:33:14.783570+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:33:14.783582+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:33:14.783638+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Generated response response=Reject(ExportId(1), Error(ErrorExpression { error_type: "EvalError", message: "NotFound: Method not found: invalidMethod", stack: None }))
+2025-09-23T21:33:14.783658+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:33:14.783668+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:33:14.783684+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m55}: capnweb_server::capnweb_server: Final response body response_body=["reject",1,["error","EvalError","NotFound: Method not found: invalidMethod"]]
+2025-09-23T21:40:48.963947+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.963999+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=a1f08e4e-af66-421d-845c-3f9714698628
+2025-09-23T21:40:48.964059+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T21:40:48.964093+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:40:48.964116+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T21:40:48.964145+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T21:40:48.964167+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.964190+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.964215+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.964291+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T21:40:48.964326+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:40:48.964344+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.964366+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-23T21:40:48.968748+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.968777+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=c0019bbe-8a64-4081-8e2f-89d55da4f315
+2025-09-23T21:40:48.968813+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[5,5]]]
+["pull",1]
+2025-09-23T21:40:48.968836+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:40:48.968854+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(5), Number(5)]]]
+2025-09-23T21:40:48.968878+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(5))])) }))
+2025-09-23T21:40:48.968897+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.968909+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.968920+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.968985+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(10.0)))
+2025-09-23T21:40:48.969004+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:40:48.969018+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.969037+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,10.0]
+2025-09-23T21:40:48.970056+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.970082+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Using session session_id=4fea699a-8be3-46f3-8271-1ad9be7ada4a
+2025-09-23T21:40:48.970112+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["multiply"],[6,6]]]
+["pull",1]
+2025-09-23T21:40:48.970133+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:40:48.970150+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(6), Number(6)]]]
+2025-09-23T21:40:48.970171+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(6))])) }))
+2025-09-23T21:40:48.970191+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.970203+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.970213+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.970275+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(36.0)))
+2025-09-23T21:40:48.970294+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:40:48.970307+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.970323+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,36.0]
+2025-09-23T21:40:48.972549+00:00  INFO ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.972577+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Using session session_id=4a2bfe0e-24a6-49e5-bc5a-ca1cb8dd5a28
+2025-09-23T21:40:48.972613+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[2,3]]]
+["push",["pipeline",0,["multiply"],[4,5]]]
+["push",["pipeline",0,["divide"],[20,4]]]
+["push",["pipeline",0,["subtract"],[15,7]]]
+["pull",1]
+["pull",2]
+["pull",3]
+
+2025-09-23T21:40:48.972644+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing messages message_count=8
+2025-09-23T21:40:48.972661+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(2), Number(3)]]]
+2025-09-23T21:40:48.972687+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-23T21:40:48.972712+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.972729+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(4), Number(5)]]]
+2025-09-23T21:40:48.972748+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-23T21:40:48.972771+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.972788+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=2 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("divide")], Array [Number(20), Number(4)]]]
+2025-09-23T21:40:48.972808+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(20)), Number(Number(4))])) }))
+2025-09-23T21:40:48.972827+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.972844+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=3 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("subtract")], Array [Number(15), Number(7)]]]
+2025-09-23T21:40:48.972860+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(15)), Number(Number(7))])) }))
+2025-09-23T21:40:48.972880+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.972893+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=4 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.972905+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.972925+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(5.0)))
+2025-09-23T21:40:48.972940+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=5 Array [String("pull"), Number(2)]
+2025-09-23T21:40:48.972954+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(2))
+2025-09-23T21:40:48.972965+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(2), Number(Number(20.0)))
+2025-09-23T21:40:48.972978+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=6 Array [String("pull"), Number(3)]
+2025-09-23T21:40:48.972992+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(3))
+2025-09-23T21:40:48.973003+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(3), Number(Number(5.0)))
+2025-09-23T21:40:48.973014+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=7 Array [String("pull"), Number(4)]
+2025-09-23T21:40:48.973025+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(4))
+2025-09-23T21:40:48.973084+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(4), Number(Number(8.0)))
+2025-09-23T21:40:48.973100+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Preparing response response_count=4
+2025-09-23T21:40:48.973110+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.973132+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,5.0]
+["resolve",2,20.0]
+["resolve",3,5.0]
+["resolve",4,8.0]
+2025-09-23T21:40:48.975590+00:00  INFO ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.975611+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=5dbb9a32-5f0b-4633-a0fe-3855def21cba
+2025-09-23T21:40:48.975643+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T21:40:48.975664+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:40:48.975678+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T21:40:48.975696+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T21:40:48.975714+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.975725+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.975736+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.975788+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T21:40:48.975804+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:40:48.975818+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.975836+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T21:40:48.978004+00:00  INFO ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T21:40:48.978032+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=fdb83073-ffad-4568-8c7b-1cc3398ca29c
+2025-09-23T21:40:48.978068+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T21:40:48.978089+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T21:40:48.978105+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T21:40:48.978127+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T21:40:48.978145+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T21:40:48.978157+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T21:40:48.978169+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T21:40:48.978225+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T21:40:48.978240+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T21:40:48.978251+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T21:40:48.978269+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-23T23:54:54.206691+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.206728+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=37d4c3b5-432b-4f6e-a788-a6e6d6e9f158
+2025-09-23T23:54:54.206767+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T23:54:54.206792+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:54:54.206810+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T23:54:54.206835+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T23:54:54.206855+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.206866+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.206877+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.206956+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T23:54:54.206977+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:54:54.206991+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.207009+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-23T23:54:54.211206+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.211234+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=1d1d7f6c-4516-47ad-b351-2a66af9e594a
+2025-09-23T23:54:54.211270+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[5,5]]]
+["pull",1]
+2025-09-23T23:54:54.211289+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:54:54.211305+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(5), Number(5)]]]
+2025-09-23T23:54:54.211328+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(5))])) }))
+2025-09-23T23:54:54.211349+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.211360+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.211371+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.211429+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(10.0)))
+2025-09-23T23:54:54.211449+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:54:54.211462+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.211481+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,10.0]
+2025-09-23T23:54:54.212466+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.212487+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Using session session_id=2763048c-fe8f-4c61-8200-c7da2c5350d9
+2025-09-23T23:54:54.212516+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["multiply"],[6,6]]]
+["pull",1]
+2025-09-23T23:54:54.212536+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:54:54.212552+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(6), Number(6)]]]
+2025-09-23T23:54:54.212573+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(6))])) }))
+2025-09-23T23:54:54.212592+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.212604+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.212616+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.212671+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(36.0)))
+2025-09-23T23:54:54.212691+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:54:54.212704+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.212721+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,36.0]
+2025-09-23T23:54:54.214932+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.214968+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Using session session_id=38fcf5bc-2c99-43c8-a304-b3178fe5c81a
+2025-09-23T23:54:54.215011+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[2,3]]]
+["push",["pipeline",0,["multiply"],[4,5]]]
+["push",["pipeline",0,["divide"],[20,4]]]
+["push",["pipeline",0,["subtract"],[15,7]]]
+["pull",1]
+["pull",2]
+["pull",3]
+
+2025-09-23T23:54:54.215046+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing messages message_count=8
+2025-09-23T23:54:54.215062+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(2), Number(3)]]]
+2025-09-23T23:54:54.215087+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-23T23:54:54.215109+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.215124+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(4), Number(5)]]]
+2025-09-23T23:54:54.215141+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-23T23:54:54.215163+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.215177+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=2 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("divide")], Array [Number(20), Number(4)]]]
+2025-09-23T23:54:54.215194+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(20)), Number(Number(4))])) }))
+2025-09-23T23:54:54.215212+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.215225+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=3 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("subtract")], Array [Number(15), Number(7)]]]
+2025-09-23T23:54:54.215242+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(15)), Number(Number(7))])) }))
+2025-09-23T23:54:54.215260+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.215273+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=4 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.215284+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.215302+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(5.0)))
+2025-09-23T23:54:54.215316+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=5 Array [String("pull"), Number(2)]
+2025-09-23T23:54:54.215327+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(2))
+2025-09-23T23:54:54.215338+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(2), Number(Number(20.0)))
+2025-09-23T23:54:54.215351+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=6 Array [String("pull"), Number(3)]
+2025-09-23T23:54:54.215363+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(3))
+2025-09-23T23:54:54.215373+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(3), Number(Number(5.0)))
+2025-09-23T23:54:54.215385+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=7 Array [String("pull"), Number(4)]
+2025-09-23T23:54:54.215396+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(4))
+2025-09-23T23:54:54.215446+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(4), Number(Number(8.0)))
+2025-09-23T23:54:54.215461+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Preparing response response_count=4
+2025-09-23T23:54:54.215473+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.215494+00:00 DEBUG ThreadId(04) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,5.0]
+["resolve",2,20.0]
+["resolve",3,5.0]
+["resolve",4,8.0]
+2025-09-23T23:54:54.218133+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.218172+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=c5505480-6828-4f8f-a139-c8d99601b4f3
+2025-09-23T23:54:54.218212+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T23:54:54.218239+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:54:54.218259+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T23:54:54.218286+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T23:54:54.218312+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.218326+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.218339+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.218414+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T23:54:54.218437+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:54:54.218453+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.218476+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T23:54:54.220601+00:00  INFO ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:54:54.220624+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=3310f15f-87bb-43c2-b099-7bd927e4904f
+2025-09-23T23:54:54.220658+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T23:54:54.220681+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:54:54.220700+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T23:54:54.220725+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T23:54:54.220746+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:54:54.220760+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:54:54.220775+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:54:54.220828+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T23:54:54.220846+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:54:54.220857+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response
+2025-09-23T23:54:54.220875+00:00 DEBUG ThreadId(15) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-23T23:57:56.746419+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-23T23:58:15.581849+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.581925+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=e3a92adf-6023-4ad9-8cf2-d4361db109de
+2025-09-23T23:58:15.582068+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T23:58:15.582105+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:58:15.582157+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T23:58:15.582199+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T23:58:15.582235+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.582252+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.582265+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.582367+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T23:58:15.582386+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:58:15.582402+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.582424+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
+2025-09-23T23:58:15.586564+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.586599+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=9d12889d-e3c7-45da-931e-bf526935a371
+2025-09-23T23:58:15.586641+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[5,5]]]
+["pull",1]
+2025-09-23T23:58:15.586674+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:58:15.586692+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(5), Number(5)]]]
+2025-09-23T23:58:15.586720+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(5)), Number(Number(5))])) }))
+2025-09-23T23:58:15.586745+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.586757+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.586772+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.586872+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(10.0)))
+2025-09-23T23:58:15.586893+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:58:15.586906+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.586925+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,10.0]
+2025-09-23T23:58:15.587810+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.587833+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Using session session_id=19827bd2-13f3-4b45-8ba0-448450a2824e
+2025-09-23T23:58:15.587870+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["multiply"],[6,6]]]
+["pull",1]
+2025-09-23T23:58:15.587893+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:58:15.587913+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(6), Number(6)]]]
+2025-09-23T23:58:15.587936+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(6)), Number(Number(6))])) }))
+2025-09-23T23:58:15.587957+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.587972+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.587984+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.588042+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(36.0)))
+2025-09-23T23:58:15.588062+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:58:15.588074+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.588093+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m53}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,36.0]
+2025-09-23T23:58:15.590226+00:00  INFO ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.590246+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Using session session_id=3c7cf63c-f8b3-4e57-9da4-035b25e3aa12
+2025-09-23T23:58:15.590280+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[2,3]]]
+["push",["pipeline",0,["multiply"],[4,5]]]
+["push",["pipeline",0,["divide"],[20,4]]]
+["push",["pipeline",0,["subtract"],[15,7]]]
+["pull",1]
+["pull",2]
+["pull",3]
+
+2025-09-23T23:58:15.590311+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing messages message_count=8
+2025-09-23T23:58:15.590329+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(2), Number(3)]]]
+2025-09-23T23:58:15.590353+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(2)), Number(Number(3))])) }))
+2025-09-23T23:58:15.590374+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.590388+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("multiply")], Array [Number(4), Number(5)]]]
+2025-09-23T23:58:15.590405+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("multiply")]), call_arguments: Some(Array([Number(Number(4)), Number(Number(5))])) }))
+2025-09-23T23:58:15.590424+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.590440+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=2 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("divide")], Array [Number(20), Number(4)]]]
+2025-09-23T23:58:15.590458+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("divide")]), call_arguments: Some(Array([Number(Number(20)), Number(Number(4))])) }))
+2025-09-23T23:58:15.590477+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.590492+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=3 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("subtract")], Array [Number(15), Number(7)]]]
+2025-09-23T23:58:15.590508+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("subtract")]), call_arguments: Some(Array([Number(Number(15)), Number(Number(7))])) }))
+2025-09-23T23:58:15.590527+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.590540+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=4 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.590552+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.590565+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(5.0)))
+2025-09-23T23:58:15.590579+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=5 Array [String("pull"), Number(2)]
+2025-09-23T23:58:15.590594+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(2))
+2025-09-23T23:58:15.590607+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(2), Number(Number(20.0)))
+2025-09-23T23:58:15.590622+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=6 Array [String("pull"), Number(3)]
+2025-09-23T23:58:15.590633+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(3))
+2025-09-23T23:58:15.590644+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(3), Number(Number(5.0)))
+2025-09-23T23:58:15.590655+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Processing message message_index=7 Array [String("pull"), Number(4)]
+2025-09-23T23:58:15.590666+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(4))
+2025-09-23T23:58:15.590725+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(4), Number(Number(8.0)))
+2025-09-23T23:58:15.590748+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Preparing response response_count=4
+2025-09-23T23:58:15.590763+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.590793+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m210}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,5.0]
+["resolve",2,20.0]
+["resolve",3,5.0]
+["resolve",4,8.0]
+2025-09-23T23:58:15.593246+00:00  INFO ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.593269+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=ff0d8e9b-9655-4dcf-acf3-e92775f3d2de
+2025-09-23T23:58:15.593298+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,1]]]
+["pull",1]
+2025-09-23T23:58:15.593321+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:58:15.593338+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(1)]]]
+2025-09-23T23:58:15.593358+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(1))])) }))
+2025-09-23T23:58:15.593376+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.593390+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.593402+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.593452+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(2.0)))
+2025-09-23T23:58:15.593470+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:58:15.593483+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.593502+00:00 DEBUG ThreadId(14) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,2.0]
+2025-09-23T23:58:15.595714+00:00  INFO ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Received batch RPC request
+2025-09-23T23:58:15.595733+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Using session session_id=cb876d11-c436-4a7b-84a2-651686ef1810
+2025-09-23T23:58:15.595760+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Parsing request content_type=text/plain;charset=UTF-8 body_preview=["push",["pipeline",0,["add"],[1,2]]]
+["pull",1]
+2025-09-23T23:58:15.595776+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing messages message_count=2
+2025-09-23T23:58:15.595791+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=0 Array [String("push"), Array [String("pipeline"), Number(0), Array [String("add")], Array [Number(1), Number(2)]]]
+2025-09-23T23:58:15.595808+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Push(Pipeline(PipelineExpression { import_id: ImportId(0), property_path: Some([String("add")]), call_arguments: Some(Array([Number(Number(1)), Number(Number(2))])) }))
+2025-09-23T23:58:15.595823+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: No response needed (e.g., for Push without Pull)
+2025-09-23T23:58:15.595834+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Processing message message_index=1 Array [String("pull"), Number(1)]
+2025-09-23T23:58:15.595845+00:00 DEBUG ThreadId(02) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Message parsed successfully parsed_message=Pull(ImportId(1))
+2025-09-23T23:58:15.595891+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Generated response response=Resolve(ExportId(1), Number(Number(3.0)))
+2025-09-23T23:58:15.595907+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Preparing response response_count=1
+2025-09-23T23:58:15.595918+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Returning newline-delimited response with session cookie
+2025-09-23T23:58:15.595933+00:00 DEBUG ThreadId(13) handle_batch{[3mbody_len[0m[2m=[0m48}: capnweb_server::capnweb_server: Final response body response_body=["resolve",1,3.0]
