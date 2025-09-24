@@ -549,7 +549,7 @@ mod tests {
 
         let parameters = json_to_value(json!({}));
         let captures: Vec<Arc<dyn RpcTarget>> = vec![Arc::new(MockRpcTarget::new())];
-        let _result = runner.execute_plan(&plan, parameters, captures).await;
+        let result = runner.execute_plan(&plan, parameters, captures).await;
 
         assert!(result.is_ok());
     }
@@ -594,11 +594,17 @@ mod tests {
         // Test nested parameter access
         let name = context.get_nested_parameter(&["user".to_string(), "name".to_string()]);
         assert!(name.is_ok());
-        assert_eq!(name.expect("Should get name"), json_to_value(json!("Alice")));
+        match name.expect("Should get name") {
+            Value::String(s) => assert_eq!(s, "Alice"),
+            _ => panic!("Expected string value for name")
+        }
 
         let theme = context.get_nested_parameter(&["settings".to_string(), "theme".to_string()]);
         assert!(theme.is_ok());
-        assert_eq!(theme.expect("Should get theme"), json_to_value(json!("dark")));
+        match theme.expect("Should get theme") {
+            Value::String(s) => assert_eq!(s, "dark"),
+            _ => panic!("Expected string value for theme")
+        }
     }
 
     #[tokio::test]
