@@ -348,9 +348,9 @@ impl PersistentSessionManager {
     ) -> Result<ResumeToken, ResumeTokenError> {
         let snapshot = self.token_manager.create_snapshot(
             session_id.to_string(),
-            allocator,
-            imports,
-            exports,
+            _allocator,
+            _imports,
+            _exports,
             variables,
         ).await?;
 
@@ -370,21 +370,21 @@ impl PersistentSessionManager {
 
         self.token_manager.restore_session(
             snapshot.clone(),
-            allocator,
-            imports,
-            exports,
+            _allocator,
+            _imports,
+            _exports,
             variables,
         ).await?;
 
         // Register the restored session
         let mut sessions = self.active_sessions.write().await;
         sessions.insert(snapshot.session_id.clone(), SessionInfo {
-            session_id: snapshot.session_id.clone(),
+            _session_id: snapshot.session_id.clone(),
             last_activity: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .unwrap()
+                .expect("System time should be after UNIX epoch")
                 .as_secs(),
-            variable_manager: None, // Note: Variable manager integration would be handled separately
+            _variable_manager: None, // Note: Variable manager integration would be handled separately
         });
 
         Ok(snapshot.session_id)
