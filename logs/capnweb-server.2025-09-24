@@ -409,3 +409,11 @@
 2025-09-24T18:13:10.824005+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - GET  /rpc/ws      (WebSocket RPC)
 2025-09-24T18:13:10.824630+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Cap'n Web server ready to accept connections
 2025-09-24T18:13:10.824689+00:00  INFO ThreadId(08) capnweb_server::capnweb_server: Session cleanup task started (60s interval)
+2025-09-24T20:34:18.496944+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-24T20:34:18.497127+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Starting Cap'n Web server host=127.0.0.1 port=9006 max_batch_size=100 has_main_capability=true
+2025-09-24T20:34:18.497162+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Building Cap'n Web server router with endpoints:
+2025-09-24T20:34:18.497171+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - GET  /health      (Health check)
+2025-09-24T20:34:18.497178+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - POST /rpc/batch   (HTTP Batch RPC)
+2025-09-24T20:34:18.497185+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - GET  /rpc/ws      (WebSocket RPC)
+2025-09-24T20:34:18.497822+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Cap'n Web server ready to accept connections
+2025-09-24T20:34:18.497866+00:00  INFO ThreadId(09) capnweb_server::capnweb_server: Session cleanup task started (60s interval)

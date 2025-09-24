@@ -178,7 +178,11 @@ async fn handle_batch(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 
-    tracing::debug!(content_type = %content_type, body_preview = %body.chars().take(200).collect::<String>(), "Parsing request");
+    // Only create preview string if debug logging is enabled
+    if tracing::enabled!(tracing::Level::DEBUG) {
+        let preview: String = body.chars().take(200).collect();
+        tracing::debug!(content_type = %content_type, body_preview = %preview, "Parsing request");
+    }
 
     // Parse messages based on format
     let messages = if content_type.contains("application/json") {
@@ -304,12 +308,22 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                 match msg {
                     WsMessage::Text(text) => {
                         let msg_len = text.len();
-                        debug!(
-                            session_id = %session_id,
-                            message_length = msg_len,
-                            message_preview = %text.chars().take(100).collect::<String>(),
-                            "WebSocket received text message"
-                        );
+                        // Only create preview string if debug logging is enabled
+                        if tracing::enabled!(tracing::Level::DEBUG) {
+                            let preview: String = text.chars().take(100).collect();
+                            debug!(
+                                session_id = %session_id,
+                                message_length = msg_len,
+                                message_preview = %preview,
+                                "WebSocket received text message"
+                            );
+                        } else {
+                            debug!(
+                                session_id = %session_id,
+                                message_length = msg_len,
+                                "WebSocket received text message"
+                            );
+                        }
 
                         // Parse JSON message
                         match serde_json::from_str::<Message>(&text) {
@@ -338,12 +352,22 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
 
                                         match serde_json::to_string(&response) {
                                             Ok(response_json) => {
-                                                debug!(
-                                                    session_id = %session_id,
-                                                    response_length = response_json.len(),
-                                                    response_preview = %response_json.chars().take(100).collect::<String>(),
-                                                    "WebSocket sending response"
-                                                );
+                                                // Only create preview string if debug logging is enabled
+                                                if tracing::enabled!(tracing::Level::DEBUG) {
+                                                    let preview: String = response_json.chars().take(100).collect();
+                                                    debug!(
+                                                        session_id = %session_id,
+                                                        response_length = response_json.len(),
+                                                        response_preview = %preview,
+                                                        "WebSocket sending response"
+                                                    );
+                                                } else {
+                                                    debug!(
+                                                        session_id = %session_id,
+                                                        response_length = response_json.len(),
+                                                        "WebSocket sending response"
+                                                    );
+                                                }
 
                                                 if let Err(e) = sender.send(WsMessage::Text(response_json)).await {
                                                     error!(
@@ -381,7 +405,13 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                                 error!(
                                     session_id = %session_id,
                                     error = %e,
-                                    message_preview = %text.chars().take(200).collect::<String>(),
+                                    message_preview = %{
+                                        if tracing::enabled!(tracing::Level::DEBUG) {
+                                            text.chars().take(200).collect::<String>()
+                                        } else {
+                                            String::new()
+                                        }
+                                    },
                                     "WebSocket failed to parse JSON message"
                                 );
                                 // Could send error response here if needed
