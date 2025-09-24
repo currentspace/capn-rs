@@ -211,7 +211,7 @@ pub enum CodecError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use capnweb_core::protocol::{ImportId, ExportId};
+    use capnweb_core::{Expression, protocol::{ImportId, ExportId}};
 
     #[test]
     fn test_length_prefixed_encode_decode() {
