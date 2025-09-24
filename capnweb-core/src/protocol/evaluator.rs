@@ -10,7 +10,9 @@ use std::pin::Pin;
 
 /// Expression evaluator context
 pub struct ExpressionEvaluator {
+    #[allow(dead_code)] // TODO: Use these when evaluation is implemented
     imports: Arc<ImportTable>,
+    #[allow(dead_code)] // TODO: Use these when evaluation is implemented
     exports: Arc<ExportTable>,
 }
 

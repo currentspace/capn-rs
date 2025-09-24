@@ -1,6 +1,6 @@
 use axum::{
     extract::{State, Json},
-    http::{StatusCode, HeaderMap},
+    http::{StatusCode, HeaderMap, header},
     response::IntoResponse,
     routing::{get, post},
     Router,
@@ -135,16 +135,10 @@ async fn handle_batch(
     body: String,
 ) -> impl IntoResponse {
     tracing::info!("Received batch RPC request");
-    // Get session ID from headers or create new one
-    let session_id = headers
-        .get("x-session-id")
-        .and_then(|v| v.to_str().ok())
-        .map(String::from)
-        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
 
-    tracing::debug!(session_id = %session_id, "Using session");
-
-    let session_state = get_or_create_session(&state, &session_id).await;
+    // For HTTP batch, create a fresh session for each request
+    // This ensures proper stateless operation as expected by the client
+    let session_state = create_batch_session(&state).await;
 
     // Update last activity time
     *session_state.last_activity.write().await = std::time::Instant::now();
@@ -232,7 +226,7 @@ async fn handle_batch(
 
     tracing::debug!(response_count = responses.len(), "Preparing response");
 
-    // Return in the same format as received
+    // Return in the same format as received (no cookies for stateless operation)
     if content_type.contains("application/json") {
         tracing::debug!("Returning JSON array response");
         // Return as JSON array
@@ -250,7 +244,7 @@ async fn handle_batch(
 
         (
             StatusCode::OK,
-            [(axum::http::header::CONTENT_TYPE, "text/plain")],
+            [(header::CONTENT_TYPE, "text/plain")],
             response_body
         ).into_response()
     }
@@ -262,29 +256,30 @@ async fn handle_websocket(State(_state): State<ServerState>) -> impl IntoRespons
     (StatusCode::NOT_IMPLEMENTED, "WebSocket not yet implemented")
 }
 
-/// Get or create a session
-async fn get_or_create_session(
+/// Create a fresh session for HTTP batch requests
+/// Each HTTP request is completely independent with its own import/export space
+async fn create_batch_session(
     state: &ServerState,
-    session_id: &str,
 ) -> SessionState {
-    let mut sessions = state.sessions.write().await;
+    // Create fresh session with import ID 0 pre-allocated to main capability
+    let session = Arc::new(RpcSession::new());
 
-    if let Some(session_state) = sessions.get(session_id) {
-        SessionState {
-            session: session_state.session.clone(),
-            next_import_id: session_state.next_import_id.clone(),
-            pending_pulls: session_state.pending_pulls.clone(),
-            last_activity: session_state.last_activity.clone(),
-        }
-    } else {
-        let session_state = SessionState {
-            session: Arc::new(RpcSession::new()),
-            next_import_id: Arc::new(RwLock::new(1)), // Start from 1 for imports
-            pending_pulls: Arc::new(RwLock::new(HashMap::new())),
-            last_activity: Arc::new(RwLock::new(std::time::Instant::now())),
-        };
-        sessions.insert(session_id.to_string(), session_state.clone());
-        session_state
+    // Pre-allocate import ID 0 to the main capability
+    if let Some(main_cap) = &state.main_capability {
+        use capnweb_core::protocol::tables::StubReference;
+
+        let stub_ref = StubReference::new(main_cap.clone());
+        let _ = session.imports.insert(
+            ImportId(0),
+            ImportValue::Stub(stub_ref),
+        );
+    }
+
+    SessionState {
+        session,
+        next_import_id: Arc::new(RwLock::new(1)), // Start from 1 since 0 is main
+        pending_pulls: Arc::new(RwLock::new(HashMap::new())),
+        last_activity: Arc::new(RwLock::new(std::time::Instant::now())),
     }
 }
 
@@ -296,7 +291,8 @@ async fn process_message(
 ) -> Result<Option<Message>, Box<dyn std::error::Error>> {
     match message {
         Message::Push(expr) => {
-            // Allocate import ID and evaluate expression asynchronously
+            // For HTTP batch, allocate a new import ID for the result
+            // Each push gets a sequential import ID (1, 2, 3, ...)
             let mut next_id = session_state.next_import_id.write().await;
             let import_id = ImportId(*next_id);
             *next_id += 1;
@@ -310,7 +306,7 @@ async fn process_message(
 
             // Spawn task to evaluate expression and resolve import
             tokio::spawn(async move {
-                match evaluate_expression(&state_clone, expr_clone).await {
+                match evaluate_expression(&state_clone, &session, expr_clone).await {
                     Ok(value) => {
                         // Store the value in the import table
                         let _ = session.imports.insert(
@@ -469,6 +465,7 @@ async fn process_message(
 /// Simple expression evaluator for testing
 async fn evaluate_expression(
     state: &ServerState,
+    session: &Arc<RpcSession>,
     expr: Expression,
 ) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
     match expr {
@@ -504,28 +501,35 @@ async fn evaluate_expression(
         }
 
         Expression::Pipeline(pipeline) => {
-            // Handle pipeline expressions (similar to Import but with pipeline semantics)
-            if pipeline.import_id.is_main() {
-                if let Some(main) = &state.main_capability {
-                    // Extract method name from property path
-                    if let Some(path) = &pipeline.property_path {
-                        if let Some(capnweb_core::protocol::PropertyKey::String(method)) = path.first() {
-                            // Extract call arguments
-                            let args = if let Some(args_expr) = &pipeline.call_arguments {
-                                extract_args(&**args_expr)?
-                            } else {
-                                Vec::new()
-                            };
+            // Handle pipeline expressions - look up the target capability
+            if let Some(import_value) = session.imports.get(pipeline.import_id) {
+                match import_value {
+                    ImportValue::Stub(stub_ref) => {
+                        // Extract method name from property path
+                        if let Some(path) = &pipeline.property_path {
+                            if let Some(capnweb_core::protocol::PropertyKey::String(method)) = path.first() {
+                                // Extract call arguments
+                                let args = if let Some(args_expr) = &pipeline.call_arguments {
+                                    extract_args(&**args_expr)?
+                                } else {
+                                    Vec::new()
+                                };
 
-                            // Call the method
-                            return main.call(method, args).await
-                                .map_err(|e| e.to_string().into());
+                                // Call the method on the capability
+                                let cap = stub_ref.get();
+                                return cap.call(method, args).await
+                                    .map_err(|e| e.to_string().into());
+                            }
                         }
+                        return Err("Invalid pipeline path".into());
+                    }
+                    _ => {
+                        return Err(format!("Import {} is not a capability stub", pipeline.import_id.0).into());
                     }
                 }
+            } else {
+                return Err(format!("Import {} not found", pipeline.import_id.0).into());
             }
-
-            Ok(Value::String("Pipeline not implemented".to_string()))
         }
 
         _ => Ok(Value::String("Expression type not implemented".to_string())),

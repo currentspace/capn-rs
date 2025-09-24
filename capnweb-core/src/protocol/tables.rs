@@ -1,10 +1,10 @@
 use dashmap::DashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
-use tokio::sync::oneshot;
+// use tokio::sync::oneshot; // TODO: Remove when promise handling is implemented
 
 use super::ids::{ImportId, ExportId, IdAllocator};
-use super::expression::Expression;
+// use super::expression::Expression; // TODO: Remove when expression integration is complete
 use crate::RpcTarget;
 
 /// Value that can be stored in tables

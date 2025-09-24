@@ -3,7 +3,8 @@
 
 use super::message::Message;
 use super::expression::Expression;
-use super::ids::{ImportId, ExportId, IdAllocator};
+use super::ids::{ImportId, IdAllocator};
+// use super::ids::ExportId; // TODO: Remove when export handling is implemented
 use super::tables::{ImportTable, ExportTable, Value};
 use super::evaluator::ExpressionEvaluator;
 use std::sync::Arc;
@@ -11,10 +12,10 @@ use tokio::sync::Mutex;
 
 /// RPC session state
 pub struct RpcSession {
-    allocator: Arc<IdAllocator>,
-    imports: Arc<ImportTable>,
-    exports: Arc<ExportTable>,
-    evaluator: Arc<Mutex<ExpressionEvaluator>>,
+    pub allocator: Arc<IdAllocator>,
+    pub imports: Arc<ImportTable>,
+    pub exports: Arc<ExportTable>,
+    pub evaluator: Arc<Mutex<ExpressionEvaluator>>,
 }
 
 impl RpcSession {
@@ -41,7 +42,7 @@ impl RpcSession {
         match msg {
             Message::Push(expr) => {
                 // Allocate import ID and evaluate expression
-                let import_id = self.imports.allocate_local();
+                let _import_id = self.imports.allocate_local();
 
                 // TODO: Evaluate expression and store result
                 let _ = self.evaluator.lock().await.evaluate(expr).await?;
@@ -49,7 +50,7 @@ impl RpcSession {
                 Ok(())
             }
 
-            Message::Pull(import_id) => {
+            Message::Pull(_import_id) => {
                 // Request resolution of an import
                 // TODO: Send resolve message for the import
                 Ok(())
@@ -85,7 +86,7 @@ impl RpcSession {
     }
 
     /// Send a push message
-    pub async fn push(&self, expr: Expression) -> ImportId {
+    pub async fn push(&self, _expr: Expression) -> ImportId {
         let import_id = self.imports.allocate_local();
 
         // TODO: Send push message over transport
