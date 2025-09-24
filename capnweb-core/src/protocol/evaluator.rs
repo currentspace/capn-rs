@@ -51,7 +51,11 @@ impl ExpressionEvaluator {
             Expression::Date(millis) => Ok(Value::Date(millis)),
 
                 Expression::Error(err) => {
-                    Ok(Value::Error(err.error_type, err.message, err.stack))
+                    Ok(Value::Error {
+                        error_type: err.error_type,
+                        message: err.message,
+                        stack: err.stack
+                    })
                 }
 
                 Expression::EscapedArray(elements) => {

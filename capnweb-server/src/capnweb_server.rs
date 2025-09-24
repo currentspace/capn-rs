@@ -90,8 +90,18 @@ impl CapnWebServer {
         });
     }
 
+    /// Get server configuration
+    pub fn config(&self) -> &CapnWebServerConfig {
+        &self.config
+    }
+
+    /// Build the router for external use
+    pub fn build_router(&self) -> Router {
+        Self::build_router_internal(self.state.clone())
+    }
+
     /// Build the router
-    fn build_router(state: ServerState) -> Router {
+    fn build_router_internal(state: ServerState) -> Router {
         info!("Building Cap'n Web server router with endpoints:");
         info!("  - GET  /health      (Health check)");
         info!("  - POST /rpc/batch   (HTTP Batch RPC)");
@@ -118,7 +128,7 @@ impl CapnWebServer {
             "Starting Cap'n Web server"
         );
 
-        let app = Self::build_router(self.state);
+        let app = Self::build_router_internal(self.state);
 
         // Start session cleanup task
         tokio::spawn(async move {
@@ -647,11 +657,11 @@ async fn process_message(
 
                         let _ = session.imports.insert(
                             import_id,
-                            ImportValue::Value(Value::Error(
-                                "EvalError".to_string(),
-                                e.to_string(),
-                                None,
-                            )),
+                            ImportValue::Value(Value::Error {
+                                error_type: "EvalError".to_string(),
+                                message: e.to_string(),
+                                stack: None,
+                            }),
                         );
 
                         // Notify any waiting pulls
@@ -677,13 +687,13 @@ async fn process_message(
                 match import_value {
                     ImportValue::Value(value) => {
                         // Check if it's an error value
-                        if let Value::Error(error_type, message, stack) = value {
+                        if let Value::Error { error_type, message, stack } = value {
                             Ok(Some(Message::Reject(
                                 ExportId(import_id.0),
                                 Expression::Error(capnweb_core::protocol::ErrorExpression {
-                                    error_type,
-                                    message,
-                                    stack,
+                                    error_type: error_type.clone(),
+                                    message: message.clone(),
+                                    stack: stack.clone(),
                                 }),
                             )))
                         } else {
@@ -899,11 +909,11 @@ fn value_to_expression(value: Value) -> Expression {
             Expression::Object(map)
         }
         Value::Date(timestamp) => Expression::Date(timestamp),
-        Value::Error(error_type, message, stack) => {
+        Value::Error { error_type, message, stack } => {
             Expression::Error(capnweb_core::protocol::ErrorExpression {
-                error_type,
-                message,
-                stack,
+                error_type: error_type.clone(),
+                message: message.clone(),
+                stack: stack.clone(),
             })
         }
         Value::Stub(_) | Value::Promise(_) => {

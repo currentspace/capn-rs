@@ -10,8 +10,12 @@ pub mod ws_h1;
 #[cfg(feature = "h3-server")]
 pub mod h3_server;
 pub mod capnweb_server;
+pub mod advanced_capability;
 
 pub use server::{RpcTarget, ServerConfig, Server};
+pub use advanced_capability::{
+    AdvancedCapability, AdvancedCapabilityBuilder, AdvancedCapabilityConfig
+};
 pub use cap_table::CapTable;
 pub use runner::PlanRunner;
 pub use limits::RateLimits;

@@ -16,6 +16,35 @@ rust-version = "1.75"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/yourusername/capn-rs"
 
+[workspace.lints.clippy]
+# Correctness - Deny in production
+unwrap_used = "warn"             # TODO: Change to "deny" after cleanup
+expect_used = "warn"              # Require meaningful expect messages
+panic = "warn"                    # TODO: Change to "deny" after cleanup
+todo = "warn"                     # Track incomplete implementations
+unimplemented = "warn"            # Track unimplemented features
+
+# Performance
+redundant_clone = "warn"          # Avoid unnecessary clones
+inefficient_to_string = "warn"   # Use Display instead of to_string
+unnecessary_to_owned = "warn"     # Avoid unnecessary String allocations
+large_enum_variant = "warn"       # Box large enum variants
+large_stack_arrays = "warn"       # Prevent stack overflow
+
+# Style & Clarity
+missing_docs = "allow"            # TODO: Enable after adding docs
+missing_debug_implementations = "warn"
+missing_copy_implementations = "warn"
+needless_borrow = "warn"
+needless_lifetimes = "warn"
+
+# Async
+future_not_send = "warn"          # Futures should be Send
+
+[workspace.lints.rust]
+unsafe_code = "warn"              # Flag all unsafe usage for review
+missing_docs = "allow"            # TODO: Enable after documentation
+
 
 [workspace.dependencies]
 # Core dependencies
@@ -56,6 +85,9 @@ nonzero_ext = "0.3"
 bytes = "1.8"
 uuid = { version = "1.11", features = ["v4"] }
 tokio-util = { version = "0.7", features = ["codec"] }
+base64 = "0.22"
+sha2 = "0.10"
+rand = "0.9"
 
 # Validation
 jsonschema = "0.26"

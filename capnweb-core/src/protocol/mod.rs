@@ -12,6 +12,9 @@ pub mod session;
 pub mod pipeline;
 pub mod remap_engine;
 pub mod variable_state;
+pub mod il_runner;
+pub mod nested_capabilities;
+pub mod resume_tokens;
 
 #[cfg(test)]
 mod tests;
@@ -26,3 +29,6 @@ pub use session::*;
 pub use pipeline::*;
 pub use remap_engine::*;
 pub use variable_state::*;
+pub use il_runner::*;
+pub use nested_capabilities::*;
+pub use resume_tokens::*;

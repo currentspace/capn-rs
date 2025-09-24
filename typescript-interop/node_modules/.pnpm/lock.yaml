@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       capnweb:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: file:./capnweb-github
+        version: file:capnweb-github
       ws:
         specifier: ^8.18.0
         version: 8.18.3
@@ -384,8 +384,8 @@ packages:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
 
-  capnweb@0.1.0:
-    resolution: {integrity: sha512-+pygKx1JFTZTRdd1hHgaBRg5BwULEDZq8ZoHXkYP2GXNV3lrjXLj5qzlGz+SgBCJjWUmNBtlh7JPWdr0wIbY8w==}
+  capnweb@file:capnweb-github:
+    resolution: {directory: capnweb-github, type: directory}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -1012,7 +1012,7 @@ snapshots:
 
   cac@6.7.14: {}
 
-  capnweb@0.1.0: {}
+  capnweb@file:capnweb-github: {}
 
   chokidar@3.6.0:
     dependencies:

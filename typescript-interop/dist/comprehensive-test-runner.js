@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import {
-  testAdvancedStatefulServer
-} from "./chunk-6WPWZAZW.js";
-import {
   testPromisePipelining
 } from "./chunk-AN3UUTFI.js";
+import {
+  testAdvancedStatefulServer
+} from "./chunk-6WPWZAZW.js";
 
 // src/comprehensive-test-runner.ts
 import { spawn } from "child_process";

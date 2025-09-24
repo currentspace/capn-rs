@@ -32,6 +32,19 @@ This is a Rust implementation of the Cap'n Web protocol, delivering both server 
 
 ## Development Standards
 
+### 📚 Coding Standards
+**IMPORTANT**: All code must follow the standards defined in **[RUST_CODING_STANDARDS.md](./RUST_CODING_STANDARDS.md)**
+
+Key requirements:
+- **NO `unwrap()` in production code** - Use proper error handling
+- **NO allocations in hot paths** - Lazy evaluate debug strings
+- **NO unnecessary `clone()`** - Use references when possible
+- **Document all public APIs**
+- **Add error context with `anyhow`**
+
+See RUST_CODING_STANDARDS.md for complete guidelines.
+Quick reference: CODING_QUICK_REFERENCE.md for instant lookup.
+
 ### Git Workflow
 ```bash
 # ALWAYS initialize git first

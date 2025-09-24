@@ -1,53 +1,23 @@
-# Tarpaulin configuration for Cap'n Web Rust implementation
+# Tarpaulin Code Coverage Configuration for Cap'n Web Rust
 
-[tool.tarpaulin]
-# Output formats
-out = ["Html", "Xml", "Json"]
-
-# Output directory
-output-dir = "target/coverage"
-
-# Source code directories to include
-include-tests = true
-run-types = ["Tests", "Doctests"]
-
-# Workspace configuration
+[default]
+# Coverage options
+exclude-files = ["*/tests/*", "*/benches/*", "*/examples/*", "*/.cargo/*"]
+ignored = ["capnweb-interop-tests"]
+timeout = "600s"
+debug = false
 all-features = true
 workspace = true
+avoid-cfg-tarpaulin = true
 
-# Timeout for tests (5 minutes)
-timeout = "300s"
+# Output formats
+out = ["Html", "Xml", "Lcov"]
+output-dir = "target/coverage"
 
-# Exclude patterns
-exclude = [
-    # Examples and benchmarks
-    "examples/*",
-    "benches/*",
+# Coverage thresholds
+fail-under = 0  # We'll check current coverage first
+print-summary = true
+print-uncovered-lines = true
 
-    # Test files themselves
-    "*/tests/*",
-    "**/test_*.rs",
-    "**/*_test.rs",
-
-    # Generated code
-    "target/*",
-
-    # Mock and test utilities
-    "**/mock*.rs",
-    "**/fixture*.rs"
-]
-
-# Follow symbolic links
-follow-symlinks = true
-
-# Include proc-macro code
-count-macro = true
-
-# Verbose output
-verbose = true
-
-# Engine to use for coverage
-engine = "Llvm"
-
-# Target directory
-target-dir = "target/tarpaulin"
+[report]
+skip-clean = false

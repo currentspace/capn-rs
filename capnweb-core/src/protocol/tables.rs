@@ -1,6 +1,7 @@
 use dashmap::DashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use serde::{Serialize, Deserialize};
 // use tokio::sync::oneshot; // TODO: Remove when promise handling is implemented
 
 use super::ids::{ImportId, ExportId, IdAllocator};
@@ -8,7 +9,7 @@ use super::ids::{ImportId, ExportId, IdAllocator};
 use crate::RpcTarget;
 
 /// Value that can be stored in tables
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Value {
     Null,
     Bool(bool),
@@ -17,8 +18,14 @@ pub enum Value {
     Array(Vec<Value>),
     Object(std::collections::HashMap<String, Box<Value>>),
     Date(f64),
-    Error(String, String, Option<String>), // type, message, stack
+    Error {
+        error_type: String,
+        message: String,
+        stack: Option<String>
+    },
+    #[serde(skip)]
     Stub(StubReference),
+    #[serde(skip)]
     Promise(PromiseReference),
 }
 
@@ -98,16 +105,25 @@ pub enum ExportValueRef {
 }
 
 /// Import table manages imported capabilities and promises
+#[derive(Debug)]
 pub struct ImportTable {
     allocator: Arc<IdAllocator>,
     entries: DashMap<ImportId, ImportEntry>,
 }
 
 impl ImportTable {
-    /// Create a new import table
+    /// Create a new import table with the given allocator
     pub fn new(allocator: Arc<IdAllocator>) -> Self {
         Self {
             allocator,
+            entries: DashMap::new(),
+        }
+    }
+
+    /// Create a new import table with a default allocator
+    pub fn with_default_allocator() -> Self {
+        Self {
+            allocator: Arc::new(IdAllocator::new()),
             entries: DashMap::new(),
         }
     }
@@ -191,16 +207,25 @@ impl ImportTable {
 }
 
 /// Export table manages exported capabilities and promises
+#[derive(Debug)]
 pub struct ExportTable {
     allocator: Arc<IdAllocator>,
     entries: DashMap<ExportId, ExportEntry>,
 }
 
 impl ExportTable {
-    /// Create a new export table
+    /// Create a new export table with the given allocator
     pub fn new(allocator: Arc<IdAllocator>) -> Self {
         Self {
             allocator,
+            entries: DashMap::new(),
+        }
+    }
+
+    /// Create a new export table with a default allocator
+    pub fn with_default_allocator() -> Self {
+        Self {
+            allocator: Arc::new(IdAllocator::new()),
             entries: DashMap::new(),
         }
     }

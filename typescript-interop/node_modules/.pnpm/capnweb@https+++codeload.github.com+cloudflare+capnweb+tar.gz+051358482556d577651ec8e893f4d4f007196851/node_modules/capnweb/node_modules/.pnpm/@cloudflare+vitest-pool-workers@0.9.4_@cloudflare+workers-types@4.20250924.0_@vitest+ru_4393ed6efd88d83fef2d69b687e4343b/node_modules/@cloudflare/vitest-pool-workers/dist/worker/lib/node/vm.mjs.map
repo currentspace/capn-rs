@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/worker/lib/node/vm.ts"],
+  "mappings": ";AAAA,OAAO,YAAY;AAGnB,IAAI;AACG,SAAS,eAAe,eAA2B;AACzD,eAAa;AACd;AAEO,SAAS,iBAAiB,MAAc,SAAgC;AAC9E,SAAO,eAAe,MAAS;AAC/B,SAAO,WAAW,KAAK,MAAM,SAAS,QAAQ;AAC/C;AAEA,IAAO,aAAQ,EAAE,iBAAiB;",
+  "names": []
+}

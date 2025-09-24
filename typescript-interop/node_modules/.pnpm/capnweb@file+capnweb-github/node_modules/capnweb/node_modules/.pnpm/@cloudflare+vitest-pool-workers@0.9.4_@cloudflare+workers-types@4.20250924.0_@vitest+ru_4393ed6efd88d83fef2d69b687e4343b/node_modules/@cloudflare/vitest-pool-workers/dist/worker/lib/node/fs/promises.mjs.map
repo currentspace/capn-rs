@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../../src/worker/lib/node/fs/promises.ts"],
+  "mappings": ";AAAA,IAAO,mBAAQ,CAAC;",
+  "names": []
+}

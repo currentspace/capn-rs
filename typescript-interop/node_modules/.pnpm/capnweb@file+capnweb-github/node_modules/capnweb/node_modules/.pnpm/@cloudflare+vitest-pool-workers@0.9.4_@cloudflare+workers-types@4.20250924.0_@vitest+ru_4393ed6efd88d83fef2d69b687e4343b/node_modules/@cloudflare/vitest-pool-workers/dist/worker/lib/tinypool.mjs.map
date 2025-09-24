@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../src/worker/lib/tinypool.ts"],
+  "mappings": ";AAAO,IAAM,WAAW;",
+  "names": []
+}

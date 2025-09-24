@@ -285,7 +285,7 @@ impl RemapEngine {
                 Expression::Object(map)
             }
             Value::Date(timestamp) => Expression::Date(*timestamp),
-            Value::Error(error_type, message, stack) => {
+            Value::Error { error_type, message, stack } => {
                 Expression::Error(super::expression::ErrorExpression {
                     error_type: error_type.clone(),
                     message: message.clone(),

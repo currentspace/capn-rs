@@ -20,6 +20,10 @@ async-trait.workspace = true
 dashmap.workspace = true
 tokio = { workspace = true, features = ["sync", "macros"] }
 uuid = { workspace = true, features = ["v4"] }
+base64.workspace = true
+sha2.workspace = true
+rand.workspace = true
+chrono = { workspace = true, features = ["serde"] }
 
 # Optional dependencies
 jsonschema = { workspace = true, optional = true }

@@ -198,7 +198,7 @@ impl VariableStateManager {
             }
 
             // Error values are valid for storage
-            Value::Error(_, _, _) => Ok(()),
+            Value::Error { .. } => Ok(()),
 
             // Complex types (stubs, promises) cannot be stored as variables
             Value::Stub(_) => Err(VariableError::UnsupportedValueType("Cannot store stub as variable".to_string())),

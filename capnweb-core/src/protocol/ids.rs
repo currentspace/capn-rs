@@ -84,6 +84,7 @@ impl fmt::Display for ExportId {
 }
 
 /// ID allocator for managing import and export IDs
+#[derive(Debug)]
 pub struct IdAllocator {
     next_positive: std::sync::atomic::AtomicI64,
     next_negative: std::sync::atomic::AtomicI64,

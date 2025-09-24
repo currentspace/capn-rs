@@ -401,3 +401,11 @@
 2025-09-24T02:54:01.410203+00:00  INFO ThreadId(13) capnweb_server::capnweb_server: WebSocket 2a5f8051-13f1-469c-80de-e4a8e023afaa disconnected
 2025-09-24T02:54:01.410279+00:00 ERROR ThreadId(08) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945: Error: WebSocket protocol error: Connection reset without closing handshake
 2025-09-24T02:54:01.410295+00:00  INFO ThreadId(08) capnweb_server::capnweb_server: WebSocket 66146479-3461-4728-86c5-a5b88e527945 disconnected
+2025-09-24T18:13:10.823732+00:00  INFO ThreadId(01) capnweb_server::logging: Logging initialized with file output to "logs"
+2025-09-24T18:13:10.823924+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Starting Cap'n Web server host=127.0.0.1 port=9005 max_batch_size=100 has_main_capability=true
+2025-09-24T18:13:10.823986+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Building Cap'n Web server router with endpoints:
+2025-09-24T18:13:10.823994+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - GET  /health      (Health check)
+2025-09-24T18:13:10.823999+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - POST /rpc/batch   (HTTP Batch RPC)
+2025-09-24T18:13:10.824005+00:00  INFO ThreadId(01) capnweb_server::capnweb_server:   - GET  /rpc/ws      (WebSocket RPC)
+2025-09-24T18:13:10.824630+00:00  INFO ThreadId(01) capnweb_server::capnweb_server: Cap'n Web server ready to accept connections
+2025-09-24T18:13:10.824689+00:00  INFO ThreadId(08) capnweb_server::capnweb_server: Session cleanup task started (60s interval)
