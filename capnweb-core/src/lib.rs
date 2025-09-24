@@ -43,15 +43,19 @@ pub trait RpcTarget: Send + Sync + std::fmt::Debug {
 #[cfg(test)]
 #[derive(Debug)]
 pub struct MockRpcTarget {
-    id: String,
 }
 
 #[cfg(test)]
 impl MockRpcTarget {
     pub fn new() -> Self {
-        Self {
-            id: uuid::Uuid::new_v4().to_string(),
-        }
+        Self {}
+    }
+}
+
+#[cfg(test)]
+impl Default for MockRpcTarget {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

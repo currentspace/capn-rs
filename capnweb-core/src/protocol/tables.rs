@@ -8,6 +8,9 @@ use super::ids::{ImportId, ExportId, IdAllocator};
 // use super::expression::Expression; // TODO: Remove when expression integration is complete
 use crate::RpcTarget;
 
+/// Type alias for complex promise sender type
+type PromiseSender = Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>;
+
 /// Value that can be stored in tables
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Value {
@@ -90,7 +93,7 @@ pub struct ExportEntry {
 #[derive(Debug)]
 pub enum ExportValue {
     Stub(StubReference),
-    Promise(Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>),
+    Promise(PromiseSender),
     Resolved(Value),
     Rejected(Value),
 }
@@ -99,7 +102,7 @@ pub enum ExportValue {
 #[derive(Debug)]
 pub enum ExportValueRef {
     Stub(StubReference),
-    Promise(Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>),
+    Promise(PromiseSender),
     Resolved(Value),
     Rejected(Value),
 }

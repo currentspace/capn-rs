@@ -275,7 +275,7 @@ impl CapabilityGraph {
 
         for (id, node) in nodes {
             if node.parent_id.is_none() {
-                let depth = self.calculate_depth_recursive(id, edges, 0);
+                let depth = Self::calculate_depth_recursive(id, edges, 0);
                 max_depth = max_depth.max(depth);
             }
         }
@@ -284,7 +284,6 @@ impl CapabilityGraph {
     }
 
     fn calculate_depth_recursive(
-        &self,
         node_id: &str,
         edges: &HashMap<String, Vec<String>>,
         current_depth: usize,
@@ -293,7 +292,7 @@ impl CapabilityGraph {
 
         if let Some(children) = edges.get(node_id) {
             for child_id in children {
-                let child_depth = self.calculate_depth_recursive(child_id, edges, current_depth + 1);
+                let child_depth = Self::calculate_depth_recursive(child_id, edges, current_depth + 1);
                 max_child_depth = max_child_depth.max(child_depth);
             }
         }

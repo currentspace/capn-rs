@@ -35,7 +35,7 @@ impl ExecutionContext {
     }
 
     /// Convert serde_json::Value to tables::Value
-    fn convert_serde_json_value_to_tables_value(&self, value: serde_json::Value) -> Value {
+    fn convert_serde_json_value_to_tables_value(value: serde_json::Value) -> Value {
         match value {
             serde_json::Value::Null => Value::Null,
             serde_json::Value::Bool(b) => Value::Bool(b),
@@ -43,13 +43,13 @@ impl ExecutionContext {
             serde_json::Value::String(s) => Value::String(s),
             serde_json::Value::Array(arr) => {
                 Value::Array(arr.into_iter()
-                    .map(|v| self.convert_serde_json_value_to_tables_value(v))
+                    .map(|v| Self::convert_serde_json_value_to_tables_value(v))
                     .collect())
             },
             serde_json::Value::Object(obj) => {
                 let mut map = HashMap::new();
                 for (k, v) in obj {
-                    map.insert(k, Box::new(self.convert_serde_json_value_to_tables_value(v)));
+                    map.insert(k, Box::new(Self::convert_serde_json_value_to_tables_value(v)));
                 }
                 Value::Object(map)
             }
@@ -83,7 +83,7 @@ impl ExecutionContext {
                 self.get_nested_parameter(&param.path)
             }
             Source::ByValue { by_value } => {
-                Ok(self.convert_serde_json_value_to_tables_value(by_value.value.clone()))
+                Ok(Self::convert_serde_json_value_to_tables_value(by_value.value.clone()))
             }
         }
     }
@@ -534,7 +534,7 @@ mod tests {
         let runner = PlanRunner::new(imports, exports);
 
         let mock_target = Arc::new(MockRpcTarget::new());
-        let _captures = vec![mock_target];
+        let _captures = [mock_target];
 
         let plan = Plan::new(
             vec![CapId::new(1)],
@@ -651,7 +651,7 @@ mod tests {
 
         // Create a mock target that takes a long time
         let mock_target = Arc::new(MockRpcTarget::new());
-        let _captures = vec![mock_target];
+        let _captures = [mock_target];
 
         let plan = Plan::new(
             vec![CapId::new(1)],

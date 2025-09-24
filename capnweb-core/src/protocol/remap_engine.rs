@@ -240,7 +240,7 @@ impl RemapEngine {
             Expression::String(s) if s.starts_with('$') => {
                 if let Ok(index) = s[1..].parse::<usize>() {
                     if let Some(captured_value) = context.get_capture(index) {
-                        Ok(self.value_to_expression(captured_value))
+                        Ok(Self::value_to_expression(captured_value))
                     } else {
                         Err(RemapError::InvalidCaptureReference(index))
                     }
@@ -274,20 +274,20 @@ impl RemapEngine {
     }
 
     /// Convert a value back to an expression for evaluation
-    fn value_to_expression(&self, value: &Value) -> Expression {
+    fn value_to_expression(value: &Value) -> Expression {
         match value {
             Value::Null => Expression::Null,
             Value::Bool(b) => Expression::Bool(*b),
             Value::Number(n) => Expression::Number(n.clone()),
             Value::String(s) => Expression::String(s.clone()),
             Value::Array(arr) => {
-                let elements = arr.iter().map(|v| self.value_to_expression(v)).collect();
+                let elements = arr.iter().map(|v| Self::value_to_expression(v)).collect();
                 Expression::Array(elements)
             }
             Value::Object(obj) => {
                 let mut map = std::collections::HashMap::new();
                 for (key, val) in obj {
-                    map.insert(key.clone(), Box::new(self.value_to_expression(val)));
+                    map.insert(key.clone(), Box::new(Self::value_to_expression(val)));
                 }
                 Expression::Object(map)
             }
