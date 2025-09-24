@@ -14,7 +14,9 @@ export default defineConfig({
     'src/tier2-websocket-tests.ts',
     'src/tier3-complex-applications.ts',
     'src/tier3-websocket-advanced.ts',
-    'src/cross-transport-interop.ts'
+    'src/cross-transport-interop.ts',
+    'src/tier3-extreme-stress.ts',
+    'src/tier3-capability-composition.ts'
   ],
   format: ['esm'],
   dts: false,
