@@ -4,22 +4,23 @@
 use super::expression::Expression;
 use super::tables::{Value, ImportTable, ExportTable};
 use super::ids::{ImportId, ExportId};
+use super::remap_engine::{RemapEngine, RemapError};
 use std::sync::Arc;
 use std::future::Future;
 use std::pin::Pin;
 
 /// Expression evaluator context
 pub struct ExpressionEvaluator {
-    #[allow(dead_code)] // TODO: Use these when evaluation is implemented
     imports: Arc<ImportTable>,
-    #[allow(dead_code)] // TODO: Use these when evaluation is implemented
     exports: Arc<ExportTable>,
+    remap_engine: RemapEngine,
 }
 
 impl ExpressionEvaluator {
     /// Create a new expression evaluator
     pub fn new(imports: Arc<ImportTable>, exports: Arc<ExportTable>) -> Self {
-        Self { imports, exports }
+        let remap_engine = RemapEngine::new(imports.clone(), exports.clone());
+        Self { imports, exports, remap_engine }
     }
 
     /// Evaluate an expression to produce a value
@@ -53,8 +54,26 @@ impl ExpressionEvaluator {
                     Ok(Value::Error(err.error_type, err.message, err.stack))
                 }
 
-                // TODO: Implement import, pipeline, remap, export, promise evaluation
-                _ => Err(EvaluatorError::NotImplemented),
+                Expression::EscapedArray(elements) => {
+                    // Escaped arrays are just regular arrays in evaluation
+                    let mut values = Vec::new();
+                    for elem in elements {
+                        values.push(self.evaluate(elem).await?);
+                    }
+                    Ok(Value::Array(values))
+                }
+
+                Expression::Remap(remap) => {
+                    // Execute remap using the remap engine
+                    self.remap_engine.execute_remap(&remap, self).await
+                        .map_err(EvaluatorError::RemapError)
+                }
+
+                // TODO: Implement import, pipeline, export, promise evaluation
+                Expression::Import(_) => Err(EvaluatorError::NotImplemented),
+                Expression::Pipeline(_) => Err(EvaluatorError::NotImplemented),
+                Expression::Export(_) => Err(EvaluatorError::NotImplemented),
+                Expression::Promise(_) => Err(EvaluatorError::NotImplemented),
             }
         })
     }
@@ -73,4 +92,7 @@ pub enum EvaluatorError {
 
     #[error("Invalid operation")]
     InvalidOperation,
+
+    #[error("Remap execution error: {0}")]
+    RemapError(#[from] RemapError),
 }

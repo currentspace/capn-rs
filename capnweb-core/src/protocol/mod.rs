@@ -10,6 +10,8 @@ pub mod evaluator;
 pub mod tables;
 pub mod session;
 pub mod pipeline;
+pub mod remap_engine;
+pub mod variable_state;
 
 #[cfg(test)]
 mod tests;
@@ -22,3 +24,5 @@ pub use evaluator::*;
 pub use tables::*;
 pub use session::*;
 pub use pipeline::*;
+pub use remap_engine::*;
+pub use variable_state::*;
