@@ -7,24 +7,22 @@ use capnweb_core::{
     Plan, Op, Source,
     il::{CallOp, ObjectOp, ArrayOp, CaptureRef, ResultRef, ParamRef, ValueRef},
     protocol::{
-        resume_tokens::{ResumeTokenManager, PersistentSessionManager, SessionSnapshot, ResumeToken},
+        resume_tokens::{ResumeTokenManager, PersistentSessionManager, ResumeToken},
         nested_capabilities::{
             CapabilityGraph,
             CapabilityFactory as CapabilityFactoryTrait,
             CapabilityError,
             CapabilityMetadata, MethodMetadata, ParameterMetadata
         },
-        il_runner::{PlanRunner, PlanBuilder, ExecutionContext},
-        ids::{IdAllocator, ImportId, ExportId},
+        il_runner::PlanRunner,
+        ids::IdAllocator,
         tables::{ImportTable, ExportTable},
     }
 };
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{RwLock, Mutex};
-use tokio::time::Duration;
 use chrono::Utc;
 
 /// Session state for resume tokens
@@ -33,6 +31,7 @@ struct SessionState {
     variables: HashMap<String, Value>,
     operations: Vec<String>,
     last_result: Option<Value>,
+    #[allow(dead_code)]
     created_at: i64,
     last_accessed: i64,
 }
@@ -321,7 +320,7 @@ impl AdvancedCapability {
         use rand::RngCore;
         let secret_key = config.secret_key.unwrap_or_else(|| {
             let mut key = vec![0u8; 32];
-            rand::thread_rng().fill_bytes(&mut key);
+            rand::rng().fill_bytes(&mut key);
             key
         });
 

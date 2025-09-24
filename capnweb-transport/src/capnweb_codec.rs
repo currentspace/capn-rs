@@ -1,5 +1,5 @@
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use capnweb_core::protocol::{Message, Expression};
+use bytes::{Buf, BufMut, BytesMut};
+use capnweb_core::protocol::Message;
 use serde_json;
 use std::io;
 use tokio_util::codec::{Decoder, Encoder};
