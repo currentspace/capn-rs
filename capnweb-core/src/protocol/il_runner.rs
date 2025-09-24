@@ -504,6 +504,26 @@ mod tests {
     use serde_json::json;
     use std::collections::BTreeMap;
 
+    // Helper to convert serde_json::Value to tables::Value
+    fn json_to_value(json: serde_json::Value) -> Value {
+        match json {
+            serde_json::Value::Null => Value::Null,
+            serde_json::Value::Bool(b) => Value::Bool(b),
+            serde_json::Value::Number(n) => Value::Number(n),
+            serde_json::Value::String(s) => Value::String(s),
+            serde_json::Value::Array(arr) => {
+                Value::Array(arr.into_iter().map(json_to_value).collect())
+            }
+            serde_json::Value::Object(obj) => {
+                let mut map = HashMap::new();
+                for (k, v) in obj {
+                    map.insert(k, Box::new(json_to_value(v)));
+                }
+                Value::Object(map)
+            }
+        }
+    }
+
     #[tokio::test]
     async fn test_plan_runner_simple_call() {
         let imports = Arc::new(ImportTable::with_default_allocator());
@@ -524,7 +544,8 @@ mod tests {
             Source::result(0),
         );
 
-        let parameters = json!({});
+        let parameters = json_to_value(json!({}));
+        let captures: Vec<Arc<dyn RpcTarget>> = vec![Arc::new(MockRpcTarget::new())];
         let result = runner.execute_plan(&plan, parameters, captures).await;
 
         assert!(result.is_ok());
@@ -634,7 +655,8 @@ mod tests {
             Source::result(0),
         );
 
-        let parameters = json!({});
+        let parameters = json_to_value(json!({}));
+        let captures: Vec<Arc<dyn RpcTarget>> = vec![Arc::new(MockRpcTarget::new())];
         let result = runner.execute_plan(&plan, parameters, captures).await;
 
         // This test might not fail with the mock target, but demonstrates the timeout structure

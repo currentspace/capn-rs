@@ -121,7 +121,7 @@ impl ResumeTokenManager {
     ) -> Result<SessionSnapshot, ResumeTokenError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("System time should be after UNIX epoch")
             .as_secs();
 
         // Extract import table state
@@ -167,7 +167,7 @@ impl ResumeTokenManager {
     ) -> Result<ResumeToken, ResumeTokenError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("System time should be after UNIX epoch")
             .as_secs();
 
         let expires_at = now + self.default_ttl;
@@ -205,7 +205,7 @@ impl ResumeTokenManager {
     ) -> Result<SessionSnapshot, ResumeTokenError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("System time should be after UNIX epoch")
             .as_secs();
 
         // Check expiration
@@ -394,7 +394,7 @@ impl PersistentSessionManager {
     pub async fn cleanup_expired_sessions(&self) -> usize {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("System time should be after UNIX epoch")
             .as_secs();
 
         let mut sessions = self.active_sessions.write().await;

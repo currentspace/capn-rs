@@ -131,7 +131,7 @@ impl RemapEngine {
                         Value::Object(obj) => {
                             if let Some(val) = obj.get(prop) {
                                 owned_value = Some((**val).clone());
-                                current = owned_value.as_ref().unwrap();
+                                current = owned_value.as_ref().expect("Just set owned_value to Some");
                             } else {
                                 return Err(RemapError::PropertyNotFound(prop.clone()));
                             }
@@ -144,7 +144,7 @@ impl RemapEngine {
                         Value::Array(arr) => {
                             if *index < arr.len() {
                                 owned_value = Some(arr[*index].clone());
-                                current = owned_value.as_ref().unwrap();
+                                current = owned_value.as_ref().expect("Just set owned_value to Some");
                             } else {
                                 return Err(RemapError::IndexOutOfBounds(*index));
                             }

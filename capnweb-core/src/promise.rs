@@ -92,7 +92,7 @@ impl PromiseDependencyGraph {
         // Calculate in-degrees
         // In-degree = number of dependencies this node has
         for (promise, deps) in &self.dependencies {
-            *in_degree.get_mut(promise).unwrap() = deps.len();
+            *in_degree.get_mut(promise).expect("Promise should exist in in_degree map") = deps.len();
         }
 
         // Find all nodes with in-degree 0 (no dependencies)
@@ -109,7 +109,7 @@ impl PromiseDependencyGraph {
             // For each promise that depends on this one
             if let Some(dependents) = self.dependents.get(&promise) {
                 for &dependent in dependents {
-                    let degree = in_degree.get_mut(&dependent).unwrap();
+                    let degree = in_degree.get_mut(&dependent).expect("Dependent should exist in in_degree map");
                     *degree -= 1;
                     if *degree == 0 {
                         queue.push(dependent);
