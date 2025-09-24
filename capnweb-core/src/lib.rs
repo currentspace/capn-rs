@@ -29,7 +29,6 @@ pub use protocol::{
 
 // RPC Target trait for capability implementations
 use async_trait::async_trait;
-use std::sync::Arc;
 
 #[async_trait]
 pub trait RpcTarget: Send + Sync + std::fmt::Debug {

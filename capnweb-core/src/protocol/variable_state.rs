@@ -285,19 +285,19 @@ impl DefaultVariableCapableTarget {
 impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
     async fn set_variable(&self, name: String, value: Value) -> Result<Value, crate::RpcError> {
         let result = self.variable_manager.set_variable(name, value).await
-            .map_err(|e| crate::RpcError::bad_request(&e.to_string()))?;
+            .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(Value::Bool(result))
     }
 
     async fn get_variable(&self, name: String) -> Result<Value, crate::RpcError> {
         let value = self.variable_manager.get_variable(&name).await
-            .map_err(|e| crate::RpcError::bad_request(&e.to_string()))?;
+            .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(value)
     }
 
     async fn clear_all_variables(&self) -> Result<Value, crate::RpcError> {
         let result = self.variable_manager.clear_all_variables().await
-            .map_err(|e| crate::RpcError::bad_request(&e.to_string()))?;
+            .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(Value::Bool(result))
     }
 

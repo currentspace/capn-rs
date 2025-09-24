@@ -193,12 +193,9 @@ impl ImportTable {
     /// Update a promise import to resolved state
     pub fn resolve_promise(&self, id: ImportId, value: Value) -> Result<(), TableError> {
         self.entries.alter(&id, |_key, mut entry| {
-            match &mut entry.value {
-                ImportValue::Promise(_promise) => {
-                    // Update to resolved value
-                    entry.value = ImportValue::Value(value);
-                }
-                _ => {}
+            if let ImportValue::Promise(_promise) = &mut entry.value {
+                // Update to resolved value
+                entry.value = ImportValue::Value(value);
             }
             entry
         });

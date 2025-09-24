@@ -4,16 +4,13 @@ use std::io::{self, Read, Write};
 use bytes::{Bytes, BytesMut, BufMut};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default)]
 pub enum FrameFormat {
     LengthPrefixed,
+    #[default]
     NewlineDelimited,
 }
 
-impl Default for FrameFormat {
-    fn default() -> Self {
-        FrameFormat::NewlineDelimited
-    }
-}
 
 pub fn encode_message(msg: &Message) -> Result<Bytes, RpcError> {
     let json = serde_json::to_vec(msg)?;
@@ -149,8 +146,8 @@ pub mod simd {
         Ok(Bytes::from(json))
     }
 
-    pub fn decode_message_simd(mut data: &[u8]) -> Result<Message, RpcError> {
-        let msg = simd_json::from_slice(&mut data)
+    pub fn decode_message_simd(data: &mut [u8]) -> Result<Message, RpcError> {
+        let msg = simd_json::from_slice(data)
             .map_err(|e| RpcError::bad_request(format!("SIMD JSON decode error: {}", e)))?;
         Ok(msg)
     }

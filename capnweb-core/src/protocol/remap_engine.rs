@@ -18,6 +18,12 @@ pub struct RemapContext {
     context_exports: HashMap<ExportId, Value>,
 }
 
+impl Default for RemapContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RemapContext {
     pub fn new() -> Self {
         Self {

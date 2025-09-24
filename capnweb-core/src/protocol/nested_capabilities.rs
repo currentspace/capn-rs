@@ -1,8 +1,7 @@
 // Nested Capability Creation for Cap'n Web Protocol
 // Enables dynamic capability graphs and advanced capability composition patterns
 
-use super::tables::{Value, StubReference};
-use super::ids::{ImportId, ExportId};
+use super::tables::Value;
 use crate::RpcTarget;
 use std::collections::HashMap;
 use std::sync::Arc;

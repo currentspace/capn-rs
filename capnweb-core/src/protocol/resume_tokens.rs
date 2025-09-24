@@ -1,8 +1,8 @@
 // Resume Tokens for Cap'n Web Protocol Session Recovery
 // Enables session suspension and resumption with full state preservation
 
-use super::tables::{Value, ImportValue, ExportValue, ImportTable, ExportTable};
-use super::ids::{ImportId, ExportId, IdAllocator};
+use super::tables::{Value, ImportTable, ExportTable};
+use super::ids::IdAllocator;
 use super::variable_state::VariableStateManager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -125,7 +125,7 @@ impl ResumeTokenManager {
             .as_secs();
 
         // Extract import table state
-        let mut serializable_imports = HashMap::new();
+        let serializable_imports = HashMap::new();
 
         // Note: In a real implementation, we'd iterate over the actual import table
         // For now, we'll create a minimal snapshot structure

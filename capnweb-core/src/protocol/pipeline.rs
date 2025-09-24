@@ -5,7 +5,6 @@ use super::ids::ImportId;
 use super::tables::Value;
 use super::expression::{Expression, PropertyKey};
 use dashmap::DashMap;
-use std::sync::Arc;
 
 /// Pipeline manager for promise pipelining
 pub struct PipelineManager {
@@ -30,7 +29,7 @@ impl PipelineManager {
         let result_id = operation.result_id;
 
         self.pipelines.entry(base_id)
-            .or_insert_with(PipelineState::new)
+            .or_default()
             .add_operation(operation);
 
         result_id
@@ -70,6 +69,12 @@ impl Default for PipelineManager {
 #[derive(Debug)]
 pub struct PipelineState {
     operations: Vec<PipelineOperation>,
+}
+
+impl Default for PipelineState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PipelineState {

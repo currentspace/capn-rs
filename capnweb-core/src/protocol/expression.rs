@@ -208,7 +208,7 @@ impl ImportExpression {
             .ok_or(ExpressionError::InvalidImport)?;
 
         let property_path = arr.get(2)
-            .map(|v| PropertyKey::parse_path(v))
+            .map(PropertyKey::parse_path)
             .transpose()?;
 
         let call_arguments = arr.get(3)
@@ -257,7 +257,7 @@ impl PipelineExpression {
             .ok_or(ExpressionError::InvalidPipeline)?;
 
         let property_path = arr.get(2)
-            .map(|v| PropertyKey::parse_path(v))
+            .map(PropertyKey::parse_path)
             .transpose()?;
 
         let call_arguments = arr.get(3)

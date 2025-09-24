@@ -2,13 +2,11 @@
 // Executes complex instruction sequences with capability composition
 
 use super::tables::{Value, ImportTable, ExportTable};
-use super::ids::{ImportId, ExportId};
 use crate::CapId;
 use crate::il::{Plan, Op, Source, CallOp, ObjectOp, ArrayOp};
 use crate::{RpcTarget, RpcError};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use serde_json::Number;
 
 /// Plan execution context containing runtime state
@@ -312,17 +310,14 @@ impl PlanRunner {
             Source::Result { result } => {
                 // Check if the result is a capability reference
                 let value = context.get_source_value(source).await?;
-                match value {
-                    Value::Object(obj) => {
-                        if let Some(cap_ref) = obj.get("$cap") {
-                            if let Value::Number(n) = cap_ref.as_ref() {
-                                if let Some(cap_index) = n.as_u64() {
-                                    return context.get_capability(cap_index as u32);
-                                }
+                if let Value::Object(obj) = value {
+                    if let Some(cap_ref) = obj.get("$cap") {
+                        if let Value::Number(n) = cap_ref.as_ref() {
+                            if let Some(cap_index) = n.as_u64() {
+                                return context.get_capability(cap_index as u32);
                             }
                         }
                     }
-                    _ => {}
                 }
                 Err(PlanExecutionError::InvalidTarget("Result is not a capability".to_string()))
             }

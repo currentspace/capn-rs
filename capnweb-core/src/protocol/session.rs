@@ -18,6 +18,12 @@ pub struct RpcSession {
     pub evaluator: Arc<Mutex<ExpressionEvaluator>>,
 }
 
+impl Default for RpcSession {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RpcSession {
     /// Create a new RPC session
     pub fn new() -> Self {
@@ -87,11 +93,11 @@ impl RpcSession {
 
     /// Send a push message
     pub async fn push(&self, _expr: Expression) -> ImportId {
-        let import_id = self.imports.allocate_local();
+        
 
         // TODO: Send push message over transport
 
-        import_id
+        self.imports.allocate_local()
     }
 
     /// Send a pull message

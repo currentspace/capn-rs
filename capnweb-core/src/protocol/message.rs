@@ -53,7 +53,7 @@ impl Message {
                     return Err(MessageError::InvalidPull);
                 }
                 let import_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidImportId)? as i64;
+                    .ok_or(MessageError::InvalidImportId)?;
                 Ok(Message::Pull(ImportId(import_id)))
             }
 
@@ -62,7 +62,7 @@ impl Message {
                     return Err(MessageError::InvalidResolve);
                 }
                 let export_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidExportId)? as i64;
+                    .ok_or(MessageError::InvalidExportId)?;
                 let expr = Expression::from_json(&arr[2])?;
                 Ok(Message::Resolve(ExportId(export_id), expr))
             }
@@ -72,7 +72,7 @@ impl Message {
                     return Err(MessageError::InvalidReject);
                 }
                 let export_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidExportId)? as i64;
+                    .ok_or(MessageError::InvalidExportId)?;
                 let expr = Expression::from_json(&arr[2])?;
                 Ok(Message::Reject(ExportId(export_id), expr))
             }
@@ -82,7 +82,7 @@ impl Message {
                     return Err(MessageError::InvalidRelease);
                 }
                 let import_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidImportId)? as i64;
+                    .ok_or(MessageError::InvalidImportId)?;
                 let refcount = arr[2].as_u64()
                     .ok_or(MessageError::InvalidRefcount)? as u32;
                 Ok(Message::Release(ImportId(import_id), refcount))
