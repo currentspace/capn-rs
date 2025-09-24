@@ -221,7 +221,7 @@ impl RemapEngine {
             tracing::debug!("Executing instruction {}: {:?}", i, instruction);
 
             // Replace capture references in the instruction
-            let resolved_instruction = self.resolve_instruction_captures(instruction, context)?;
+            let resolved_instruction = Self::resolve_instruction_captures(instruction, context)?;
 
             // Evaluate the instruction
             result = evaluator.evaluate(resolved_instruction).await
@@ -234,7 +234,7 @@ impl RemapEngine {
     }
 
     /// Resolve capture references within an instruction
-    fn resolve_instruction_captures(&self, instruction: &Expression, context: &RemapContext) -> Result<Expression, RemapError> {
+    fn resolve_instruction_captures(instruction: &Expression, context: &RemapContext) -> Result<Expression, RemapError> {
         match instruction {
             // Handle special capture reference syntax (e.g., $0, $1, etc.)
             Expression::String(s) if s.starts_with('$') => {
@@ -253,7 +253,7 @@ impl RemapEngine {
             Expression::Array(elements) => {
                 let resolved_elements: Result<Vec<Expression>, RemapError> = elements
                     .iter()
-                    .map(|elem| self.resolve_instruction_captures(elem, context))
+                    .map(|elem| Self::resolve_instruction_captures(elem, context))
                     .collect();
                 Ok(Expression::Array(resolved_elements?))
             }
@@ -262,7 +262,7 @@ impl RemapEngine {
             Expression::Object(obj) => {
                 let mut resolved_obj = std::collections::HashMap::new();
                 for (key, value) in obj {
-                    let resolved_value = self.resolve_instruction_captures(value, context)?;
+                    let resolved_value = Self::resolve_instruction_captures(value, context)?;
                     resolved_obj.insert(key.clone(), Box::new(resolved_value));
                 }
                 Ok(Expression::Object(resolved_obj))
@@ -281,7 +281,7 @@ impl RemapEngine {
             Value::Number(n) => Expression::Number(n.clone()),
             Value::String(s) => Expression::String(s.clone()),
             Value::Array(arr) => {
-                let elements = arr.iter().map(|v| Self::value_to_expression(v)).collect();
+                let elements = arr.iter().map(Self::value_to_expression).collect();
                 Expression::Array(elements)
             }
             Value::Object(obj) => {

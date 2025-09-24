@@ -43,7 +43,7 @@ impl ExecutionContext {
             serde_json::Value::String(s) => Value::String(s),
             serde_json::Value::Array(arr) => {
                 Value::Array(arr.into_iter()
-                    .map(|v| Self::convert_serde_json_value_to_tables_value(v))
+                    .map(Self::convert_serde_json_value_to_tables_value)
                     .collect())
             },
             serde_json::Value::Object(obj) => {
