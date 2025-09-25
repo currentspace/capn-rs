@@ -35,6 +35,14 @@ pub fn wire_expr_to_value(expr: &WireExpression) -> Value {
                     .collect()
             )
         }
+        WireExpression::CapRef(id) => {
+            // Marshal capability reference as special JSON object
+            // This follows TypeScript implementation pattern
+            serde_json::json!({
+                "_type": "capability",
+                "id": id
+            })
+        }
         _ => {
             warn!("Unsupported WireExpression type: {:?}", expr);
             Value::String(format!("Unsupported: {:?}", expr))
@@ -53,6 +61,16 @@ pub fn value_to_wire_expr(value: Value) -> WireExpression {
             WireExpression::Array(items.into_iter().map(value_to_wire_expr).collect())
         }
         Value::Object(map) => {
+            // Check if this is a capability reference
+            if let (Some(type_val), Some(id_val)) = (map.get("_type"), map.get("id")) {
+                if type_val.as_str() == Some("capability") {
+                    if let Some(id) = id_val.as_i64() {
+                        return WireExpression::CapRef(id);
+                    }
+                }
+            }
+
+            // Regular object
             WireExpression::Object(
                 map.into_iter()
                     .map(|(k, v)| (k, value_to_wire_expr(v)))

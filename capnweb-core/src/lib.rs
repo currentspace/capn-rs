@@ -30,6 +30,7 @@ pub use protocol::{
     wire::{WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch},
     ids::{ImportId, ExportId},
     tables::{ImportTable, ExportTable, Value},
+    capability_registry::{CapabilityRegistry, RegistrableCapability},
 };
 
 // Legacy protocol types
@@ -40,6 +41,7 @@ pub use protocol::{
 
 // RPC Target trait for capability implementations
 use async_trait::async_trait;
+pub use async_trait::async_trait;
 
 #[async_trait]
 pub trait RpcTarget: Send + Sync + std::fmt::Debug {

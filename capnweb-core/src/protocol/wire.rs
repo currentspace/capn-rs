@@ -73,6 +73,9 @@ pub enum WireExpression {
 
     /// ["remap", plan]
     Remap(JsonValue), // IL plan, keep as raw JSON for now
+
+    /// ["capref", id] - Reference to a capability for marshaling
+    CapRef(i64),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -307,6 +310,15 @@ impl WireExpression {
                             Ok(WireExpression::Remap(arr[1].clone()))
                         }
 
+                        "capref" => {
+                            if arr.len() != 2 {
+                                return Err("capref requires exactly 2 elements".into());
+                            }
+                            let id = arr[1].as_i64()
+                                .ok_or("capref ID must be integer")?;
+                            Ok(WireExpression::CapRef(id))
+                        }
+
                         _ => {
                             // Not a special form, just a regular array
                             let items = arr.iter()
@@ -424,6 +436,13 @@ impl WireExpression {
                 JsonValue::Array(vec![
                     JsonValue::String("remap".into()),
                     plan.clone()
+                ])
+            }
+
+            WireExpression::CapRef(id) => {
+                JsonValue::Array(vec![
+                    JsonValue::String("capref".into()),
+                    JsonValue::Number(Number::from(*id))
                 ])
             }
         }
@@ -567,5 +586,57 @@ mod tests {
 
         let response_str = serialize_wire_batch(&[server_response]);
         assert_eq!(response_str, r#"["resolve",1,8]"#);
+    }
+
+    #[test]
+    fn test_capref_wire_expression() {
+        // Test CapRef parsing and serialization
+        let input = r#"["capref",42]"#;
+        let json: JsonValue = serde_json::from_str(input).unwrap();
+        let expr = WireExpression::from_json(&json).unwrap();
+
+        match expr {
+            WireExpression::CapRef(id) => assert_eq!(id, 42),
+            _ => panic!("Expected CapRef expression")
+        }
+
+        // Test serialization
+        let serialized = expr.to_json();
+        let expected = serde_json::json!(["capref", 42]);
+        assert_eq!(serialized, expected);
+    }
+
+    #[test]
+    fn test_capability_passing_in_args() {
+        // Test capability references passed as arguments
+        let input = r#"["push",["pipeline",0,["method"],[["capref",5],"regular_arg"]]]"#;
+        let json: JsonValue = serde_json::from_str(input).unwrap();
+        let arr = json.as_array().unwrap();
+        let msg = WireMessage::from_json_array(arr).unwrap();
+
+        match msg {
+            WireMessage::Push(WireExpression::Pipeline { import_id, property_path, args }) => {
+                assert_eq!(import_id, 0);
+                assert_eq!(property_path, Some(vec![PropertyKey::String("method".into())]));
+
+                if let Some(args_expr) = args {
+                    match args_expr.as_ref() {
+                        WireExpression::Array(items) => {
+                            assert_eq!(items.len(), 2);
+                            match &items[0] {
+                                WireExpression::CapRef(id) => assert_eq!(*id, 5),
+                                _ => panic!("Expected first arg to be CapRef")
+                            }
+                            match &items[1] {
+                                WireExpression::String(s) => assert_eq!(s, "regular_arg"),
+                                _ => panic!("Expected second arg to be string")
+                            }
+                        }
+                        _ => panic!("Expected args to be array")
+                    }
+                }
+            }
+            _ => panic!("Expected Push with Pipeline")
+        }
     }
 }

@@ -19,6 +19,7 @@ pub mod variable_state;
 pub mod il_runner;
 pub mod nested_capabilities;
 pub mod resume_tokens;
+pub mod capability_registry;
 
 #[cfg(test)]
 mod tests;
@@ -44,6 +45,7 @@ pub use variable_state::*;
 pub use il_runner::*;
 pub use nested_capabilities::*;
 pub use resume_tokens::*;
+pub use capability_registry::*;
 
 // Re-export PropertyKey as the primary one (wire format)
 pub use wire::PropertyKey;
