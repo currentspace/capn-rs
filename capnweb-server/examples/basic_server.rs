@@ -3,10 +3,15 @@ use capnweb_core::{CapId, RpcError};
 use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
+use std::collections::HashMap;
+use tokio::sync::RwLock;
 use tracing::{info, debug};
 
-/// A simple calculator capability
-struct Calculator;
+/// A stateful calculator capability with variable storage
+struct Calculator {
+    /// Storage for variables (name -> value)
+    variables: Arc<RwLock<HashMap<String, f64>>>,
+}
 
 #[async_trait]
 impl RpcTarget for Calculator {
@@ -62,6 +67,48 @@ impl RpcTarget for Calculator {
                     return Err(RpcError::bad_request("Division by zero"));
                 }
                 Ok(json!(a / b))
+            }
+            "setVariable" => {
+                if args.len() != 2 {
+                    return Err(RpcError::bad_request("setVariable requires exactly 2 arguments: name and value"));
+                }
+                let name = args[0]
+                    .as_str()
+                    .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
+                let value = args[1]
+                    .as_f64()
+                    .ok_or_else(|| RpcError::bad_request("Variable value must be a number"))?;
+
+                let mut variables = self.variables.write().await;
+                variables.insert(name.to_string(), value);
+                Ok(json!(value))
+            }
+            "getVariable" => {
+                if args.len() != 1 {
+                    return Err(RpcError::bad_request("getVariable requires exactly 1 argument: name"));
+                }
+                let name = args[0]
+                    .as_str()
+                    .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
+
+                let variables = self.variables.read().await;
+                match variables.get(name) {
+                    Some(&value) => Ok(json!(value)),
+                    None => Err(RpcError::not_found(format!("Variable '{}' not found", name))),
+                }
+            }
+            "clearAllVariables" => {
+                if !args.is_empty() {
+                    return Err(RpcError::bad_request("clearAllVariables requires no arguments"));
+                }
+
+                let mut variables = self.variables.write().await;
+                let count = variables.len();
+                variables.clear();
+                Ok(json!({
+                    "cleared": count,
+                    "message": format!("Cleared {} variables", count)
+                }))
             }
             _ => Err(RpcError::not_found(format!(
                 "Method '{}' not found on Calculator",
@@ -122,14 +169,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server = Server::new(config);
 
     // Register capabilities
-    let calculator = Arc::new(Calculator);
+    let calculator = Arc::new(Calculator {
+        variables: Arc::new(RwLock::new(HashMap::new())),
+    });
     let echo = Arc::new(EchoService);
 
     server.register_capability(CapId::new(1), calculator);
     server.register_capability(CapId::new(2), echo);
 
     println!("Starting Cap'n Web server with the following capabilities:");
-    println!("  - Calculator (ID: 1) - Methods: add, subtract, multiply, divide");
+    println!("  - Calculator (ID: 1) - Methods: add, subtract, multiply, divide, setVariable, getVariable, clearAllVariables");
     println!("  - EchoService (ID: 2) - Methods: echo, reverse");
     println!();
     println!("Example request:");
