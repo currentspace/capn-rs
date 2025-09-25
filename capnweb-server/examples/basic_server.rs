@@ -110,6 +110,54 @@ impl RpcTarget for Calculator {
                     "message": format!("Cleared {} variables", count)
                 }))
             }
+            "getAsyncProcessor" => {
+                if !args.is_empty() {
+                    return Err(RpcError::bad_request("getAsyncProcessor requires no arguments"));
+                }
+
+                // Return a mock async processor capability reference
+                // In a full implementation, this would return a capability reference
+                Ok(json!({
+                    "_type": "capability",
+                    "id": "async_processor_1",
+                    "methods": ["process_async", "get_operation_count"],
+                    "description": "Mock Async Processor capability"
+                }))
+            }
+            "getNested" => {
+                let operation_id = if args.is_empty() {
+                    "default_operation".to_string()
+                } else {
+                    args[0]
+                        .as_str()
+                        .unwrap_or("default_operation")
+                        .to_string()
+                };
+
+                // Return a mock nested capability reference
+                Ok(json!({
+                    "_type": "capability",
+                    "id": format!("nested_cap_{}", operation_id),
+                    "operation_id": operation_id,
+                    "methods": ["multiply_counter", "get_operation_id"],
+                    "description": "Mock Nested Capability"
+                }))
+            }
+            "createSubCalculator" => {
+                let calc_id = if args.is_empty() {
+                    "sub_calc_1".to_string()
+                } else {
+                    format!("sub_calc_{}", args[0].as_str().unwrap_or("1"))
+                };
+
+                // Return a mock sub-calculator capability reference
+                Ok(json!({
+                    "_type": "capability",
+                    "id": calc_id,
+                    "methods": ["add", "subtract", "multiply", "divide", "setVariable", "getVariable"],
+                    "description": "Mock Sub-Calculator capability"
+                }))
+            }
             _ => Err(RpcError::not_found(format!(
                 "Method '{}' not found on Calculator",
                 member
@@ -178,7 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     server.register_capability(CapId::new(2), echo);
 
     println!("Starting Cap'n Web server with the following capabilities:");
-    println!("  - Calculator (ID: 1) - Methods: add, subtract, multiply, divide, setVariable, getVariable, clearAllVariables");
+    println!("  - Calculator (ID: 1) - Methods: add, subtract, multiply, divide, setVariable, getVariable, clearAllVariables, getAsyncProcessor, getNested, createSubCalculator");
     println!("  - EchoService (ID: 2) - Methods: echo, reverse");
     println!();
     println!("Example request:");
