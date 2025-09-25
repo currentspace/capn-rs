@@ -12,6 +12,8 @@ pub mod lifecycle;
 pub mod logging;
 #[cfg(feature = "all-transports")]
 pub mod ws_h1;
+#[cfg(feature = "all-transports")]
+pub mod ws_wire;
 #[cfg(feature = "h3-server")]
 pub mod h3_server;
 pub mod capnweb_server;

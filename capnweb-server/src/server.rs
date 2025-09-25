@@ -74,7 +74,8 @@ impl Server {
         // Add WebSocket support if the feature is enabled
         #[cfg(feature = "all-transports")]
         {
-            app = app.route("/rpc/ws", get(crate::ws_h1::websocket_handler));
+            // Use the new wire protocol WebSocket handler
+            app = app.route("/rpc/ws", get(crate::ws_wire::websocket_wire_handler));
         }
 
         let app = app.with_state(Arc::new(self.clone()));
