@@ -2,11 +2,12 @@
 // This module adds wire protocol support to the existing server
 
 use serde_json::Value;
+use std::collections::HashMap;
 use capnweb_core::{
     WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch,
     CapId,
 };
-use tracing::{info, warn, error};
+use tracing::{info, warn, error, debug};
 
 /// Convert WireExpression arguments to JSON Values for RPC calls
 pub fn wire_expr_to_values(expr: &WireExpression) -> Vec<Value> {
@@ -15,6 +16,19 @@ pub fn wire_expr_to_values(expr: &WireExpression) -> Vec<Value> {
             items.iter().map(wire_expr_to_value).collect()
         }
         single => vec![wire_expr_to_value(single)]
+    }
+}
+
+/// Convert WireExpression arguments to JSON Values with pipeline evaluation
+pub fn wire_expr_to_values_with_evaluation(
+    expr: &WireExpression,
+    results: &HashMap<i64, WireExpression>
+) -> Vec<Value> {
+    match expr {
+        WireExpression::Array(items) => {
+            items.iter().map(|e| wire_expr_to_value_with_evaluation(e, results)).collect()
+        }
+        single => vec![wire_expr_to_value_with_evaluation(single, results)]
     }
 }
 
@@ -48,6 +62,65 @@ pub fn wire_expr_to_value(expr: &WireExpression) -> Value {
             Value::String(format!("Unsupported: {:?}", expr))
         }
     }
+}
+
+/// Convert a single WireExpression to a JSON Value with pipeline evaluation
+pub fn wire_expr_to_value_with_evaluation(
+    expr: &WireExpression,
+    results: &HashMap<i64, WireExpression>
+) -> Value {
+    match expr {
+        // Handle pipeline expressions by evaluating them
+        WireExpression::Pipeline { import_id, property_path, args: _ } => {
+            debug!("Evaluating pipeline: import_id={}, path={:?}", import_id, property_path);
+
+            // Look up the result for this import_id
+            if let Some(result_expr) = results.get(import_id) {
+                debug!("Found result for import_id {}: {:?}", import_id, result_expr);
+
+                // Navigate the property path if present
+                if let Some(path) = property_path {
+                    let result_value = wire_expr_to_value(result_expr);
+                    navigate_property_path(&result_value, path)
+                } else {
+                    // No path, return the whole result
+                    wire_expr_to_value(result_expr)
+                }
+            } else {
+                warn!("No result found for import_id {} during pipeline evaluation", import_id);
+                Value::Null
+            }
+        }
+        // For non-pipeline expressions, use the regular conversion
+        other => wire_expr_to_value(other)
+    }
+}
+
+/// Navigate a property path through a JSON value
+fn navigate_property_path(value: &Value, path: &[PropertyKey]) -> Value {
+    let mut current = value.clone();
+
+    for key in path {
+        match key {
+            PropertyKey::String(s) => {
+                if let Value::Object(map) = current {
+                    current = map.get(s).cloned().unwrap_or(Value::Null);
+                } else {
+                    return Value::Null;
+                }
+            }
+            PropertyKey::Number(n) => {
+                if let Value::Array(arr) = current {
+                    let index = *n;  // n is already a usize
+                    current = arr.get(index).cloned().unwrap_or(Value::Null);
+                } else {
+                    return Value::Null;
+                }
+            }
+        }
+    }
+
+    current
 }
 
 /// Convert a JSON Value back to WireExpression

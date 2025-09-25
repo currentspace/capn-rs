@@ -20,7 +20,7 @@ use tokio::net::TcpListener;
 use tracing::{info, warn, error};
 
 // Using wire protocol helper functions from the server_wire_handler module
-use crate::server_wire_handler::{wire_expr_to_values, value_to_wire_expr};
+use crate::server_wire_handler::{wire_expr_to_values, wire_expr_to_values_with_evaluation, value_to_wire_expr};
 
 #[async_trait]
 pub trait RpcTarget: Send + Sync {
@@ -173,9 +173,9 @@ async fn handle_batch(
                                         if let Some(PropertyKey::String(method)) = path.first() {
                                             tracing::info!("  Calling method '{}' on capability {}", method, cap_id);
 
-                                            // Convert args from WireExpression to Value
+                                            // Convert args from WireExpression to Value (with pipeline evaluation)
                                             let json_args = if let Some(args_expr) = args {
-                                                wire_expr_to_values(args_expr)
+                                                wire_expr_to_values_with_evaluation(args_expr, &session.results)
                                             } else {
                                                 vec![]
                                             };
