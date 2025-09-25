@@ -271,6 +271,6 @@ mod tests {
 
         // Verify it can be deserialized
         let deserialized = Message::from_json(&json).unwrap();
-        assert_eq!(format!("{:?}", msg), format!("{:?}", deserialized));
+        assert_eq!(msg, deserialized);
     }
 }

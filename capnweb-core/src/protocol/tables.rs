@@ -12,7 +12,7 @@ use crate::RpcTarget;
 type PromiseSender = Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>;
 
 /// Value that can be stored in tables
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Value {
     Null,
     Bool(bool),
@@ -53,8 +53,15 @@ impl StubReference {
     }
 }
 
+impl PartialEq for StubReference {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare by ID since Arc<dyn RpcTarget> can't be compared
+        self.id == other.id
+    }
+}
+
 /// Reference to a promise
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PromiseReference {
     pub id: String,
 }

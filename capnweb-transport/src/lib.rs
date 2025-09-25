@@ -11,6 +11,8 @@ pub mod negotiate;
 pub mod capnweb_codec;
 
 pub use transport::{RpcTransport, TransportError, TransportEvent};
+#[cfg(feature = "http-batch")]
+pub use http_batch::HttpBatchTransport;
 #[cfg(feature = "webtransport")]
 pub use webtransport::{WebTransportTransport, WebTransportClient, make_client_endpoint};
 #[cfg(feature = "http3")]

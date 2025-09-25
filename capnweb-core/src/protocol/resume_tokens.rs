@@ -478,8 +478,8 @@ mod tests {
 
         let token = manager.generate_token(snapshot).unwrap();
 
-        // Wait a moment for the token to expire
-        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        // Wait a moment for the token to expire (TTL is 0 seconds)
+        tokio::time::sleep(std::time::Duration::from_millis(1100)).await;
 
         let result = manager.parse_token(&token);
         assert!(matches!(result, Err(ResumeTokenError::TokenExpired)));

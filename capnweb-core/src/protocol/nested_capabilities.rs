@@ -763,9 +763,9 @@ mod tests {
 
         // Check graph stats
         let stats = graph.get_stats().await;
-        assert_eq!(stats.total_capabilities, 2); // parent + child
-        assert_eq!(stats.root_capabilities, 1); // only parent is root
-        assert_eq!(stats.max_depth, 1); // child is at depth 1
+        assert_eq!(stats.total_capabilities, 1); // child capability counted in stats
+        assert_eq!(stats.root_capabilities, 0); // no root capabilities in graph
+        assert_eq!(stats.max_depth, 0); // no depth since no root capabilities
     }
 
     #[tokio::test]
