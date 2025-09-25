@@ -832,7 +832,7 @@ async fn evaluate_expression(
                 if let Some(main) = &state.main_capability {
                     // Extract method name from property path
                     if let Some(path) = &import.property_path {
-                        if let Some(capnweb_core::protocol::PropertyKey::String(method)) = path.first() {
+                        if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) = path.first() {
                             // Extract call arguments
                             let args = if let Some(args_expr) = &import.call_arguments {
                                 extract_args(&**args_expr)?
@@ -858,7 +858,7 @@ async fn evaluate_expression(
                     ImportValue::Stub(stub_ref) => {
                         // Extract method name from property path
                         if let Some(path) = &pipeline.property_path {
-                            if let Some(capnweb_core::protocol::PropertyKey::String(method)) = path.first() {
+                            if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) = path.first() {
                                 // Extract call arguments
                                 let args = if let Some(args_expr) = &pipeline.call_arguments {
                                     extract_args(&**args_expr)?

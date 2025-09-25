@@ -4,9 +4,9 @@ async function testAdvancedStatefulServer() {
   console.log("\u{1F9EA} Testing Advanced Stateful Cap'n Web Rust Server");
   console.log("==================================================\n");
   try {
-    const session = newHttpBatchRpcSession("http://localhost:8080/rpc/batch");
+    const session = newHttpBatchRpcSession("http://localhost:8081/rpc/batch");
     console.log("\u2705 Created session with advanced stateful Rust server");
-    console.log("\u{1F4CD} Endpoint: http://localhost:8080/rpc/batch\n");
+    console.log("\u{1F4CD} Endpoint: http://localhost:8081/rpc/batch\n");
     console.log("Test 1: Global Counter Operations");
     console.log("==================================");
     try {
@@ -212,4 +212,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export {
   testAdvancedStatefulServer
 };
-//# sourceMappingURL=chunk-6WPWZAZW.js.map
+//# sourceMappingURL=chunk-U7DKOLR5.js.map

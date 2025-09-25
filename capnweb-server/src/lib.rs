@@ -1,3 +1,8 @@
+// Official Cap'n Web wire protocol server
+pub mod wire_server;
+pub mod server_wire_handler;
+
+// Legacy servers (TO BE REMOVED - only wire protocol should be used)
 pub mod server;
 pub mod cap_table;
 pub mod runner;
@@ -12,6 +17,10 @@ pub mod h3_server;
 pub mod capnweb_server;
 pub mod advanced_capability;
 
+// Primary exports: Official Cap'n Web wire protocol
+pub use wire_server::{WireServer, WireServerConfig, WireCapability, RpcTargetAdapter};
+
+// Legacy exports
 pub use server::{RpcTarget, ServerConfig, Server};
 pub use advanced_capability::{
     AdvancedCapability, AdvancedCapabilityBuilder, AdvancedCapabilityConfig

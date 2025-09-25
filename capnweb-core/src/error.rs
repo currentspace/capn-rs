@@ -13,6 +13,20 @@ pub enum ErrorCode {
     Internal,
 }
 
+impl fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ErrorCode::BadRequest => "bad_request",
+            ErrorCode::NotFound => "not_found",
+            ErrorCode::CapRevoked => "cap_revoked",
+            ErrorCode::PermissionDenied => "permission_denied",
+            ErrorCode::Canceled => "canceled",
+            ErrorCode::Internal => "internal",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RpcError {
     pub code: ErrorCode,

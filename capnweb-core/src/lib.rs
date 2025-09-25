@@ -19,12 +19,17 @@ pub use codec::{encode_message, decode_message};
 pub use il::{Source, Op, Plan};
 pub use promise::{ArgValue, ExtendedTarget, PromiseDependencyGraph, PendingPromise};
 
-// Re-export new protocol types
+// Re-export official Cap'n Web wire protocol (primary)
 pub use protocol::{
-    message::Message as CapnWebMessage,
-    expression::Expression,
+    wire::{WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch},
     ids::{ImportId, ExportId},
     tables::{ImportTable, ExportTable, Value},
+};
+
+// Legacy protocol types
+pub use protocol::{
+    message::Message as LegacyMessage,
+    expression::Expression,
 };
 
 // RPC Target trait for capability implementations

@@ -4,7 +4,7 @@ import {
 } from "./chunk-AN3UUTFI.js";
 import {
   testAdvancedStatefulServer
-} from "./chunk-6WPWZAZW.js";
+} from "./chunk-U7DKOLR5.js";
 
 // src/comprehensive-test-runner.ts
 import { spawn } from "child_process";
@@ -56,7 +56,7 @@ async function runTestWithMeasurement(name, testFn) {
 }
 async function checkServerHealth() {
   try {
-    const response = await fetch("http://localhost:8080/rpc/batch", {
+    const response = await fetch("http://localhost:8081/rpc/batch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify([])

@@ -30,43 +30,17 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
                     WsMessage::Text(text) => {
                         debug!("Received text message: {}", text);
 
-                        // Parse JSON message
-                        match serde_json::from_str::<Message>(&text) {
-                            Ok(message) => {
-                                debug!("Parsed message: {:?}", message);
+                        // LEGACY MESSAGE FORMAT - NOT SUPPORTED IN WIRE PROTOCOL
+                        // The official Cap'n Web protocol uses newline-delimited arrays only
+                        // WebSocket support will need to be reimplemented with wire protocol
+                        error!("WebSocket handler uses legacy Message format which is no longer supported");
+                        error!("Only the official Cap'n Web wire protocol (newline-delimited arrays) is supported");
 
-                                // Process the message using server's logic
-                                let response = server.process_message(message).await;
-                                debug!("Response: {:?}", response);
-
-                                // Serialize and send response as JSON text
-                                match serde_json::to_string(&response) {
-                                    Ok(response_json) => {
-                                        if let Err(e) = sender.send(WsMessage::Text(response_json)).await {
-                                            error!("Failed to send response: {}", e);
-                                            break;
-                                        }
-                                    }
-                                    Err(e) => {
-                                        error!("Failed to serialize response: {}", e);
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                error!("Failed to parse JSON message: {}", e);
-                                // Send error response
-                                let error_response = Message::result(
-                                    capnweb_core::CallId::new(0),
-                                    capnweb_core::Outcome::Error {
-                                        error: capnweb_core::RpcError::bad_request(
-                                            format!("Invalid JSON: {}", e)
-                                        )
-                                    }
-                                );
-                                if let Ok(error_json) = serde_json::to_string(&error_response) {
-                                    let _ = sender.send(WsMessage::Text(error_json)).await;
-                                }
-                            }
+                        // Send error response
+                        let error_msg = "WebSocket support requires wire protocol implementation";
+                        if let Err(e) = sender.send(WsMessage::Text(error_msg.to_string())).await {
+                            error!("Failed to send error response: {}", e);
+                            break;
                         }
                     }
                     WsMessage::Binary(data) => {

@@ -73,7 +73,7 @@ async function runTestWithMeasurement<T>(
 
 async function checkServerHealth(): Promise<boolean> {
     try {
-        const response = await fetch('http://localhost:8080/rpc/batch', {
+        const response = await fetch('http://localhost:8081/rpc/batch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify([])

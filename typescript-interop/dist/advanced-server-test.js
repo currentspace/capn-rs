@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {
   testAdvancedStatefulServer
-} from "./chunk-6WPWZAZW.js";
+} from "./chunk-U7DKOLR5.js";
 export {
   testAdvancedStatefulServer
 };

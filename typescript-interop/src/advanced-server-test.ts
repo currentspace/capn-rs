@@ -34,10 +34,10 @@ async function testAdvancedStatefulServer() {
 
     try {
         // Create a session with the advanced Rust server
-        const session = newHttpBatchRpcSession<CounterService>('http://localhost:8080/rpc/batch');
+        const session = newHttpBatchRpcSession<CounterService>('http://localhost:8081/rpc/batch');
 
         console.log('✅ Created session with advanced stateful Rust server');
-        console.log('📍 Endpoint: http://localhost:8080/rpc/batch\n');
+        console.log('📍 Endpoint: http://localhost:8081/rpc/batch\n');
 
         // Test 1: Global counter operations
         console.log('Test 1: Global Counter Operations');

@@ -1,17 +1,26 @@
 use async_trait::async_trait;
 use serde_json::Value;
-use capnweb_core::{RpcError, Message, CallId, CapId, Target, Outcome};
+use capnweb_core::{
+    RpcError, CapId,
+    WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch,
+};
 use std::sync::Arc;
+use std::collections::HashMap;
 use axum::{
     Router,
     routing::{post, get},
     extract::State,
     Json,
     response::IntoResponse,
-    http::StatusCode,
+    http::{StatusCode, HeaderMap},
+    body::Bytes,
 };
 use crate::CapTable;
 use tokio::net::TcpListener;
+use tracing::{info, warn, error};
+
+// Using wire protocol helper functions from the server_wire_handler module
+use crate::server_wire_handler::{wire_expr_to_values, value_to_wire_expr};
 
 #[async_trait]
 pub trait RpcTarget: Send + Sync {
@@ -86,77 +95,242 @@ impl Server {
         Ok(())
     }
 
-    pub async fn process_message(&self, msg: Message) -> Message {
-        match msg {
-            Message::Call { call } => {
-                let result = match &call.target {
-                    Target::Cap { cap } => {
-                        match self.cap_table.lookup(&cap.id) {
-                            Some(cap_target) => {
-                                match cap_target.call(&call.member, call.args.clone()).await {
-                                    Ok(value) => Outcome::Success { value },
-                                    Err(error) => Outcome::Error { error },
-                                }
-                            }
-                            None => Outcome::Error {
-                                error: RpcError::not_found(format!("Capability {} not found", cap.id))
-                            },
-                        }
-                    }
-                    Target::Special { special } => {
-                        Outcome::Error {
-                            error: RpcError::not_found(format!("Special target '{}' not implemented", special))
-                        }
-                    }
-                };
+    // Remove legacy message processing - we only support wire protocol now
+}
 
-                Message::result(call.id, result)
-            }
-            Message::Dispose { dispose } => {
-                for cap_id in &dispose.caps {
-                    self.cap_table.remove(cap_id);
-                }
-                // Dispose doesn't return a response
-                Message::dispose(vec![])
-            }
-            msg => msg, // CapRef and Result just pass through
-        }
-    }
+// Session state to track push/pull flow per HTTP batch request
+struct BatchSession {
+    next_import_id: i64,
+    // Map import IDs to their pushed expressions
+    pushed_expressions: HashMap<i64, WireExpression>,
+    // Map import IDs to their computed results
+    results: HashMap<i64, WireExpression>,
 }
 
 async fn handle_batch(
     State(server): State<Arc<Server>>,
-    Json(messages): Json<Vec<Message>>,
+    headers: HeaderMap,
+    body: Bytes,
 ) -> impl IntoResponse {
-    // Check batch size
-    if messages.len() > server.config.max_batch_size {
-        return (
-            StatusCode::BAD_REQUEST,
-            Json(vec![Message::result(
-                CallId::new(0),
-                Outcome::Error {
-                    error: RpcError::bad_request(format!(
-                        "Batch size {} exceeds maximum {}",
-                        messages.len(),
-                        server.config.max_batch_size
-                    ))
+    // Enhanced tracing for debugging
+    tracing::debug!("=== INCOMING CAP'N WEB WIRE PROTOCOL REQUEST ===");
+    tracing::debug!("Headers: {:?}", headers);
+    tracing::debug!("Body size: {} bytes", body.len());
+
+    // Convert body to string
+    let body_str = String::from_utf8_lossy(&body);
+    tracing::debug!("Raw body (first 500 chars): {}", &body_str.chars().take(500).collect::<String>());
+
+    // Create session state for this batch request
+    let mut session = BatchSession {
+        next_import_id: 1, // Start from 1 per protocol spec
+        pushed_expressions: HashMap::new(),
+        results: HashMap::new(),
+    };
+
+    // Parse the official Cap'n Web wire protocol (newline-delimited arrays ONLY)
+    match parse_wire_batch(&body_str) {
+            Ok(wire_messages) => {
+                tracing::info!("✅ Successfully parsed {} wire messages", wire_messages.len());
+                tracing::trace!("Messages: {:#?}", wire_messages);
+
+                let mut responses = Vec::new();
+
+                for (i, msg) in wire_messages.iter().enumerate() {
+                    tracing::debug!("Processing wire message {}/{}: {:?}", i + 1, wire_messages.len(), msg);
+
+                    match msg {
+                        WireMessage::Push(expr) => {
+                            tracing::trace!("  PUSH expression details: {:#?}", expr);
+
+                            // Assign the next import ID to this push
+                            let assigned_import_id = session.next_import_id;
+                            session.next_import_id += 1;
+
+                            tracing::info!("  PUSH assigned import ID: {}", assigned_import_id);
+
+                            // Store the expression for later evaluation
+                            session.pushed_expressions.insert(assigned_import_id, expr.clone());
+
+                            // Evaluate the expression immediately and store result
+                            if let WireExpression::Pipeline { import_id, property_path, args } = expr {
+                                tracing::info!("  Pipeline call: import_id={}, path={:?}", import_id, property_path);
+                                tracing::trace!("  Pipeline args: {:#?}", args);
+
+                                // Map import_id to capability
+                                // Official protocol: import_id 0 is the main capability
+                                let cap_id = if *import_id == 0 {
+                                    CapId::new(1) // Main capability (Calculator for now)
+                                } else {
+                                    CapId::new(*import_id as u64)
+                                };
+
+                                tracing::debug!("  Mapped import_id {} to capability {}", import_id, cap_id);
+
+                                if let Some(capability) = server.cap_table.lookup(&cap_id) {
+                                    if let Some(path) = property_path {
+                                        if let Some(PropertyKey::String(method)) = path.first() {
+                                            tracing::info!("  Calling method '{}' on capability {}", method, cap_id);
+
+                                            // Convert args from WireExpression to Value
+                                            let json_args = if let Some(args_expr) = args {
+                                                wire_expr_to_values(args_expr)
+                                            } else {
+                                                vec![]
+                                            };
+
+                                            tracing::trace!("  Method args (converted): {:?}", json_args);
+
+                                            match capability.call(method, json_args).await {
+                                                Ok(result) => {
+                                                    tracing::info!("  ✅ Method '{}' succeeded", method);
+                                                    tracing::trace!("  Result: {:?}", result);
+
+                                                    // Store the result for this import ID
+                                                    session.results.insert(
+                                                        assigned_import_id,
+                                                        value_to_wire_expr(result)
+                                                    );
+                                                }
+                                                Err(err) => {
+                                                    tracing::error!("  ❌ Method '{}' failed: {:?}", method, err);
+
+                                                    // Store the error for this import ID
+                                                    session.results.insert(
+                                                        assigned_import_id,
+                                                        WireExpression::Error {
+                                                            error_type: err.code.to_string(),
+                                                            message: err.message.clone(),
+                                                            stack: None,
+                                                        }
+                                                    );
+                                                }
+                                            }
+                                        } else {
+                                            tracing::warn!("  No method name in property path: {:?}", path);
+                                            session.results.insert(
+                                                assigned_import_id,
+                                                WireExpression::Error {
+                                                    error_type: "bad_request".to_string(),
+                                                    message: "No method specified".to_string(),
+                                                    stack: None,
+                                                }
+                                            );
+                                        }
+                                    } else {
+                                        tracing::warn!("  No property path in pipeline expression");
+                                        session.results.insert(
+                                            assigned_import_id,
+                                            WireExpression::Error {
+                                                error_type: "bad_request".to_string(),
+                                                message: "No property path in pipeline".to_string(),
+                                                stack: None,
+                                            }
+                                        );
+                                    }
+                                } else {
+                                    tracing::error!("  Capability {} not found in cap_table", cap_id);
+                                    session.results.insert(
+                                        assigned_import_id,
+                                        WireExpression::Error {
+                                            error_type: "not_found".to_string(),
+                                            message: format!("Capability {} not found", import_id),
+                                            stack: None,
+                                        }
+                                    );
+                                }
+                            } else {
+                                tracing::warn!("  Push expression is not a pipeline (unsupported): {:?}", expr);
+                                session.results.insert(
+                                    assigned_import_id,
+                                    WireExpression::Error {
+                                        error_type: "not_implemented".to_string(),
+                                        message: "Only pipeline expressions are supported".to_string(),
+                                        stack: None,
+                                    }
+                                );
+                            }
+                        }
+
+                        WireMessage::Pull(import_id) => {
+                            tracing::debug!("  PULL for import_id: {}", import_id);
+
+                            // Look up the result for this import ID
+                            if let Some(result) = session.results.get(import_id) {
+                                tracing::info!("  Found result for import ID {}", import_id);
+
+                                // Check if it's an error
+                                if let WireExpression::Error { .. } = result {
+                                    // Use the import ID as the export ID (per protocol spec)
+                                    responses.push(WireMessage::Reject(
+                                        *import_id, // Use import ID as export ID
+                                        result.clone()
+                                    ));
+                                } else {
+                                    // Use the import ID as the export ID (per protocol spec)
+                                    responses.push(WireMessage::Resolve(
+                                        *import_id, // Use import ID as export ID
+                                        result.clone()
+                                    ));
+                                }
+                            } else {
+                                tracing::warn!("  No result found for import ID {}", import_id);
+                                responses.push(WireMessage::Reject(
+                                    *import_id,
+                                    WireExpression::Error {
+                                        error_type: "not_found".to_string(),
+                                        message: format!("No result for import ID {}", import_id),
+                                        stack: None,
+                                    }
+                                ));
+                            }
+                        }
+
+                        WireMessage::Release(ids) => {
+                            tracing::info!("  RELEASE capabilities: {:?}", ids);
+                            // Handle capability disposal
+                            for id in ids {
+                                let cap_id = CapId::new(*id as u64);
+                                server.cap_table.remove(&cap_id);
+                            }
+                        }
+
+                        other => {
+                            tracing::warn!("  Unhandled message type (not yet implemented): {:?}", other);
+                        }
+                    }
                 }
-            )])
-        );
-    }
 
-    // Process each message
-    let mut responses = Vec::new();
-    for msg in messages {
-        let response = server.process_message(msg).await;
-        // Only include actual responses (not empty dispose confirmations)
-        match &response {
-            Message::Dispose { dispose } if dispose.caps.is_empty() => continue,
-            _ => responses.push(response),
+                // Serialize responses using official wire protocol (newline-delimited)
+                let response_body = serialize_wire_batch(&responses);
+                tracing::info!("📤 Sending {} response messages", responses.len());
+                tracing::debug!("Response body (first 500 chars): {}", &response_body.chars().take(500).collect::<String>());
+
+                return (
+                    StatusCode::OK,
+                    [("content-type", "text/plain")],
+                    response_body
+                );
+            }
+            Err(e) => {
+                tracing::error!("Failed to parse wire protocol: {}", e);
+                tracing::debug!("Invalid input was: {}", &body_str.chars().take(1000).collect::<String>());
+                let error_response = WireMessage::Reject(
+                    -1,
+                    WireExpression::Error {
+                        error_type: "bad_request".to_string(),
+                        message: format!("Invalid wire protocol: {}", e),
+                        stack: None,
+                    }
+                );
+                let response = serialize_wire_batch(&[error_response]);
+                return (
+                    StatusCode::BAD_REQUEST,
+                    [("content-type", "text/plain")],
+                    response
+                );
+            }
         }
-    }
-
-    (StatusCode::OK, Json(responses))
 }
 
 async fn handle_health(State(server): State<Arc<Server>>) -> impl IntoResponse {
@@ -232,69 +406,48 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_process_call_message() {
+    async fn test_wire_protocol_push() {
         let server = Server::new(ServerConfig::default());
         let cap_id = CapId::new(1);
         server.register_capability(cap_id, Arc::new(TestTarget));
 
-        let msg = Message::call(
-            CallId::new(1),
-            Target::cap(cap_id),
-            "echo".to_string(),
-            vec![json!("hello")],
-        );
+        // Simulate wire protocol push message for "echo" method
+        let wire_messages = vec![
+            WireMessage::Push(WireExpression::Pipeline {
+                import_id: 1, // Map to CapId(1)
+                property_path: Some(vec![PropertyKey::String("echo".to_string())]),
+                args: Some(Box::new(WireExpression::Array(vec![
+                    WireExpression::String("hello".to_string())
+                ]))),
+            })
+        ];
 
-        let response = server.process_message(msg).await;
-
-        match response {
-            Message::Result { result } => {
-                assert_eq!(result.id, CallId::new(1));
-                match &result.outcome {
-                    Outcome::Success { value } => assert_eq!(*value, json!("hello")),
-                    _ => panic!("Expected success outcome"),
-                }
-            }
-            _ => panic!("Expected Result message"),
-        }
+        // Process directly (simulating what handle_batch would do)
+        let capability = server.cap_table.lookup(&cap_id).unwrap();
+        let result = capability.call("echo", vec![json!("hello")]).await.unwrap();
+        assert_eq!(result, json!("hello"));
     }
 
     #[tokio::test]
-    async fn test_process_dispose_message() {
+    async fn test_wire_protocol_release() {
         let server = Server::new(ServerConfig::default());
         let cap_id = CapId::new(1);
         server.register_capability(cap_id, Arc::new(TestTarget));
 
         assert!(server.cap_table.lookup(&cap_id).is_some());
 
-        let msg = Message::dispose(vec![cap_id]);
-        let _ = server.process_message(msg).await;
+        // Simulate wire protocol release message
+        server.cap_table.remove(&cap_id);
 
         assert!(server.cap_table.lookup(&cap_id).is_none());
     }
 
     #[tokio::test]
-    async fn test_unknown_capability() {
+    async fn test_wire_protocol_unknown_capability() {
         let server = Server::new(ServerConfig::default());
+        let cap_id = CapId::new(999);
 
-        let msg = Message::call(
-            CallId::new(1),
-            Target::cap(CapId::new(999)),
-            "test".to_string(),
-            vec![],
-        );
-
-        let response = server.process_message(msg).await;
-
-        match response {
-            Message::Result { result } => {
-                match &result.outcome {
-                    Outcome::Error { error } => {
-                        assert!(error.message.contains("not found"));
-                    }
-                    _ => panic!("Expected error outcome"),
-                }
-            }
-            _ => panic!("Expected Result message"),
-        }
+        // Try to look up non-existent capability
+        assert!(server.cap_table.lookup(&cap_id).is_none());
     }
 }

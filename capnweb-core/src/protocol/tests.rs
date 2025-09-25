@@ -111,7 +111,7 @@ mod tests {
     fn test_import_expression() {
         let expr = Expression::Import(ImportExpression {
             import_id: ImportId(1),
-            property_path: Some(vec![PropertyKey::String("method".to_string())]),
+            property_path: Some(vec![expression::PropertyKey::String("method".to_string())]),
             call_arguments: Some(Box::new(Expression::Array(vec![
                 Expression::Number(serde_json::Number::from(1)),
                 Expression::Number(serde_json::Number::from(2)),
@@ -130,9 +130,9 @@ mod tests {
         let expr = Expression::Pipeline(PipelineExpression {
             import_id: ImportId(3),
             property_path: Some(vec![
-                PropertyKey::String("users".to_string()),
-                PropertyKey::Number(0),
-                PropertyKey::String("name".to_string()),
+                expression::PropertyKey::String("users".to_string()),
+                expression::PropertyKey::Number(0),
+                expression::PropertyKey::String("name".to_string()),
             ]),
             call_arguments: None,
         });
