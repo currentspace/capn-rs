@@ -7,6 +7,9 @@ pub mod promise;
 #[cfg(feature = "validation")]
 pub mod validate;
 pub mod il;
+pub mod il_extended;
+pub mod il_executor;
+pub mod promise_map;
 
 // New Cap'n Web protocol implementation
 pub mod protocol;
@@ -17,6 +20,9 @@ pub use msg::{Message, Target, Outcome};
 pub use error::{RpcError, ErrorCode};
 pub use codec::{encode_message, decode_message};
 pub use il::{Source, Op, Plan};
+pub use il_extended::{ILExpression, ILContext, ILPlan, ILOperation, ILError};
+pub use il_executor::ILExecutor;
+pub use promise_map::{PromiseMapExecutor, MapOperation, PipelinedCall};
 pub use promise::{ArgValue, ExtendedTarget, PromiseDependencyGraph, PendingPromise};
 
 // Re-export official Cap'n Web wire protocol (primary)
