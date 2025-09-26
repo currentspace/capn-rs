@@ -2,12 +2,11 @@
 // Complete server implementation to pass 100% of TypeScript client tests
 
 use std::{sync::Arc, collections::HashMap};
-use capnweb_core::{RpcError, CapId};
-use capnweb_server::{Server, ServerConfig, RpcTarget};
-use serde_json::{json, Value};
+use capnweb_core::{RpcTarget, RpcError, CapId, async_trait, Value};
+use capnweb_server::{Server, ServerConfig};
+use serde_json::json;
 use tokio::sync::RwLock;
 use tracing::{info, debug};
-use async_trait::async_trait;
 
 /// Enhanced Calculator capability with all methods expected by TypeScript tests
 #[derive(Debug)]
@@ -25,10 +24,10 @@ impl Calculator {
 
 #[async_trait]
 impl RpcTarget for Calculator {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        debug!("Calculator::{} called with args: {:?}", member, args);
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        debug!("Calculator::{} called with args: {:?}", method, args);
 
-        match member {
+        match method {
             // Basic arithmetic operations
             "add" => {
                 if args.len() != 2 {
@@ -123,7 +122,8 @@ impl RpcTarget for Calculator {
                     return Err(RpcError::bad_request("setVariable requires exactly 2 arguments"));
                 }
 
-                let name = extract_string(&args[0])?;
+                let name = args[0].as_str()
+                    .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
                 let value = extract_number(&args[1])?;
 
                 let mut vars = self.variables.write().await;
@@ -137,13 +137,14 @@ impl RpcTarget for Calculator {
                     return Err(RpcError::bad_request("getVariable requires exactly 1 argument"));
                 }
 
-                let name = extract_string(&args[0])?;
+                let name = args[0].as_str()
+                    .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
 
                 let vars = self.variables.read().await;
                 let value = vars.get(name)
                     .ok_or_else(|| RpcError::not_found(&format!("Variable '{}' not found", name)))?;
 
-                Ok(json!(*value))
+                Ok(json!(value))
             }
 
             "clearAllVariables" => {
@@ -183,12 +184,16 @@ impl RpcTarget for Calculator {
                 }))
             }
 
-            // Property access (handled as method calls in server)
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", method)))
+        }
+    }
+
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
             "name" => Ok(json!("Calculator")),
             "version" => Ok(json!("1.0.0")),
             "methods" => Ok(json!(["add", "subtract", "multiply", "divide", "power", "sqrt", "factorial", "setVariable", "getVariable", "clearAllVariables", "getAsyncProcessor", "getNested", "createSubCalculator"])),
-
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", member)))
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on Calculator", property)))
         }
     }
 }
@@ -247,16 +252,17 @@ impl UserManager {
 
 #[async_trait]
 impl RpcTarget for UserManager {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        debug!("UserManager::{} called with args: {:?}", member, args);
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        debug!("UserManager::{} called with args: {:?}", method, args);
 
-        match member {
+        match method {
             "getUser" => {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("getUser requires exactly 1 argument"));
                 }
 
-                let user_id = extract_number(&args[0])? as i32;
+                let user_id = args[0].as_i64()
+                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))? as i32;
 
                 let users = self.users.read().await;
                 let user = users.get(&user_id)
@@ -312,7 +318,8 @@ impl RpcTarget for UserManager {
                     return Err(RpcError::bad_request("deleteUser requires exactly 1 argument"));
                 }
 
-                let user_id = extract_number(&args[0])? as i32;
+                let user_id = args[0].as_i64()
+                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))? as i32;
 
                 let mut users = self.users.write().await;
                 let user = users.remove(&user_id)
@@ -324,12 +331,16 @@ impl RpcTarget for UserManager {
                 }))
             }
 
-            // Property access (handled as method calls in server)
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on UserManager", method)))
+        }
+    }
+
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
             "name" => Ok(json!("UserManager")),
             "version" => Ok(json!("1.0.0")),
             "methods" => Ok(json!(["getUser", "createUser", "listUsers", "deleteUser"])),
-
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on UserManager", member)))
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on UserManager", property)))
         }
     }
 }
@@ -340,8 +351,8 @@ pub struct EchoService;
 
 #[async_trait]
 impl RpcTarget for EchoService {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        match member {
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        match method {
             "echo" => {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("echo requires exactly 1 argument"));
@@ -353,20 +364,25 @@ impl RpcTarget for EchoService {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("reverse requires exactly 1 argument"));
                 }
-                let text = extract_string(&args[0])?;
+                let text = args[0].as_str()
+                    .ok_or_else(|| RpcError::bad_request("Argument must be a string"))?;
                 Ok(json!(text.chars().rev().collect::<String>()))
             }
 
-            // Property access (handled as method calls in server)
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on EchoService", method)))
+        }
+    }
+
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
             "name" => Ok(json!("EchoService")),
             "methods" => Ok(json!(["echo", "reverse"])),
-
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on EchoService", member)))
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on EchoService", property)))
         }
     }
 }
 
-// Helper functions for serde_json::Value
+// Helper function to extract numbers from capnweb Value
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
         Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
@@ -374,10 +390,29 @@ fn extract_number(value: &Value) -> Result<f64, RpcError> {
     }
 }
 
+// Helper function to extract string from capnweb Value
 fn extract_string(value: &Value) -> Result<&str, RpcError> {
     match value {
         Value::String(s) => Ok(s),
         _ => Err(RpcError::bad_request("Expected a string"))
+    }
+}
+
+// Helper function to convert serde_json::Value to capnweb Value
+fn json_to_capnweb_value(json_val: serde_json::Value) -> Value {
+    match json_val {
+        serde_json::Value::Null => Value::Null,
+        serde_json::Value::Bool(b) => Value::Bool(b),
+        serde_json::Value::Number(n) => Value::Number(n),
+        serde_json::Value::String(s) => Value::String(s),
+        serde_json::Value::Array(arr) => Value::Array(arr.into_iter().map(json_to_capnweb_value).collect()),
+        serde_json::Value::Object(map) => {
+            let mut result = std::collections::HashMap::new();
+            for (k, v) in map {
+                result.insert(k, Box::new(json_to_capnweb_value(v)));
+            }
+            Value::Object(result)
+        }
     }
 }
 

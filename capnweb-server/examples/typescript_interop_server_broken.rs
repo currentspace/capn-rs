@@ -2,12 +2,11 @@
 // Complete server implementation to pass 100% of TypeScript client tests
 
 use std::{sync::Arc, collections::HashMap};
-use capnweb_core::{RpcError, CapId};
-use capnweb_server::{Server, ServerConfig, RpcTarget};
-use serde_json::{json, Value};
+use capnweb_core::{RpcTarget, RpcError, CapId, async_trait, Value};
+use capnweb_server::{Server, ServerConfig};
+use serde_json::json;
 use tokio::sync::RwLock;
 use tracing::{info, debug};
-use async_trait::async_trait;
 
 /// Enhanced Calculator capability with all methods expected by TypeScript tests
 #[derive(Debug)]
@@ -25,10 +24,10 @@ impl Calculator {
 
 #[async_trait]
 impl RpcTarget for Calculator {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        debug!("Calculator::{} called with args: {:?}", member, args);
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        debug!("Calculator::{} called with args: {:?}", method, args);
 
-        match member {
+        match method {
             // Basic arithmetic operations
             "add" => {
                 if args.len() != 2 {
@@ -36,7 +35,7 @@ impl RpcTarget for Calculator {
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
-                Ok(json!(a + b))
+                Ok(Value::Number(serde_json::Number::from_f64(a + b).unwrap()))
             }
 
             "subtract" => {
@@ -45,7 +44,7 @@ impl RpcTarget for Calculator {
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
-                Ok(json!(a - b))
+                Ok(Value::Number(serde_json::Number::from_f64(a - b).unwrap()))
             }
 
             "multiply" => {
@@ -54,7 +53,7 @@ impl RpcTarget for Calculator {
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
-                Ok(json!(a * b))
+                Ok(Value::Number(serde_json::Number::from_f64(a * b).unwrap()))
             }
 
             "divide" => {
@@ -68,7 +67,7 @@ impl RpcTarget for Calculator {
                     return Err(RpcError::bad_request("Cannot divide by zero"));
                 }
 
-                Ok(json!(a / b))
+                Ok(Value::Number(serde_json::Number::from_f64(a / b).unwrap()))
             }
 
             // Advanced mathematical operations
@@ -78,7 +77,7 @@ impl RpcTarget for Calculator {
                 }
                 let base = extract_number(&args[0])?;
                 let exp = extract_number(&args[1])?;
-                Ok(json!(base.powf(exp)))
+                Ok(Value::Number(serde_json::Number::from_f64(base.powf(exp)).unwrap()))
             }
 
             "sqrt" => {
@@ -91,7 +90,7 @@ impl RpcTarget for Calculator {
                     return Err(RpcError::bad_request("Cannot take square root of negative number"));
                 }
 
-                Ok(json!(value.sqrt()))
+                Ok(Value::Number(serde_json::Number::from_f64(value.sqrt()).unwrap()))
             }
 
             "factorial" => {
@@ -114,7 +113,7 @@ impl RpcTarget for Calculator {
                     result *= i as i64;
                 }
 
-                Ok(json!(result))
+                Ok(Value::Number(serde_json::Number::from_i64(result).unwrap()))
             }
 
             // Variable storage
@@ -129,7 +128,7 @@ impl RpcTarget for Calculator {
                 let mut vars = self.variables.write().await;
                 vars.insert(name.to_string(), value);
 
-                Ok(json!(value))
+                Ok(Value::Number(serde_json::Number::from_f64(value).unwrap()))
             }
 
             "getVariable" => {
@@ -143,7 +142,7 @@ impl RpcTarget for Calculator {
                 let value = vars.get(name)
                     .ok_or_else(|| RpcError::not_found(&format!("Variable '{}' not found", name)))?;
 
-                Ok(json!(*value))
+                Ok(Value::Number(serde_json::Number::from_f64(*value).unwrap()))
             }
 
             "clearAllVariables" => {
@@ -151,44 +150,48 @@ impl RpcTarget for Calculator {
                 let count = vars.len();
                 vars.clear();
 
-                Ok(json!({
+                Ok(json_to_capnweb_value(json!({
                     "cleared": count,
                     "message": format!("Cleared {} variables", count)
-                }))
+                })))
             }
 
             // Capability creation methods
             "getAsyncProcessor" => {
-                Ok(json!({
+                Ok(json_to_capnweb_value(json!({
                     "_type": "capability",
                     "id": 200,  // AsyncProcessor capability ID
                     "description": "Asynchronous processing capability"
-                }))
+                })))
             }
 
             "getNested" => {
-                Ok(json!({
+                Ok(json_to_capnweb_value(json!({
                     "_type": "capability",
                     "id": 300, // Nested capability ID
                     "description": "Nested capability for testing"
-                }))
+                })))
             }
 
             "createSubCalculator" => {
-                Ok(json!({
+                Ok(json_to_capnweb_value(json!({
                     "_type": "capability",
                     "id": 500, // SubCalculator capability ID
                     "methods": ["add", "subtract", "multiply", "divide", "setVariable", "getVariable"],
                     "description": "Sub-calculator instance"
-                }))
+                })))
             }
 
-            // Property access (handled as method calls in server)
-            "name" => Ok(json!("Calculator")),
-            "version" => Ok(json!("1.0.0")),
-            "methods" => Ok(json!(["add", "subtract", "multiply", "divide", "power", "sqrt", "factorial", "setVariable", "getVariable", "clearAllVariables", "getAsyncProcessor", "getNested", "createSubCalculator"])),
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", method)))
+        }
+    }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", member)))
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
+            "name" => Ok(Value::String("Calculator".to_string())),
+            "version" => Ok(Value::String("1.0.0".to_string())),
+            "methods" => Ok(json_to_capnweb_value(json!(["add", "subtract", "multiply", "divide", "power", "sqrt", "factorial", "setVariable", "getVariable", "clearAllVariables", "getAsyncProcessor", "getNested", "createSubCalculator"]))),
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on Calculator", property)))
         }
     }
 }
@@ -247,10 +250,10 @@ impl UserManager {
 
 #[async_trait]
 impl RpcTarget for UserManager {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        debug!("UserManager::{} called with args: {:?}", member, args);
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        debug!("UserManager::{} called with args: {:?}", method, args);
 
-        match member {
+        match method {
             "getUser" => {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("getUser requires exactly 1 argument"));
@@ -262,7 +265,7 @@ impl RpcTarget for UserManager {
                 let user = users.get(&user_id)
                     .ok_or_else(|| RpcError::not_found(&format!("User with ID {} not found", user_id)))?;
 
-                Ok(serde_json::to_value(user).unwrap())
+                Ok(json_to_capnweb_value(serde_json::to_value(user).unwrap()))
             }
 
             "createUser" => {
@@ -270,20 +273,27 @@ impl RpcTarget for UserManager {
                     return Err(RpcError::bad_request("createUser requires exactly 1 argument"));
                 }
 
-                let user_data = args[0].as_object()
-                    .ok_or_else(|| RpcError::bad_request("User data must be an object"))?;
+                let user_data = extract_object(&args[0])?;
 
                 let name = user_data.get("name")
-                    .and_then(|v| v.as_str())
+                    .and_then(|v| match v.as_ref() {
+                        Value::String(s) => Some(s.as_str()),
+                        _ => None
+                    })
                     .ok_or_else(|| RpcError::bad_request("User name is required"))?;
 
                 let email = user_data.get("email")
-                    .and_then(|v| v.as_str())
+                    .and_then(|v| match v.as_ref() {
+                        Value::String(s) => Some(s.as_str()),
+                        _ => None
+                    })
                     .ok_or_else(|| RpcError::bad_request("User email is required"))?;
 
                 let role = user_data.get("role")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.to_string());
+                    .and_then(|v| match v.as_ref() {
+                        Value::String(s) => Some(s.clone()),
+                        _ => None
+                    });
 
                 let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
@@ -298,13 +308,13 @@ impl RpcTarget for UserManager {
                 let mut users = self.users.write().await;
                 users.insert(id, user.clone());
 
-                Ok(serde_json::to_value(user).unwrap())
+                Ok(json_to_capnweb_value(serde_json::to_value(user).unwrap()))
             }
 
             "listUsers" => {
                 let users = self.users.read().await;
                 let user_list: Vec<&User> = users.values().collect();
-                Ok(serde_json::to_value(user_list).unwrap())
+                Ok(json_to_capnweb_value(serde_json::to_value(user_list).unwrap()))
             }
 
             "deleteUser" => {
@@ -318,18 +328,22 @@ impl RpcTarget for UserManager {
                 let user = users.remove(&user_id)
                     .ok_or_else(|| RpcError::not_found(&format!("User with ID {} not found", user_id)))?;
 
-                Ok(json!({
+                Ok(json_to_capnweb_value(json!({
                     "deleted": true,
                     "user": user
-                }))
+                })))
             }
 
-            // Property access (handled as method calls in server)
-            "name" => Ok(json!("UserManager")),
-            "version" => Ok(json!("1.0.0")),
-            "methods" => Ok(json!(["getUser", "createUser", "listUsers", "deleteUser"])),
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on UserManager", method)))
+        }
+    }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on UserManager", member)))
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
+            "name" => Ok(Value::String("UserManager".to_string())),
+            "version" => Ok(Value::String("1.0.0".to_string())),
+            "methods" => Ok(json_to_capnweb_value(json!(["getUser", "createUser", "listUsers", "deleteUser"]))),
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on UserManager", property)))
         }
     }
 }
@@ -340,8 +354,8 @@ pub struct EchoService;
 
 #[async_trait]
 impl RpcTarget for EchoService {
-    async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        match member {
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        match method {
             "echo" => {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("echo requires exactly 1 argument"));
@@ -354,19 +368,23 @@ impl RpcTarget for EchoService {
                     return Err(RpcError::bad_request("reverse requires exactly 1 argument"));
                 }
                 let text = extract_string(&args[0])?;
-                Ok(json!(text.chars().rev().collect::<String>()))
+                Ok(Value::String(text.chars().rev().collect::<String>()))
             }
 
-            // Property access (handled as method calls in server)
-            "name" => Ok(json!("EchoService")),
-            "methods" => Ok(json!(["echo", "reverse"])),
+            _ => Err(RpcError::not_found(&format!("Method '{}' not found on EchoService", method)))
+        }
+    }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on EchoService", member)))
+    async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+        match property {
+            "name" => Ok(Value::String("EchoService".to_string())),
+            "methods" => Ok(json_to_capnweb_value(json!(["echo", "reverse"]))),
+            _ => Err(RpcError::not_found(&format!("Property '{}' not found on EchoService", property)))
         }
     }
 }
 
-// Helper functions for serde_json::Value
+// Helper functions
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
         Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
@@ -378,6 +396,30 @@ fn extract_string(value: &Value) -> Result<&str, RpcError> {
     match value {
         Value::String(s) => Ok(s),
         _ => Err(RpcError::bad_request("Expected a string"))
+    }
+}
+
+fn extract_object(value: &Value) -> Result<&HashMap<String, Box<Value>>, RpcError> {
+    match value {
+        Value::Object(obj) => Ok(obj),
+        _ => Err(RpcError::bad_request("Expected an object"))
+    }
+}
+
+fn json_to_capnweb_value(json_val: serde_json::Value) -> Value {
+    match json_val {
+        serde_json::Value::Null => Value::Null,
+        serde_json::Value::Bool(b) => Value::Bool(b),
+        serde_json::Value::Number(n) => Value::Number(n),
+        serde_json::Value::String(s) => Value::String(s),
+        serde_json::Value::Array(arr) => Value::Array(arr.into_iter().map(json_to_capnweb_value).collect()),
+        serde_json::Value::Object(map) => {
+            let mut result = HashMap::new();
+            for (k, v) in map {
+                result.insert(k, Box::new(json_to_capnweb_value(v)));
+            }
+            Value::Object(result)
+        }
     }
 }
 

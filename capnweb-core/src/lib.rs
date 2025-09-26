@@ -40,7 +40,6 @@ pub use protocol::{
 };
 
 // RPC Target trait for capability implementations
-use async_trait::async_trait;
 pub use async_trait::async_trait;
 
 #[async_trait]
