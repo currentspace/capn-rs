@@ -4,6 +4,6 @@ pub mod stubs;
 #[cfg(feature = "macros")]
 pub mod macros;
 
-pub use client::{Client, ClientConfig};
+pub use client::{Client, ClientConfig, BatchBuilder, BatchResults, PendingResult};
 pub use recorder::{Recorder, RecordedPlan};
 pub use stubs::{Capability, StubError};

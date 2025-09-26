@@ -20,6 +20,7 @@ tracing.workspace = true
 tokio.workspace = true
 futures.workspace = true
 async-trait.workspace = true
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 
 # Concurrent data structures
 dashmap.workspace = true
@@ -35,6 +36,7 @@ mockito.workspace = true
 proptest.workspace = true
 criterion.workspace = true
 capnweb-server.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 default = ["all-transports", "macros"]
