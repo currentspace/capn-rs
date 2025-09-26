@@ -164,15 +164,13 @@ impl ILExecutor {
             Value::Array(items) => {
                 let mut results = Vec::new();
                 for item in items {
-                    let var_index = context.push_variable(item.clone());
+                    // Create a new context for evaluating the predicate
+                    // The item becomes variable 0 in this new context
+                    let mut predicate_context = ILContext::new(context.captures.clone());
+                    predicate_context.set_variable(0, item.clone()).unwrap();
 
-                    let condition = if let ILExpression::Bind { .. } = predicate {
-                        self.execute(predicate, context).await?
-                    } else {
-                        let bind_expr =
-                            ILExpression::bind(ILExpression::var(var_index), predicate.clone());
-                        self.execute(&bind_expr, context).await?
-                    };
+                    // Execute the predicate with the item as variable 0
+                    let condition = self.execute(predicate, &mut predicate_context).await?;
 
                     if self.is_truthy(&condition) {
                         results.push(item);

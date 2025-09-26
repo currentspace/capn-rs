@@ -1,21 +1,16 @@
 use crate::CapId;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 /// Extended IL expressions for complete Cap'n Web protocol support
 /// Includes variable references, bindings, conditionals, and plans
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ILExpression {
     /// Direct JSON value
     Literal(Value),
 
     /// Variable reference: ["var", index]
-    #[serde(rename_all = "camelCase")]
-    Variable {
-        #[serde(rename = "var")]
-        var_ref: u32,
-    },
+    Variable { var_ref: u32 },
 
     /// Plan execution: ["plan", ...operations]
     Plan { plan: ILPlan },
@@ -24,10 +19,7 @@ pub enum ILExpression {
     Bind { bind: BindExpression },
 
     /// Conditional: ["if", condition, then_expr, else_expr]
-    If {
-        #[serde(rename = "if")]
-        if_expr: Box<IfExpression>,
-    },
+    If { if_expr: Box<IfExpression> },
 
     /// Property access: ["get", object, property]
     Get { get: GetExpression },
@@ -43,6 +35,201 @@ pub enum ILExpression {
 
     /// Reduce operation: ["reduce", array, function, initial]
     ReduceOp { reduce: ReduceExpression },
+}
+
+// Custom serialization to match Cap'n Web protocol array notation
+impl Serialize for ILExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde_json::json;
+
+        let value = match self {
+            ILExpression::Literal(v) => v.clone(),
+            ILExpression::Variable { var_ref } => json!(["var", var_ref]),
+            ILExpression::Plan { plan } => {
+                let mut arr = vec![json!("plan")];
+                // Add plan operations
+                arr.push(json!(plan.captures));
+                arr.push(json!(plan.operations));
+                arr.push(serde_json::to_value(&*plan.result).unwrap());
+                Value::Array(arr)
+            }
+            ILExpression::Bind { bind } => {
+                json!(["bind", bind.value, bind.body])
+            }
+            ILExpression::If { if_expr } => {
+                json!(["if", if_expr.condition, if_expr.then_branch, if_expr.else_branch])
+            }
+            ILExpression::Get { get } => {
+                json!(["get", get.object, get.property])
+            }
+            ILExpression::Call { call } => {
+                let mut arr = vec![json!("call"), serde_json::to_value(&*call.target).unwrap(), json!(call.method)];
+                for arg in &call.args {
+                    arr.push(serde_json::to_value(arg).unwrap());
+                }
+                Value::Array(arr)
+            }
+            ILExpression::MapOp { map } => {
+                json!(["map", map.array, map.function])
+            }
+            ILExpression::FilterOp { filter } => {
+                json!(["filter", filter.array, filter.predicate])
+            }
+            ILExpression::ReduceOp { reduce } => {
+                json!(["reduce", reduce.array, reduce.function, reduce.initial])
+            }
+        };
+
+        value.serialize(serializer)
+    }
+}
+
+// Custom deserialization to parse Cap'n Web protocol array notation
+impl<'de> Deserialize<'de> for ILExpression {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+
+        // Check if this is an array with a type marker
+        if let Value::Array(arr) = &value {
+            if !arr.is_empty() {
+                if let Some(Value::String(type_str)) = arr.first() {
+                    return match type_str.as_str() {
+                        "var" => {
+                            if arr.len() != 2 {
+                                return Err(serde::de::Error::custom("var requires exactly 2 elements"));
+                            }
+                            let index = arr[1].as_u64()
+                                .ok_or_else(|| serde::de::Error::custom("var index must be a number"))?
+                                as u32;
+                            Ok(ILExpression::Variable { var_ref: index })
+                        }
+                        "bind" => {
+                            if arr.len() != 3 {
+                                return Err(serde::de::Error::custom("bind requires exactly 3 elements"));
+                            }
+                            let value = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let body = Box::new(serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::Bind {
+                                bind: BindExpression { value, body }
+                            })
+                        }
+                        "if" => {
+                            if arr.len() != 4 {
+                                return Err(serde::de::Error::custom("if requires exactly 4 elements"));
+                            }
+                            let condition = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let then_branch = Box::new(serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let else_branch = Box::new(serde_json::from_value(arr[3].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::If {
+                                if_expr: Box::new(IfExpression {
+                                    condition,
+                                    then_branch,
+                                    else_branch,
+                                })
+                            })
+                        }
+                        "get" => {
+                            if arr.len() != 3 {
+                                return Err(serde::de::Error::custom("get requires exactly 3 elements"));
+                            }
+                            let object = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let property = arr[2].as_str()
+                                .ok_or_else(|| serde::de::Error::custom("get property must be a string"))?
+                                .to_string();
+                            Ok(ILExpression::Get {
+                                get: GetExpression { object, property }
+                            })
+                        }
+                        "call" => {
+                            if arr.len() < 3 {
+                                return Err(serde::de::Error::custom("call requires at least 3 elements"));
+                            }
+                            let target = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let method = arr[2].as_str()
+                                .ok_or_else(|| serde::de::Error::custom("call method must be a string"))?
+                                .to_string();
+                            let args = arr[3..].iter()
+                                .map(|v| serde_json::from_value(v.clone()))
+                                .collect::<Result<Vec<_>, _>>()
+                                .map_err(serde::de::Error::custom)?;
+                            Ok(ILExpression::Call {
+                                call: CallExpression { target, method, args }
+                            })
+                        }
+                        "map" => {
+                            if arr.len() != 3 {
+                                return Err(serde::de::Error::custom("map requires exactly 3 elements"));
+                            }
+                            let array = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let function = Box::new(serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::MapOp {
+                                map: MapExpression { array, function }
+                            })
+                        }
+                        "filter" => {
+                            if arr.len() != 3 {
+                                return Err(serde::de::Error::custom("filter requires exactly 3 elements"));
+                            }
+                            let array = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let predicate = Box::new(serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::FilterOp {
+                                filter: FilterExpression { array, predicate }
+                            })
+                        }
+                        "reduce" => {
+                            if arr.len() != 4 {
+                                return Err(serde::de::Error::custom("reduce requires exactly 4 elements"));
+                            }
+                            let array = Box::new(serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let function = Box::new(serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            let initial = Box::new(serde_json::from_value(arr[3].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::ReduceOp {
+                                reduce: ReduceExpression { array, function, initial }
+                            })
+                        }
+                        "plan" => {
+                            if arr.len() != 4 {
+                                return Err(serde::de::Error::custom("plan requires exactly 4 elements"));
+                            }
+                            let captures = serde_json::from_value(arr[1].clone())
+                                .map_err(serde::de::Error::custom)?;
+                            let operations = serde_json::from_value(arr[2].clone())
+                                .map_err(serde::de::Error::custom)?;
+                            let result = Box::new(serde_json::from_value(arr[3].clone())
+                                .map_err(serde::de::Error::custom)?);
+                            Ok(ILExpression::Plan {
+                                plan: ILPlan { captures, operations, result }
+                            })
+                        }
+                        _ => Ok(ILExpression::Literal(value))
+                    }
+                }
+            }
+        }
+
+        // If not a special array form, treat as literal
+        Ok(ILExpression::Literal(value))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -116,8 +303,8 @@ pub struct StoreOperation {
 
 /// Context for IL execution with variable bindings
 pub struct ILContext {
-    variables: Vec<Value>,
-    captures: Vec<CapId>,
+    pub variables: Vec<Value>,
+    pub captures: Vec<CapId>,
 }
 
 impl ILContext {
@@ -254,7 +441,7 @@ mod tests {
     fn test_variable_expression() {
         let expr = ILExpression::var(0);
         let json = serde_json::to_value(&expr).unwrap();
-        assert_eq!(json, json!({"var": 0}));
+        assert_eq!(json, json!(["var", 0]));
 
         let deserialized: ILExpression = serde_json::from_value(json).unwrap();
         assert_eq!(expr, deserialized);
