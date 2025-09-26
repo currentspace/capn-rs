@@ -154,31 +154,106 @@ async fn handle_batch(
                             session.pushed_expressions.insert(assigned_import_id, expr.clone());
 
                             // Evaluate the expression immediately and store result
-                            if let WireExpression::Pipeline { import_id, property_path, args } = expr {
-                                tracing::info!("  Pipeline call: import_id={}, path={:?}", import_id, property_path);
-                                tracing::trace!("  Pipeline args: {:#?}", args);
+                            match expr {
+                                WireExpression::Pipeline { import_id, property_path, args } => {
+                                    tracing::info!("  Pipeline call: import_id={}, path={:?}", import_id, property_path);
+                                    tracing::trace!("  Pipeline args: {:#?}", args);
 
-                                // Map import_id to capability
-                                // Official protocol: import_id 0 is the main capability
-                                let cap_id = if *import_id == 0 {
-                                    CapId::new(1) // Main capability (Calculator for now)
-                                } else {
-                                    CapId::new(*import_id as u64)
-                                };
+                                    // Map import_id to capability
+                                    // Official protocol: import_id 0 is the main capability
+                                    let cap_id = if *import_id == 0 {
+                                        CapId::new(1) // Main capability (Calculator for now)
+                                    } else {
+                                        CapId::new(*import_id as u64)
+                                    };
 
-                                tracing::debug!("  Mapped import_id {} to capability {}", import_id, cap_id);
+                                    tracing::debug!("  Mapped import_id {} to capability {}", import_id, cap_id);
 
-                                if let Some(capability) = server.cap_table.lookup(&cap_id) {
-                                    if let Some(path) = property_path {
-                                        if let Some(PropertyKey::String(method)) = path.first() {
+                                    if let Some(capability) = server.cap_table.lookup(&cap_id) {
+                                        if let Some(path) = property_path {
+                                            if let Some(PropertyKey::String(method)) = path.first() {
+                                                tracing::info!("  Calling method '{}' on capability {}", method, cap_id);
+
+                                                // Convert args from WireExpression to Value (with pipeline evaluation)
+                                                let json_args = if let Some(args_expr) = args {
+                                                    wire_expr_to_values_with_evaluation(args_expr, &session.results)
+                                                } else {
+                                                    vec![]
+                                                };
+
+                                                tracing::trace!("  Method args (converted): {:?}", json_args);
+
+                                                match capability.call(method, json_args).await {
+                                                    Ok(result) => {
+                                                        tracing::info!("  ✅ Method '{}' succeeded", method);
+                                                        tracing::trace!("  Result: {:?}", result);
+
+                                                        // Store the result for this import ID
+                                                        session.results.insert(
+                                                            assigned_import_id,
+                                                            value_to_wire_expr(result)
+                                                        );
+                                                    }
+                                                    Err(err) => {
+                                                        tracing::error!("  ❌ Method '{}' failed: {:?}", method, err);
+
+                                                        // Store the error for this import ID
+                                                        session.results.insert(
+                                                            assigned_import_id,
+                                                            WireExpression::Error {
+                                                                error_type: err.code.to_string(),
+                                                                message: err.message.clone(),
+                                                                stack: None,
+                                                            }
+                                                        );
+                                                    }
+                                                }
+                                            } else {
+                                                tracing::warn!("  No method name in property path: {:?}", path);
+                                                session.results.insert(
+                                                    assigned_import_id,
+                                                    WireExpression::Error {
+                                                        error_type: "bad_request".to_string(),
+                                                        message: "No method specified".to_string(),
+                                                        stack: None,
+                                                    }
+                                                );
+                                            }
+                                        } else {
+                                            tracing::warn!("  No property path in pipeline expression");
+                                            session.results.insert(
+                                                assigned_import_id,
+                                                WireExpression::Error {
+                                                    error_type: "bad_request".to_string(),
+                                                    message: "No property path in pipeline".to_string(),
+                                                    stack: None,
+                                                }
+                                            );
+                                        }
+                                    } else {
+                                        tracing::error!("  Capability {} not found in cap_table", cap_id);
+                                        session.results.insert(
+                                            assigned_import_id,
+                                            WireExpression::Error {
+                                                error_type: "not_found".to_string(),
+                                                message: format!("Capability {} not found", import_id),
+                                                stack: None,
+                                            }
+                                        );
+                                    }
+                                },
+                                WireExpression::Call { cap_id, property_path, args } => {
+                                    tracing::info!("  Call: cap_id={}, path={:?}", cap_id, property_path);
+                                    tracing::trace!("  Call args: {:#?}", args);
+
+                                    let cap_id = CapId::new(*cap_id as u64);
+
+                                    if let Some(capability) = server.cap_table.lookup(&cap_id) {
+                                        if let Some(PropertyKey::String(method)) = property_path.first() {
                                             tracing::info!("  Calling method '{}' on capability {}", method, cap_id);
 
                                             // Convert args from WireExpression to Value (with pipeline evaluation)
-                                            let json_args = if let Some(args_expr) = args {
-                                                wire_expr_to_values_with_evaluation(args_expr, &session.results)
-                                            } else {
-                                                vec![]
-                                            };
+                                            let json_args = wire_expr_to_values_with_evaluation(args, &session.results);
 
                                             tracing::trace!("  Method args (converted): {:?}", json_args);
 
@@ -208,7 +283,7 @@ async fn handle_batch(
                                                 }
                                             }
                                         } else {
-                                            tracing::warn!("  No method name in property path: {:?}", path);
+                                            tracing::warn!("  No method name in property path: {:?}", property_path);
                                             session.results.insert(
                                                 assigned_import_id,
                                                 WireExpression::Error {
@@ -219,37 +294,28 @@ async fn handle_batch(
                                             );
                                         }
                                     } else {
-                                        tracing::warn!("  No property path in pipeline expression");
+                                        tracing::error!("  Capability {} not found in cap_table", cap_id);
                                         session.results.insert(
                                             assigned_import_id,
                                             WireExpression::Error {
-                                                error_type: "bad_request".to_string(),
-                                                message: "No property path in pipeline".to_string(),
+                                                error_type: "not_found".to_string(),
+                                                message: format!("Capability {} not found", cap_id),
                                                 stack: None,
                                             }
                                         );
                                     }
-                                } else {
-                                    tracing::error!("  Capability {} not found in cap_table", cap_id);
+                                },
+                                _ => {
+                                    tracing::warn!("  Push expression is not a pipeline or call (unsupported): {:?}", expr);
                                     session.results.insert(
                                         assigned_import_id,
                                         WireExpression::Error {
-                                            error_type: "not_found".to_string(),
-                                            message: format!("Capability {} not found", import_id),
+                                            error_type: "not_implemented".to_string(),
+                                            message: "Only pipeline and call expressions are supported".to_string(),
                                             stack: None,
                                         }
                                     );
                                 }
-                            } else {
-                                tracing::warn!("  Push expression is not a pipeline (unsupported): {:?}", expr);
-                                session.results.insert(
-                                    assigned_import_id,
-                                    WireExpression::Error {
-                                        error_type: "not_implemented".to_string(),
-                                        message: "Only pipeline expressions are supported".to_string(),
-                                        stack: None,
-                                    }
-                                );
                             }
                         }
 

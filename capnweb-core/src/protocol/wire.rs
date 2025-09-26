@@ -68,6 +68,13 @@ pub enum WireExpression {
         args: Option<Box<WireExpression>>,
     },
 
+    /// ["call", cap_id, property_path, args]
+    Call {
+        cap_id: i64,
+        property_path: Vec<PropertyKey>,
+        args: Box<WireExpression>,
+    },
+
     /// ["date", timestamp]
     Date(f64),
 
@@ -294,6 +301,33 @@ impl WireExpression {
                             Ok(WireExpression::Pipeline { import_id, property_path, args })
                         }
 
+                        "call" => {
+                            if arr.len() != 4 {
+                                warn!("call has {} elements, expected 4", arr.len());
+                                return Err("call requires exactly 4 elements".into());
+                            }
+                            let cap_id = arr[1].as_i64()
+                                .ok_or("call cap ID must be integer")?;
+
+                            trace!("Call: cap_id={}, elements={}", cap_id, arr.len());
+
+                            let property_path = arr[2].as_array()
+                                .ok_or("call property path must be array")?
+                                .iter().map(|key| {
+                                    if let Some(s) = key.as_str() {
+                                        Ok(PropertyKey::String(s.to_string()))
+                                    } else if let Some(n) = key.as_u64() {
+                                        Ok(PropertyKey::Number(n as usize))
+                                    } else {
+                                        Err("Property key must be string or number".to_string())
+                                    }
+                                }).collect::<Result<Vec<_>, _>>()?;
+
+                            let args = Box::new(WireExpression::from_json(&arr[3])?);
+
+                            Ok(WireExpression::Call { cap_id, property_path, args })
+                        }
+
                         "date" => {
                             if arr.len() != 2 {
                                 return Err("date requires exactly 2 elements".into());
@@ -444,6 +478,22 @@ impl WireExpression {
                     JsonValue::String("capref".into()),
                     JsonValue::Number(Number::from(*id))
                 ])
+            }
+
+            WireExpression::Call { cap_id, property_path, args } => {
+                let mut arr = vec![
+                    JsonValue::String("call".into()),
+                    JsonValue::Number(Number::from(*cap_id))
+                ];
+
+                let path_json: Vec<JsonValue> = property_path.iter().map(|key| match key {
+                    PropertyKey::String(s) => JsonValue::String(s.clone()),
+                    PropertyKey::Number(n) => JsonValue::Number(Number::from(*n)),
+                }).collect();
+                arr.push(JsonValue::Array(path_json));
+                arr.push(args.to_json());
+
+                JsonValue::Array(arr)
             }
         }
     }
