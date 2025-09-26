@@ -5,15 +5,15 @@
 // - Capability passing and lifecycle management
 // - Error handling and validation
 
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicU64, Ordering};
-use anyhow::{Result, Context};
-use serde_json::{json, Value};
-use tokio::sync::{RwLock, oneshot};
-use tracing::{debug, trace};
-use capnweb_core::{CallId, CapId, Message, RpcError};
+use anyhow::{Context, Result};
+use capnweb_core::CapId;
 use reqwest::Client as HttpClient;
+use serde_json::{json, Value};
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use tracing::{debug, trace};
 
 /// Client configuration
 #[derive(Debug, Clone)]
@@ -55,31 +55,34 @@ impl Client {
         Ok(Self {
             config,
             http_client,
-            next_call_id: AtomicU64::new(0),
+            next_call_id: AtomicU64::new(1), // Start from 1 for Cap'n Web protocol
             capabilities: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
     /// Create a new client with default configuration
     pub fn new_with_url(url: &str) -> Result<Self> {
-        let mut config = ClientConfig::default();
-        config.url = url.to_string();
+        let config = ClientConfig {
+            url: url.to_string(),
+            ..Default::default()
+        };
         Self::new(config)
     }
 
     /// Create a new batch builder for batching multiple operations
-    pub fn batch(&self) -> BatchBuilder {
+    pub fn batch(&self) -> BatchBuilder<'_> {
         BatchBuilder::new(self)
     }
 
     /// Perform a single RPC call
     pub async fn call(&self, cap_id: CapId, method: &str, args: Vec<Value>) -> Result<Value> {
-        let call_id = CallId::new(self.next_call_id.fetch_add(1, Ordering::SeqCst));
+        // Cap'n Web protocol uses import IDs starting from 1
+        let import_id = self.next_call_id.fetch_add(1, Ordering::SeqCst);
 
         // Create batch with single operation
         let messages = vec![
             json!(["push", ["call", cap_id.as_u64(), [method], args]]),
-            json!(["pull", call_id.as_u64()]),
+            json!(["pull", import_id]),
         ];
 
         let results = self.send_batch(messages).await?;
@@ -87,10 +90,14 @@ impl Client {
         // Extract result
         for result in results {
             if let Some(arr) = result.as_array() {
-                if arr.len() >= 3 && (arr[0] == "result" || arr[0] == "resolve") && arr[1] == call_id.as_u64() {
+                if arr.len() >= 3
+                    && (arr[0] == "result" || arr[0] == "resolve")
+                    && arr[1] == import_id
+                {
                     return Ok(arr[2].clone());
-                } else if arr.len() >= 3 && arr[0] == "error" && arr[1] == call_id.as_u64() {
-                    let error = arr[2].as_object()
+                } else if arr.len() >= 3 && arr[0] == "error" && arr[1] == import_id {
+                    let error = arr[2]
+                        .as_object()
                         .and_then(|o| o.get("message"))
                         .and_then(|m| m.as_str())
                         .unwrap_or("Unknown error");
@@ -105,16 +112,21 @@ impl Client {
     /// Send a batch of messages to the server
     async fn send_batch(&self, messages: Vec<Value>) -> Result<Vec<Value>> {
         // Convert messages to newline-delimited JSON
-        let body = messages
+        let body_parts: Result<Vec<String>> = messages
             .iter()
-            .map(|m| serde_json::to_string(m).unwrap())
-            .collect::<Vec<_>>()
-            .join("\n");
+            .map(|m| serde_json::to_string(m).context("Failed to serialize message"))
+            .collect();
+        let body = body_parts?.join("\n");
 
-        debug!("Sending batch request to {}: {} messages", self.config.url, messages.len());
+        debug!(
+            "Sending batch request to {}: {} messages",
+            self.config.url,
+            messages.len()
+        );
         trace!("Request body:\n{}", body);
 
-        let response = self.http_client
+        let response = self
+            .http_client
             .post(&self.config.url)
             .header("Content-Type", "text/plain")
             .body(body)
@@ -123,7 +135,9 @@ impl Client {
             .context("Failed to send HTTP request")?;
 
         let status = response.status();
-        let text = response.text().await
+        let text = response
+            .text()
+            .await
             .context("Failed to read response body")?;
 
         if !status.is_success() {
@@ -161,9 +175,7 @@ impl Client {
 
     /// Dispose of a capability
     pub async fn dispose_capability(&self, id: CapId) -> Result<()> {
-        let messages = vec![
-            json!(["dispose", id.as_u64()]),
-        ];
+        let messages = vec![json!(["dispose", id.as_u64()])];
 
         self.send_batch(messages).await?;
 
@@ -202,7 +214,7 @@ impl<'a> BatchBuilder<'a> {
         Self {
             client,
             operations: Vec::new(),
-            next_result_id: 1,  // Start from 1 to match server's import_id assignment
+            next_result_id: 1, // Start from 1 to match server's import_id assignment
         }
     }
 
@@ -227,11 +239,13 @@ impl<'a> BatchBuilder<'a> {
     }
 
     /// Add a pipeline operation that depends on a previous result
-    pub fn pipeline(&mut self,
-                     base: &PendingResult,
-                     path: Vec<&str>,
-                     method: &str,
-                     args: Vec<Value>) -> PendingResult {
+    pub fn pipeline(
+        &mut self,
+        base: &PendingResult,
+        path: Vec<&str>,
+        method: &str,
+        args: Vec<Value>,
+    ) -> PendingResult {
         let result_id = self.next_result_id;
         self.next_result_id += 1;
 
@@ -249,7 +263,10 @@ impl<'a> BatchBuilder<'a> {
         pipeline_args.extend(args);
 
         // Create the pipeline message: ["pipeline", import_id, [method], [args]]
-        let message = json!(["push", ["pipeline", base.id, vec![json!(method)], pipeline_args]]);
+        let message = json!([
+            "push",
+            ["pipeline", base.id, vec![json!(method)], pipeline_args]
+        ]);
 
         self.operations.push(BatchOperation {
             id: result_id,
@@ -318,10 +335,12 @@ impl<'a> BatchBuilder<'a> {
                         "error" => {
                             if let Some(id) = arr[1].as_u64() {
                                 let error_obj = arr.get(2).cloned().unwrap_or(json!({}));
-                                let error_msg = error_obj.get("message")
+                                let error_msg = error_obj
+                                    .get("message")
                                     .and_then(|m| m.as_str())
                                     .unwrap_or("Unknown error");
-                                results.insert(id, Err(anyhow::anyhow!("RPC error: {}", error_msg)));
+                                results
+                                    .insert(id, Err(anyhow::anyhow!("RPC error: {}", error_msg)));
                             }
                         }
                         _ => {}
@@ -342,7 +361,8 @@ pub struct BatchResults {
 impl BatchResults {
     /// Get a result by its pending handle
     pub fn get(&self, pending: &PendingResult) -> Result<Value> {
-        let value = self.results
+        let value = self
+            .results
             .get(&pending.id)
             .ok_or_else(|| anyhow::anyhow!("No result for operation {}", pending.id))?
             .as_ref()
@@ -355,7 +375,8 @@ impl BatchResults {
         } else {
             let mut current = value;
             for segment in &pending.path {
-                current = current.get(segment)
+                current = current
+                    .get(segment)
                     .ok_or_else(|| anyhow::anyhow!("Field '{}' not found in result", segment))?
                     .clone();
             }
@@ -392,9 +413,9 @@ mod tests {
         let mut batch = client.batch();
 
         let result = batch.call(CapId::new(1), "test", vec![json!("arg")]);
-        assert_eq!(result.id, 0);
+        assert_eq!(result.id, 1); // IDs start from 1 per Cap'n Web protocol
 
         let pipelined = batch.pipeline(&result, vec!["field"], "method", vec![]);
-        assert_eq!(pipelined.id, 1);
+        assert_eq!(pipelined.id, 2);
     }
 }

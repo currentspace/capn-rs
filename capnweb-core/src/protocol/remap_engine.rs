@@ -1,10 +1,10 @@
 // Advanced Remap Execution Engine for Cap'n Web Protocol
 // Implements the sophisticated remap operation: ["remap", import_id, property_path, captures, instructions]
 
-use super::expression::{Expression, RemapExpression, CaptureRef, PropertyKey};
-use super::tables::{Value, ImportTable, ExportTable, ImportValue, ExportValueRef};
-use super::ids::{ImportId, ExportId};
 use super::evaluator::ExpressionEvaluator;
+use super::expression::{CaptureRef, Expression, PropertyKey, RemapExpression};
+use super::ids::{ExportId, ImportId};
+use super::tables::{ExportTable, ExportValueRef, ImportTable, ImportValue, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -88,7 +88,9 @@ impl RemapEngine {
         tracing::debug!("Captured {} values", context.captured_values.len());
 
         // Step 3: Execute instruction sequence
-        let result = self.execute_instructions(&remap.instructions, &context, evaluator).await?;
+        let result = self
+            .execute_instructions(&remap.instructions, &context, evaluator)
+            .await?;
         tracing::debug!("Remap execution completed: {:?}", result);
 
         Ok(result)
@@ -97,17 +99,22 @@ impl RemapEngine {
     /// Resolve the base import value with optional property path
     async fn resolve_base_import(&self, remap: &RemapExpression) -> Result<Value, RemapError> {
         // Get the base import
-        let import_value = self.imports
+        let import_value = self
+            .imports
             .get(remap.import_id)
             .ok_or(RemapError::UnknownImport(remap.import_id))?;
 
         let base_value = match import_value {
             ImportValue::Value(value) => value,
             ImportValue::Stub(_) => {
-                return Err(RemapError::UnsupportedImportType("Stub remapping not yet implemented".to_string()));
+                return Err(RemapError::UnsupportedImportType(
+                    "Stub remapping not yet implemented".to_string(),
+                ));
             }
             ImportValue::Promise(_) => {
-                return Err(RemapError::UnsupportedImportType("Promise remapping not yet implemented".to_string()));
+                return Err(RemapError::UnsupportedImportType(
+                    "Promise remapping not yet implemented".to_string(),
+                ));
             }
         };
 
@@ -120,39 +127,49 @@ impl RemapEngine {
     }
 
     /// Resolve a property path on a value
-    fn resolve_property_path(&self, value: &Value, path: &[PropertyKey]) -> Result<Value, RemapError> {
+    fn resolve_property_path(
+        &self,
+        value: &Value,
+        path: &[PropertyKey],
+    ) -> Result<Value, RemapError> {
         let mut current = value;
         #[allow(unused_assignments)]
         let mut owned_value: Option<Value> = None;
 
         for key in path {
             match key {
-                PropertyKey::String(prop) => {
-                    match current {
-                        Value::Object(obj) => {
-                            if let Some(val) = obj.get(prop) {
-                                owned_value = Some((**val).clone());
-                                current = owned_value.as_ref().expect("Just set owned_value to Some");
-                            } else {
-                                return Err(RemapError::PropertyNotFound(prop.clone()));
-                            }
+                PropertyKey::String(prop) => match current {
+                    Value::Object(obj) => {
+                        if let Some(val) = obj.get(prop) {
+                            owned_value = Some((**val).clone());
+                            current = owned_value.as_ref().expect("Just set owned_value to Some");
+                        } else {
+                            return Err(RemapError::PropertyNotFound(prop.clone()));
                         }
-                        _ => return Err(RemapError::InvalidPropertyAccess(format!("Cannot access property '{}' on non-object", prop))),
                     }
-                }
-                PropertyKey::Number(index) => {
-                    match current {
-                        Value::Array(arr) => {
-                            if *index < arr.len() {
-                                owned_value = Some(arr[*index].clone());
-                                current = owned_value.as_ref().expect("Just set owned_value to Some");
-                            } else {
-                                return Err(RemapError::IndexOutOfBounds(*index));
-                            }
+                    _ => {
+                        return Err(RemapError::InvalidPropertyAccess(format!(
+                            "Cannot access property '{}' on non-object",
+                            prop
+                        )))
+                    }
+                },
+                PropertyKey::Number(index) => match current {
+                    Value::Array(arr) => {
+                        if *index < arr.len() {
+                            owned_value = Some(arr[*index].clone());
+                            current = owned_value.as_ref().expect("Just set owned_value to Some");
+                        } else {
+                            return Err(RemapError::IndexOutOfBounds(*index));
                         }
-                        _ => return Err(RemapError::InvalidPropertyAccess(format!("Cannot index with {} on non-array", index))),
                     }
-                }
+                    _ => {
+                        return Err(RemapError::InvalidPropertyAccess(format!(
+                            "Cannot index with {} on non-array",
+                            index
+                        )))
+                    }
+                },
             }
         }
 
@@ -160,26 +177,36 @@ impl RemapEngine {
     }
 
     /// Capture values from imports and exports as specified
-    async fn capture_values(&self, remap: &RemapExpression, context: &mut RemapContext) -> Result<(), RemapError> {
+    async fn capture_values(
+        &self,
+        remap: &RemapExpression,
+        context: &mut RemapContext,
+    ) -> Result<(), RemapError> {
         for (index, capture_ref) in remap.captures.iter().enumerate() {
             let captured_value = match capture_ref {
                 CaptureRef::Import(import_id) => {
-                    let import_value = self.imports
+                    let import_value = self
+                        .imports
                         .get(*import_id)
                         .ok_or(RemapError::UnknownImport(*import_id))?;
 
                     match import_value {
                         ImportValue::Value(value) => value,
                         ImportValue::Stub(_) => {
-                            return Err(RemapError::UnsupportedCaptureType("Cannot capture stub".to_string()));
+                            return Err(RemapError::UnsupportedCaptureType(
+                                "Cannot capture stub".to_string(),
+                            ));
                         }
                         ImportValue::Promise(_) => {
-                            return Err(RemapError::UnsupportedCaptureType("Cannot capture unresolved promise".to_string()));
+                            return Err(RemapError::UnsupportedCaptureType(
+                                "Cannot capture unresolved promise".to_string(),
+                            ));
                         }
                     }
                 }
                 CaptureRef::Export(export_id) => {
-                    let export_value = self.exports
+                    let export_value = self
+                        .exports
                         .get(*export_id)
                         .ok_or(RemapError::UnknownExport(*export_id))?;
 
@@ -189,10 +216,14 @@ impl RemapEngine {
                             return Err(RemapError::CapturedRejectedPromise(error.clone()));
                         }
                         ExportValueRef::Stub(_) => {
-                            return Err(RemapError::UnsupportedCaptureType("Cannot capture stub".to_string()));
+                            return Err(RemapError::UnsupportedCaptureType(
+                                "Cannot capture stub".to_string(),
+                            ));
                         }
                         ExportValueRef::Promise(_) => {
-                            return Err(RemapError::UnsupportedCaptureType("Cannot capture unresolved promise".to_string()));
+                            return Err(RemapError::UnsupportedCaptureType(
+                                "Cannot capture unresolved promise".to_string(),
+                            ));
                         }
                     }
                 }
@@ -224,7 +255,9 @@ impl RemapEngine {
             let resolved_instruction = Self::resolve_instruction_captures(instruction, context)?;
 
             // Evaluate the instruction
-            result = evaluator.evaluate(resolved_instruction).await
+            result = evaluator
+                .evaluate(resolved_instruction)
+                .await
                 .map_err(|e| RemapError::InstructionExecutionError(i, e.to_string()))?;
 
             tracing::debug!("Instruction {} result: {:?}", i, result);
@@ -234,7 +267,10 @@ impl RemapEngine {
     }
 
     /// Resolve capture references within an instruction
-    fn resolve_instruction_captures(instruction: &Expression, context: &RemapContext) -> Result<Expression, RemapError> {
+    fn resolve_instruction_captures(
+        instruction: &Expression,
+        context: &RemapContext,
+    ) -> Result<Expression, RemapError> {
         match instruction {
             // Handle special capture reference syntax (e.g., $0, $1, etc.)
             Expression::String(s) if s.starts_with('$') => {
@@ -292,13 +328,15 @@ impl RemapEngine {
                 Expression::Object(map)
             }
             Value::Date(timestamp) => Expression::Date(*timestamp),
-            Value::Error { error_type, message, stack } => {
-                Expression::Error(super::expression::ErrorExpression {
-                    error_type: error_type.clone(),
-                    message: message.clone(),
-                    stack: stack.clone(),
-                })
-            }
+            Value::Error {
+                error_type,
+                message,
+                stack,
+            } => Expression::Error(super::expression::ErrorExpression {
+                error_type: error_type.clone(),
+                message: message.clone(),
+                stack: stack.clone(),
+            }),
             // For complex types, create placeholder expressions
             Value::Stub(_) | Value::Promise(_) => {
                 Expression::String("[Complex value - not serializable]".to_string())
@@ -348,8 +386,8 @@ pub enum RemapError {
 mod tests {
     use super::*;
     use crate::protocol::{IdAllocator, ImportValue};
-    use std::sync::Arc;
     use serde_json::Number;
+    use std::sync::Arc;
 
     #[tokio::test]
     async fn test_basic_remap_execution() {
@@ -359,7 +397,12 @@ mod tests {
 
         // Set up test data
         let import_id = ImportId(1);
-        imports.insert(import_id, ImportValue::Value(Value::Number(Number::from(42)))).unwrap();
+        imports
+            .insert(
+                import_id,
+                ImportValue::Value(Value::Number(Number::from(42))),
+            )
+            .unwrap();
 
         // Create remap expression: ["remap", 1, null, [], ["$0"]]
         let remap = RemapExpression {
@@ -388,15 +431,23 @@ mod tests {
 
         // Create object with nested properties
         let mut obj = std::collections::HashMap::new();
-        obj.insert("user".to_string(), Box::new(Value::Object({
-            let mut user_obj = std::collections::HashMap::new();
-            user_obj.insert("name".to_string(), Box::new(Value::String("Alice".to_string())));
-            user_obj.insert("age".to_string(), Box::new(Value::Number(Number::from(30))));
-            user_obj
-        })));
+        obj.insert(
+            "user".to_string(),
+            Box::new(Value::Object({
+                let mut user_obj = std::collections::HashMap::new();
+                user_obj.insert(
+                    "name".to_string(),
+                    Box::new(Value::String("Alice".to_string())),
+                );
+                user_obj.insert("age".to_string(), Box::new(Value::Number(Number::from(30))));
+                user_obj
+            })),
+        );
 
         let import_id = ImportId(1);
-        imports.insert(import_id, ImportValue::Value(Value::Object(obj))).unwrap();
+        imports
+            .insert(import_id, ImportValue::Value(Value::Object(obj)))
+            .unwrap();
 
         // Create remap with property path: ["remap", 1, ["user", "name"], [], ["$0"]]
         let remap = RemapExpression {
@@ -430,23 +481,24 @@ mod tests {
         let import1 = ImportId(1);
         let import2 = ImportId(2);
 
-        imports.insert(import1, ImportValue::Value(Value::Number(Number::from(10)))).unwrap();
-        imports.insert(import2, ImportValue::Value(Value::Number(Number::from(20)))).unwrap();
+        imports
+            .insert(import1, ImportValue::Value(Value::Number(Number::from(10))))
+            .unwrap();
+        imports
+            .insert(import2, ImportValue::Value(Value::Number(Number::from(20))))
+            .unwrap();
 
         // Create remap that captures both values: ["remap", 1, null, [["import", 1], ["import", 2]], [...]]
         let remap = RemapExpression {
             import_id: import1,
             property_path: None,
-            captures: vec![
-                CaptureRef::Import(import1),
-                CaptureRef::Import(import2),
-            ],
+            captures: vec![CaptureRef::Import(import1), CaptureRef::Import(import2)],
             instructions: vec![
                 // Simple instruction that would use captures (simplified for test)
                 Expression::Array(vec![
                     Expression::String("$0".to_string()),
                     Expression::String("$1".to_string()),
-                ])
+                ]),
             ],
         };
 

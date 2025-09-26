@@ -1,13 +1,13 @@
 // Advanced IL Plan Runner - Execution engine for Cap'n Web IL plans
 // Executes complex instruction sequences with capability composition
 
-use super::tables::{Value, ImportTable, ExportTable};
+use super::tables::{ExportTable, ImportTable, Value};
+use crate::il::{ArrayOp, CallOp, ObjectOp, Op, Plan, Source};
 use crate::CapId;
-use crate::il::{Plan, Op, Source, CallOp, ObjectOp, ArrayOp};
-use crate::{RpcTarget, RpcError};
+use crate::{RpcError, RpcTarget};
+use serde_json::Number;
 use std::collections::HashMap;
 use std::sync::Arc;
-use serde_json::Number;
 
 /// Plan execution context containing runtime state
 #[derive(Debug)]
@@ -41,15 +41,18 @@ impl ExecutionContext {
             serde_json::Value::Bool(b) => Value::Bool(b),
             serde_json::Value::Number(n) => Value::Number(n),
             serde_json::Value::String(s) => Value::String(s),
-            serde_json::Value::Array(arr) => {
-                Value::Array(arr.into_iter()
+            serde_json::Value::Array(arr) => Value::Array(
+                arr.into_iter()
                     .map(Self::convert_serde_json_value_to_tables_value)
-                    .collect())
-            },
+                    .collect(),
+            ),
             serde_json::Value::Object(obj) => {
                 let mut map = HashMap::new();
                 for (k, v) in obj {
-                    map.insert(k, Box::new(Self::convert_serde_json_value_to_tables_value(v)));
+                    map.insert(
+                        k,
+                        Box::new(Self::convert_serde_json_value_to_tables_value(v)),
+                    );
                 }
                 Value::Object(map)
             }
@@ -66,7 +69,10 @@ impl ExecutionContext {
                 // Return a capability reference
                 Ok(Value::Object({
                     let mut obj = HashMap::new();
-                    obj.insert("$cap".to_string(), Box::new(Value::Number(Number::from(capture.index))));
+                    obj.insert(
+                        "$cap".to_string(),
+                        Box::new(Value::Number(Number::from(capture.index))),
+                    );
                     obj
                 }))
             }
@@ -79,12 +85,10 @@ impl ExecutionContext {
                     None => Err(PlanExecutionError::ResultNotSet(result.index)),
                 }
             }
-            Source::Param { param } => {
-                self.get_nested_parameter(&param.path)
-            }
-            Source::ByValue { by_value } => {
-                Ok(Self::convert_serde_json_value_to_tables_value(by_value.value.clone()))
-            }
+            Source::Param { param } => self.get_nested_parameter(&param.path),
+            Source::ByValue { by_value } => Ok(Self::convert_serde_json_value_to_tables_value(
+                by_value.value.clone(),
+            )),
         }
     }
 
@@ -95,7 +99,8 @@ impl ExecutionContext {
         for segment in path {
             match current {
                 Value::Object(obj) => {
-                    current = obj.get(segment)
+                    current = obj
+                        .get(segment)
                         .ok_or_else(|| PlanExecutionError::ParameterNotFound(segment.clone()))?
                         .as_ref();
                 }
@@ -141,14 +146,11 @@ pub struct PlanRunner {
 
 impl PlanRunner {
     /// Create a new plan runner
-    pub fn new(
-        imports: Arc<ImportTable>,
-        exports: Arc<ExportTable>,
-    ) -> Self {
+    pub fn new(imports: Arc<ImportTable>, exports: Arc<ExportTable>) -> Self {
         Self {
             imports,
             exports,
-            timeout_ms: 30000, // 30 second default timeout
+            timeout_ms: 30000,    // 30 second default timeout
             max_operations: 1000, // Maximum 1000 operations per plan
         }
     }
@@ -176,7 +178,8 @@ impl PlanRunner {
         captures: Vec<Arc<dyn RpcTarget>>,
     ) -> Result<Value, PlanExecutionError> {
         // Validate the plan first
-        plan.validate().map_err(PlanExecutionError::ValidationError)?;
+        plan.validate()
+            .map_err(PlanExecutionError::ValidationError)?;
 
         if plan.ops.len() > self.max_operations {
             return Err(PlanExecutionError::TooManyOperations(plan.ops.len()));
@@ -196,7 +199,7 @@ impl PlanRunner {
 
             let result = tokio::time::timeout(
                 std::time::Duration::from_millis(self.timeout_ms),
-                self.execute_operation(op, &mut context)
+                self.execute_operation(op, &mut context),
             )
             .await
             .map_err(|_| PlanExecutionError::ExecutionTimeout)?;
@@ -259,7 +262,9 @@ impl PlanRunner {
         );
 
         // Execute the RPC call
-        let result = target.call(&call.member, args).await
+        let result = target
+            .call(&call.member, args)
+            .await
             .map_err(PlanExecutionError::RpcCallFailed)?;
 
         tracing::trace!(member = %call.member, "RPC call completed");
@@ -307,9 +312,7 @@ impl PlanRunner {
         context: &ExecutionContext,
     ) -> Result<Arc<dyn RpcTarget>, PlanExecutionError> {
         match source {
-            Source::Capture { capture } => {
-                context.get_capability(capture.index)
-            }
+            Source::Capture { capture } => context.get_capability(capture.index),
             Source::Result { result: _ } => {
                 // Check if the result is a capability reference
                 let value = context.get_source_value(source).await?;
@@ -322,9 +325,13 @@ impl PlanRunner {
                         }
                     }
                 }
-                Err(PlanExecutionError::InvalidTarget("Result is not a capability".to_string()))
+                Err(PlanExecutionError::InvalidTarget(
+                    "Result is not a capability".to_string(),
+                ))
             }
-            _ => Err(PlanExecutionError::InvalidTarget("Source cannot be used as a target".to_string())),
+            _ => Err(PlanExecutionError::InvalidTarget(
+                "Source cannot be used as a target".to_string(),
+            )),
         }
     }
 }
@@ -559,11 +566,8 @@ mod tests {
         let mut builder = PlanBuilder::new();
 
         let cap_index = builder.add_capture(CapId::new(1));
-        let call_result = builder.add_call(
-            Source::capture(cap_index),
-            "getData".to_string(),
-            vec![],
-        );
+        let call_result =
+            builder.add_call(Source::capture(cap_index), "getData".to_string(), vec![]);
 
         let mut fields = HashMap::new();
         fields.insert("data".to_string(), Source::result(call_result));
@@ -596,14 +600,14 @@ mod tests {
         assert!(name.is_ok());
         match name.expect("Should get name") {
             Value::String(s) => assert_eq!(s, "Alice"),
-            _ => panic!("Expected string value for name")
+            _ => panic!("Expected string value for name"),
         }
 
         let theme = context.get_nested_parameter(&["settings".to_string(), "theme".to_string()]);
         assert!(theme.is_ok());
         match theme.expect("Should get theme") {
             Value::String(s) => assert_eq!(s, "dark"),
-            _ => panic!("Expected string value for theme")
+            _ => panic!("Expected string value for theme"),
         }
     }
 
@@ -615,7 +619,10 @@ mod tests {
                 Op::call(
                     Source::capture(0),
                     "method1".to_string(),
-                    vec![Source::by_value(json!("arg1")), Source::by_value(json!("arg2"))],
+                    vec![
+                        Source::by_value(json!("arg1")),
+                        Source::by_value(json!("arg2")),
+                    ],
                     0,
                 ),
                 Op::object(
@@ -625,10 +632,7 @@ mod tests {
                     ]),
                     1,
                 ),
-                Op::array(
-                    vec![Source::result(1), Source::by_value(json!(42))],
-                    2,
-                ),
+                Op::array(vec![Source::result(1), Source::by_value(json!(42))], 2),
             ],
             Source::result(2),
         );

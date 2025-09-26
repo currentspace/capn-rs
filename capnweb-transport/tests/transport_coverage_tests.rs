@@ -1,23 +1,19 @@
 // Transport Layer Coverage Tests
 // Addresses uncovered code in HTTP/3, WebTransport, and other transport modules
 
-use capnweb_transport::{
-    RpcTransport, TransportError,
-};
+use capnweb_transport::{RpcTransport, TransportError};
 
 #[cfg(feature = "http-batch")]
 use capnweb_transport::HttpBatchTransport;
 
 #[cfg(feature = "http3")]
 use capnweb_transport::{
-    Http3Transport, Http3Config, Http3Client, Http3Stats,
     http3::advanced::{Http3ConnectionPool, Http3LoadBalancer},
+    Http3Client, Http3Config, Http3Stats, Http3Transport,
 };
 
 #[cfg(feature = "webtransport")]
-use capnweb_transport::{
-    WebTransportTransport, WebTransportClient,
-};
+use capnweb_transport::{WebTransportClient, WebTransportTransport};
 
 use capnweb_core::Message;
 
@@ -82,10 +78,8 @@ mod http3_tests {
         assert!(matches!(result, Err(TransportError::Protocol(_))));
 
         // Test with single server
-        let single_balancer = Http3LoadBalancer::new(
-            vec!["localhost:8080".to_string()],
-            config.clone()
-        );
+        let single_balancer =
+            Http3LoadBalancer::new(vec!["localhost:8080".to_string()], config.clone());
 
         // Should always return same connection attempt
         for _ in 0..3 {
@@ -116,15 +110,19 @@ mod http3_tests {
         // Test with special characters in headers
         headers.custom_headers.insert(
             "X-Special-Header".to_string(),
-            "value with spaces and 特殊字符".to_string()
+            "value with spaces and 特殊字符".to_string(),
         );
 
         // Test with empty values
-        headers.custom_headers.insert("X-Empty".to_string(), "".to_string());
+        headers
+            .custom_headers
+            .insert("X-Empty".to_string(), "".to_string());
 
         // Test with very long header value
         let long_value = "x".repeat(8192);
-        headers.custom_headers.insert("X-Long".to_string(), long_value);
+        headers
+            .custom_headers
+            .insert("X-Long".to_string(), long_value);
 
         assert_eq!(headers.method, "POST");
         assert_eq!(headers.custom_headers.len(), 3);
@@ -296,7 +294,7 @@ mod http_batch_tests {
                 capnweb_core::CallId::new(i),
                 capnweb_core::Target::cap(capnweb_core::CapId::new(1)),
                 format!("method_{}", i),
-                vec![]
+                vec![],
             );
 
             let _ = transport.send(msg).await;
@@ -337,7 +335,7 @@ mod http_batch_tests {
                 capnweb_core::CallId::new(i),
                 capnweb_core::Target::cap(capnweb_core::CapId::new(1)),
                 "test".to_string(),
-                vec![]
+                vec![],
             );
             let _ = transport.send(msg).await;
         }
@@ -355,8 +353,8 @@ mod http_batch_tests {
 // ============================================================================
 
 mod codec_tests {
+    use bytes::{BufMut, BytesMut};
     use capnweb_transport::capnweb_codec::{CapnWebCodec, NewlineDelimitedCodec};
-    use bytes::{BytesMut, BufMut};
     use tokio_util::codec::Decoder;
 
     #[test]
@@ -375,8 +373,8 @@ mod codec_tests {
         // Partial JSON might return error or None, both are acceptable
         match result {
             Ok(Some(_)) => panic!("Unexpected decoded message from partial JSON"),
-            Ok(None) => {}, // Expected: not enough data
-            Err(_) => {}, // Also acceptable: invalid JSON
+            Ok(None) => {} // Expected: not enough data
+            Err(_) => {}   // Also acceptable: invalid JSON
         }
 
         // Test invalid JSON
@@ -459,7 +457,10 @@ async fn test_transport_error_recovery() {
         TransportError::ConnectionClosed,
         TransportError::Codec("Invalid message".to_string()),
         TransportError::Protocol("Protocol violation".to_string()),
-        TransportError::Io(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "EOF")),
+        TransportError::Io(std::io::Error::new(
+            std::io::ErrorKind::UnexpectedEof,
+            "EOF",
+        )),
     ];
 
     for error in errors {

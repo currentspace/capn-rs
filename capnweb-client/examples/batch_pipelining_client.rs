@@ -4,21 +4,21 @@
 // - Non-batched sequential calls: multiple round trips
 // - Full protocol validation against the server
 
-use std::time::Instant;
-use std::env;
-use serde_json::{json, Value};
-use reqwest;
-use colored::*;
 use capnweb_core::protocol::wire::{
-    WireMessage, WireExpression, PropertyKey,
-    serialize_wire_batch, parse_wire_batch
+    parse_wire_batch, serialize_wire_batch, PropertyKey, WireExpression, WireMessage,
 };
 use capnweb_core::CapId;
+use colored::*;
+use reqwest;
+use serde_json::{json, Value};
+use std::env;
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize environment
-    let rpc_url = env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
+    let rpc_url =
+        env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
 
     println!("========================================");
     println!("Cap'n Web Rust Client - Batch Pipelining");
@@ -30,7 +30,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
     // Test 1: Pipelined batch (single round trip)
-    println!("{}", "--- Running pipelined (batched, single round trip) ---".blue());
+    println!(
+        "{}",
+        "--- Running pipelined (batched, single round trip) ---".blue()
+    );
     let (pipelined_result, pipelined_time) = run_pipelined(&client, &rpc_url).await?;
 
     println!("HTTP POSTs: {}", "1".green());
@@ -41,7 +44,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     // Test 2: Sequential calls (multiple round trips)
-    println!("{}", "--- Running sequential (non-batched, multiple round trips) ---".blue());
+    println!(
+        "{}",
+        "--- Running sequential (non-batched, multiple round trips) ---".blue()
+    );
     let (sequential_result, sequential_time) = run_sequential(&client, &rpc_url).await?;
 
     println!("HTTP POSTs: {}", "3".yellow());
@@ -55,8 +61,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", "========================================".green());
     println!("{}", "Summary:".bold());
     println!("Pipelined: {} POST, {:.2} ms", "1".green(), pipelined_time);
-    println!("Sequential: {} POSTs, {:.2} ms", "3".yellow(), sequential_time);
-    println!("Speedup: {:.1}x faster with pipelining", sequential_time / pipelined_time);
+    println!(
+        "Sequential: {} POSTs, {:.2} ms",
+        "3".yellow(),
+        sequential_time
+    );
+    println!(
+        "Speedup: {:.1}x faster with pipelining",
+        sequential_time / pipelined_time
+    );
     println!("{}", "========================================".green());
 
     Ok(())
@@ -71,7 +84,7 @@ struct TestResult {
 
 async fn run_pipelined(
     client: &reqwest::Client,
-    url: &str
+    url: &str,
 ) -> Result<(TestResult, f64), Box<dyn std::error::Error>> {
     let start = Instant::now();
 
@@ -83,10 +96,10 @@ async fn run_pipelined(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-123".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "cookie-123".to_string(),
+                )])),
+            },
         ),
         // 2. Get user profile using pipelined user ID
         WireMessage::Push(
@@ -94,14 +107,12 @@ async fn run_pipelined(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getUserProfile".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::Pipeline {
-                        import_id: 1,
-                        property_path: Some(vec![PropertyKey::String("id".to_string())]),
-                        args: None,
-                    }
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::Pipeline {
+                    import_id: 1,
+                    property_path: Some(vec![PropertyKey::String("id".to_string())]),
+                    args: None,
+                }])),
+            },
         ),
         // 3. Get notifications using pipelined user ID
         WireMessage::Push(
@@ -109,14 +120,12 @@ async fn run_pipelined(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getNotifications".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::Pipeline {
-                        import_id: 1,
-                        property_path: Some(vec![PropertyKey::String("id".to_string())]),
-                        args: None,
-                    }
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::Pipeline {
+                    import_id: 1,
+                    property_path: Some(vec![PropertyKey::String("id".to_string())]),
+                    args: None,
+                }])),
+            },
         ),
         // Pull all results
         WireMessage::Pull(1),
@@ -160,12 +169,19 @@ async fn run_pipelined(
     }
 
     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-    Ok((TestResult { user, profile, notifications }, elapsed))
+    Ok((
+        TestResult {
+            user,
+            profile,
+            notifications,
+        },
+        elapsed,
+    ))
 }
 
 async fn run_sequential(
     client: &reqwest::Client,
-    url: &str
+    url: &str,
 ) -> Result<(TestResult, f64), Box<dyn std::error::Error>> {
     let start = Instant::now();
 
@@ -176,10 +192,10 @@ async fn run_sequential(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-123".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "cookie-123".to_string(),
+                )])),
+            },
         ),
         WireMessage::Pull(1),
     ];
@@ -214,10 +230,10 @@ async fn run_sequential(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getUserProfile".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String(user_id.clone())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    user_id.clone(),
+                )])),
+            },
         ),
         WireMessage::Pull(2),
     ];
@@ -247,10 +263,8 @@ async fn run_sequential(
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getNotifications".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String(user_id)
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(user_id)])),
+            },
         ),
         WireMessage::Pull(3),
     ];
@@ -274,7 +288,14 @@ async fn run_sequential(
     }
 
     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-    Ok((TestResult { user, profile, notifications }, elapsed))
+    Ok((
+        TestResult {
+            user,
+            profile,
+            notifications,
+        },
+        elapsed,
+    ))
 }
 
 // Helper function to convert WireExpression to JSON Value

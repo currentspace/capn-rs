@@ -1,7 +1,7 @@
 // use serde::{Deserialize, Serialize}; // TODO: Remove when serialization is implemented
-use serde_json::{Value as JsonValue, Number};
+use super::ids::{ExportId, ImportId};
+use serde_json::{Number, Value as JsonValue};
 use std::collections::HashMap;
-use super::ids::{ImportId, ExportId};
 
 /// Cap'n Web expressions represent values and operations in the protocol
 #[derive(Debug, Clone, PartialEq)]
@@ -34,9 +34,7 @@ impl Expression {
             JsonValue::Number(n) => Ok(Expression::Number(n.clone())),
             JsonValue::String(s) => Ok(Expression::String(s.clone())),
 
-            JsonValue::Array(arr) if arr.is_empty() => {
-                Ok(Expression::Array(Vec::new()))
-            }
+            JsonValue::Array(arr) if arr.is_empty() => Ok(Expression::Array(Vec::new())),
 
             JsonValue::Array(arr) => {
                 // Check if this is a special typed array
@@ -45,20 +43,23 @@ impl Expression {
                 } else if let Some(JsonValue::Array(inner)) = arr.first() {
                     // This is an escaped array: [[...]]
                     if arr.len() == 1 {
-                        let elements = inner.iter()
+                        let elements = inner
+                            .iter()
                             .map(Self::from_json)
                             .collect::<Result<Vec<_>, _>>()?;
                         Ok(Expression::EscapedArray(elements))
                     } else {
                         // Regular array with array as first element
-                        let elements = arr.iter()
+                        let elements = arr
+                            .iter()
                             .map(Self::from_json)
                             .collect::<Result<Vec<_>, _>>()?;
                         Ok(Expression::Array(elements))
                     }
                 } else {
                     // Regular array
-                    let elements = arr.iter()
+                    let elements = arr
+                        .iter()
                         .map(Self::from_json)
                         .collect::<Result<Vec<_>, _>>()?;
                     Ok(Expression::Array(elements))
@@ -127,8 +128,7 @@ impl Expression {
                 if arr.len() != 2 {
                     return Err(ExpressionError::InvalidDate);
                 }
-                let millis = arr[1].as_f64()
-                    .ok_or(ExpressionError::InvalidDate)?;
+                let millis = arr[1].as_f64().ok_or(ExpressionError::InvalidDate)?;
                 Ok(Expression::Date(millis))
             }
 
@@ -136,15 +136,15 @@ impl Expression {
                 if arr.len() < 3 || arr.len() > 4 {
                     return Err(ExpressionError::InvalidError);
                 }
-                let error_type = arr[1].as_str()
+                let error_type = arr[1]
+                    .as_str()
                     .ok_or(ExpressionError::InvalidError)?
                     .to_string();
-                let message = arr[2].as_str()
+                let message = arr[2]
+                    .as_str()
                     .ok_or(ExpressionError::InvalidError)?
                     .to_string();
-                let stack = arr.get(3)
-                    .and_then(|v| v.as_str())
-                    .map(String::from);
+                let stack = arr.get(3).and_then(|v| v.as_str()).map(String::from);
 
                 Ok(Expression::Error(ErrorExpression {
                     error_type,
@@ -153,29 +153,20 @@ impl Expression {
                 }))
             }
 
-            "import" => {
-                ImportExpression::from_array(arr).map(Expression::Import)
-            }
+            "import" => ImportExpression::from_array(arr).map(Expression::Import),
 
-            "pipeline" => {
-                PipelineExpression::from_array(arr).map(Expression::Pipeline)
-            }
+            "pipeline" => PipelineExpression::from_array(arr).map(Expression::Pipeline),
 
-            "remap" => {
-                RemapExpression::from_array(arr).map(Expression::Remap)
-            }
+            "remap" => RemapExpression::from_array(arr).map(Expression::Remap),
 
-            "export" => {
-                ExportExpression::from_array(arr).map(Expression::Export)
-            }
+            "export" => ExportExpression::from_array(arr).map(Expression::Export),
 
-            "promise" => {
-                PromiseExpression::from_array(arr).map(Expression::Promise)
-            }
+            "promise" => PromiseExpression::from_array(arr).map(Expression::Promise),
 
             _ => {
                 // Unknown type code, treat as regular array
-                let elements = arr.iter()
+                let elements = arr
+                    .iter()
                     .map(Self::from_json)
                     .collect::<Result<Vec<_>, _>>()?;
                 Ok(Expression::Array(elements))
@@ -204,14 +195,12 @@ impl ImportExpression {
             return Err(ExpressionError::InvalidImport);
         }
 
-        let import_id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidImport)?;
+        let import_id = arr[1].as_i64().ok_or(ExpressionError::InvalidImport)?;
 
-        let property_path = arr.get(2)
-            .map(PropertyKey::parse_path)
-            .transpose()?;
+        let property_path = arr.get(2).map(PropertyKey::parse_path).transpose()?;
 
-        let call_arguments = arr.get(3)
+        let call_arguments = arr
+            .get(3)
             .map(|v| Expression::from_json(v).map(Box::new))
             .transpose()?;
 
@@ -253,14 +242,12 @@ impl PipelineExpression {
             return Err(ExpressionError::InvalidPipeline);
         }
 
-        let import_id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidPipeline)?;
+        let import_id = arr[1].as_i64().ok_or(ExpressionError::InvalidPipeline)?;
 
-        let property_path = arr.get(2)
-            .map(PropertyKey::parse_path)
-            .transpose()?;
+        let property_path = arr.get(2).map(PropertyKey::parse_path).transpose()?;
 
-        let call_arguments = arr.get(3)
+        let call_arguments = arr
+            .get(3)
             .map(|v| Expression::from_json(v).map(Box::new))
             .transpose()?;
 
@@ -303,8 +290,7 @@ impl RemapExpression {
             return Err(ExpressionError::InvalidRemap);
         }
 
-        let import_id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidRemap)?;
+        let import_id = arr[1].as_i64().ok_or(ExpressionError::InvalidRemap)?;
 
         let property_path = if !arr[2].is_null() {
             Some(PropertyKey::parse_path(&arr[2])?)
@@ -312,13 +298,15 @@ impl RemapExpression {
             None
         };
 
-        let captures = arr[3].as_array()
+        let captures = arr[3]
+            .as_array()
             .ok_or(ExpressionError::InvalidRemap)?
             .iter()
             .map(CaptureRef::from_json)
             .collect::<Result<Vec<_>, _>>()?;
 
-        let instructions = arr[4].as_array()
+        let instructions = arr[4]
+            .as_array()
             .ok_or(ExpressionError::InvalidRemap)?
             .iter()
             .map(Expression::from_json)
@@ -333,25 +321,17 @@ impl RemapExpression {
     }
 
     fn to_json(&self) -> JsonValue {
-        let path = self.property_path.as_ref()
+        let path = self
+            .property_path
+            .as_ref()
             .map(|p| PropertyKey::path_to_json(p))
             .unwrap_or(JsonValue::Null);
 
-        let captures: Vec<JsonValue> = self.captures.iter()
-            .map(|c| c.to_json())
-            .collect();
+        let captures: Vec<JsonValue> = self.captures.iter().map(|c| c.to_json()).collect();
 
-        let instructions: Vec<JsonValue> = self.instructions.iter()
-            .map(|i| i.to_json())
-            .collect();
+        let instructions: Vec<JsonValue> = self.instructions.iter().map(|i| i.to_json()).collect();
 
-        serde_json::json!([
-            "remap",
-            self.import_id.0,
-            path,
-            captures,
-            instructions
-        ])
+        serde_json::json!(["remap", self.import_id.0, path, captures, instructions])
     }
 }
 
@@ -366,8 +346,7 @@ impl ExportExpression {
             return Err(ExpressionError::InvalidExport);
         }
 
-        let export_id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidExport)?;
+        let export_id = arr[1].as_i64().ok_or(ExpressionError::InvalidExport)?;
 
         Ok(ExportExpression {
             export_id: ExportId(export_id),
@@ -390,8 +369,7 @@ impl PromiseExpression {
             return Err(ExpressionError::InvalidPromise);
         }
 
-        let export_id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidPromise)?;
+        let export_id = arr[1].as_i64().ok_or(ExpressionError::InvalidPromise)?;
 
         Ok(PromiseExpression {
             export_id: ExportId(export_id),
@@ -411,7 +389,8 @@ pub enum PropertyKey {
 
 impl PropertyKey {
     fn parse_path(value: &JsonValue) -> Result<Vec<PropertyKey>, ExpressionError> {
-        let arr = value.as_array()
+        let arr = value
+            .as_array()
             .ok_or(ExpressionError::InvalidPropertyPath)?;
 
         arr.iter()
@@ -428,7 +407,8 @@ impl PropertyKey {
     }
 
     fn path_to_json(path: &[PropertyKey]) -> JsonValue {
-        let elements: Vec<JsonValue> = path.iter()
+        let elements: Vec<JsonValue> = path
+            .iter()
             .map(|key| match key {
                 PropertyKey::String(s) => JsonValue::String(s.clone()),
                 PropertyKey::Number(n) => JsonValue::Number(Number::from(*n)),
@@ -447,18 +427,15 @@ pub enum CaptureRef {
 
 impl CaptureRef {
     fn from_json(value: &JsonValue) -> Result<Self, ExpressionError> {
-        let arr = value.as_array()
-            .ok_or(ExpressionError::InvalidCapture)?;
+        let arr = value.as_array().ok_or(ExpressionError::InvalidCapture)?;
 
         if arr.len() != 2 {
             return Err(ExpressionError::InvalidCapture);
         }
 
-        let type_str = arr[0].as_str()
-            .ok_or(ExpressionError::InvalidCapture)?;
+        let type_str = arr[0].as_str().ok_or(ExpressionError::InvalidCapture)?;
 
-        let id = arr[1].as_i64()
-            .ok_or(ExpressionError::InvalidCapture)?;
+        let id = arr[1].as_i64().ok_or(ExpressionError::InvalidCapture)?;
 
         match type_str {
             "import" => Ok(CaptureRef::Import(ImportId(id))),
@@ -569,7 +546,10 @@ mod tests {
         match expr {
             Expression::Import(import) => {
                 assert_eq!(import.import_id, ImportId(42));
-                assert_eq!(import.property_path, Some(vec![PropertyKey::String("method".to_string())]));
+                assert_eq!(
+                    import.property_path,
+                    Some(vec![PropertyKey::String("method".to_string())])
+                );
                 assert!(import.call_arguments.is_some());
             }
             _ => panic!("Expected Import expression"),

@@ -23,11 +23,10 @@ pub fn init_logging(log_dir: impl AsRef<Path>, log_prefix: &str) -> anyhow::Resu
     let (file_writer, _guard) = tracing_appender::non_blocking(file_appender);
 
     // Set up environment filter with sensible defaults
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| {
-            // Default to info level for our crates, warn for others
-            EnvFilter::new("capnweb=debug,tower_http=debug,axum=debug,hyper=debug,warn")
-        });
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+        // Default to info level for our crates, warn for others
+        EnvFilter::new("capnweb=debug,tower_http=debug,axum=debug,hyper=debug,warn")
+    });
 
     // Create console subscriber
     let console_layer = fmt::layer()
@@ -61,8 +60,9 @@ pub fn init_logging(log_dir: impl AsRef<Path>, log_prefix: &str) -> anyhow::Resu
 /// Initialize simple console-only logging for tests
 pub fn init_test_logging() {
     let _ = tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::new("capnweb=trace,debug")
-        }))
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("capnweb=trace,debug")),
+        )
         .try_init();
 }

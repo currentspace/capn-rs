@@ -1,7 +1,7 @@
+use super::expression::Expression;
+use super::ids::{ExportId, ImportId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use super::expression::Expression;
-use super::ids::{ImportId, ExportId};
 
 /// Cap'n Web protocol messages
 /// Messages are represented as JSON arrays with the message type as the first element
@@ -29,15 +29,13 @@ pub enum Message {
 impl Message {
     /// Parse a message from a JSON value
     pub fn from_json(value: &JsonValue) -> Result<Self, MessageError> {
-        let arr = value.as_array()
-            .ok_or(MessageError::NotAnArray)?;
+        let arr = value.as_array().ok_or(MessageError::NotAnArray)?;
 
         if arr.is_empty() {
             return Err(MessageError::EmptyMessage);
         }
 
-        let msg_type = arr[0].as_str()
-            .ok_or(MessageError::InvalidMessageType)?;
+        let msg_type = arr[0].as_str().ok_or(MessageError::InvalidMessageType)?;
 
         match msg_type {
             "push" => {
@@ -52,8 +50,7 @@ impl Message {
                 if arr.len() != 2 {
                     return Err(MessageError::InvalidPull);
                 }
-                let import_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidImportId)?;
+                let import_id = arr[1].as_i64().ok_or(MessageError::InvalidImportId)?;
                 Ok(Message::Pull(ImportId(import_id)))
             }
 
@@ -61,8 +58,7 @@ impl Message {
                 if arr.len() != 3 {
                     return Err(MessageError::InvalidResolve);
                 }
-                let export_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidExportId)?;
+                let export_id = arr[1].as_i64().ok_or(MessageError::InvalidExportId)?;
                 let expr = Expression::from_json(&arr[2])?;
                 Ok(Message::Resolve(ExportId(export_id), expr))
             }
@@ -71,8 +67,7 @@ impl Message {
                 if arr.len() != 3 {
                     return Err(MessageError::InvalidReject);
                 }
-                let export_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidExportId)?;
+                let export_id = arr[1].as_i64().ok_or(MessageError::InvalidExportId)?;
                 let expr = Expression::from_json(&arr[2])?;
                 Ok(Message::Reject(ExportId(export_id), expr))
             }
@@ -81,10 +76,8 @@ impl Message {
                 if arr.len() != 3 {
                     return Err(MessageError::InvalidRelease);
                 }
-                let import_id = arr[1].as_i64()
-                    .ok_or(MessageError::InvalidImportId)?;
-                let refcount = arr[2].as_u64()
-                    .ok_or(MessageError::InvalidRefcount)? as u32;
+                let import_id = arr[1].as_i64().ok_or(MessageError::InvalidImportId)?;
+                let refcount = arr[2].as_u64().ok_or(MessageError::InvalidRefcount)? as u32;
                 Ok(Message::Release(ImportId(import_id), refcount))
             }
 
@@ -96,7 +89,7 @@ impl Message {
                 Ok(Message::Abort(expr))
             }
 
-            _ => Err(MessageError::UnknownMessageType(msg_type.to_string()))
+            _ => Err(MessageError::UnknownMessageType(msg_type.to_string())),
         }
     }
 
@@ -142,8 +135,7 @@ impl<'de> Deserialize<'de> for Message {
         D: serde::Deserializer<'de>,
     {
         let value = JsonValue::deserialize(deserializer)?;
-        Message::from_json(&value)
-            .map_err(|e| serde::de::Error::custom(e.to_string()))
+        Message::from_json(&value).map_err(|e| serde::de::Error::custom(e.to_string()))
     }
 }
 

@@ -1,34 +1,32 @@
 // Wire protocol handler for the server
 // This module adds wire protocol support to the existing server
 
+use capnweb_core::{
+    parse_wire_batch, serialize_wire_batch, CapId, PropertyKey, WireExpression, WireMessage,
+};
 use serde_json::Value;
 use std::collections::HashMap;
-use capnweb_core::{
-    WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch,
-    CapId,
-};
-use tracing::{info, warn, error, debug};
+use tracing::{debug, error, info, warn};
 
 /// Convert WireExpression arguments to JSON Values for RPC calls
 pub fn wire_expr_to_values(expr: &WireExpression) -> Vec<Value> {
     match expr {
-        WireExpression::Array(items) => {
-            items.iter().map(wire_expr_to_value).collect()
-        }
-        single => vec![wire_expr_to_value(single)]
+        WireExpression::Array(items) => items.iter().map(wire_expr_to_value).collect(),
+        single => vec![wire_expr_to_value(single)],
     }
 }
 
 /// Convert WireExpression arguments to JSON Values with pipeline evaluation
 pub fn wire_expr_to_values_with_evaluation(
     expr: &WireExpression,
-    results: &HashMap<i64, WireExpression>
+    results: &HashMap<i64, WireExpression>,
 ) -> Vec<Value> {
     match expr {
-        WireExpression::Array(items) => {
-            items.iter().map(|e| wire_expr_to_value_with_evaluation(e, results)).collect()
-        }
-        single => vec![wire_expr_to_value_with_evaluation(single, results)]
+        WireExpression::Array(items) => items
+            .iter()
+            .map(|e| wire_expr_to_value_with_evaluation(e, results))
+            .collect(),
+        single => vec![wire_expr_to_value_with_evaluation(single, results)],
     }
 }
 
@@ -42,13 +40,11 @@ pub fn wire_expr_to_value(expr: &WireExpression) -> Value {
         WireExpression::Array(items) => {
             Value::Array(items.iter().map(wire_expr_to_value).collect())
         }
-        WireExpression::Object(map) => {
-            Value::Object(
-                map.iter()
-                    .map(|(k, v)| (k.clone(), wire_expr_to_value(v)))
-                    .collect()
-            )
-        }
+        WireExpression::Object(map) => Value::Object(
+            map.iter()
+                .map(|(k, v)| (k.clone(), wire_expr_to_value(v)))
+                .collect(),
+        ),
         WireExpression::CapRef(id) => {
             // Marshal capability reference as special JSON object
             // This follows TypeScript implementation pattern
@@ -67,16 +63,26 @@ pub fn wire_expr_to_value(expr: &WireExpression) -> Value {
 /// Convert a single WireExpression to a JSON Value with pipeline evaluation
 pub fn wire_expr_to_value_with_evaluation(
     expr: &WireExpression,
-    results: &HashMap<i64, WireExpression>
+    results: &HashMap<i64, WireExpression>,
 ) -> Value {
     match expr {
         // Handle pipeline expressions by evaluating them
-        WireExpression::Pipeline { import_id, property_path, args: _ } => {
-            debug!("Evaluating pipeline: import_id={}, path={:?}", import_id, property_path);
+        WireExpression::Pipeline {
+            import_id,
+            property_path,
+            args: _,
+        } => {
+            debug!(
+                "Evaluating pipeline: import_id={}, path={:?}",
+                import_id, property_path
+            );
 
             // Look up the result for this import_id
             if let Some(result_expr) = results.get(import_id) {
-                debug!("Found result for import_id {}: {:?}", import_id, result_expr);
+                debug!(
+                    "Found result for import_id {}: {:?}",
+                    import_id, result_expr
+                );
 
                 // Navigate the property path if present
                 if let Some(path) = property_path {
@@ -87,12 +93,15 @@ pub fn wire_expr_to_value_with_evaluation(
                     wire_expr_to_value(result_expr)
                 }
             } else {
-                warn!("No result found for import_id {} during pipeline evaluation", import_id);
+                warn!(
+                    "No result found for import_id {} during pipeline evaluation",
+                    import_id
+                );
                 Value::Null
             }
         }
         // For non-pipeline expressions, use the regular conversion
-        other => wire_expr_to_value(other)
+        other => wire_expr_to_value(other),
     }
 }
 
@@ -111,7 +120,7 @@ fn navigate_property_path(value: &Value, path: &[PropertyKey]) -> Value {
             }
             PropertyKey::Number(n) => {
                 if let Value::Array(arr) = current {
-                    let index = *n;  // n is already a usize
+                    let index = *n; // n is already a usize
                     current = arr.get(index).cloned().unwrap_or(Value::Null);
                 } else {
                     return Value::Null;
@@ -147,7 +156,7 @@ pub fn value_to_wire_expr(value: Value) -> WireExpression {
             WireExpression::Object(
                 map.into_iter()
                     .map(|(k, v)| (k, value_to_wire_expr(v)))
-                    .collect()
+                    .collect(),
             )
         }
     }

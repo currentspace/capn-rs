@@ -1,8 +1,8 @@
-use capnweb_core::{CallId, PromiseId, PendingPromise, PromiseDependencyGraph, RpcError};
+use capnweb_core::{CallId, PendingPromise, PromiseDependencyGraph, PromiseId, RpcError};
 use dashmap::DashMap;
 use serde_json::Value;
-use std::sync::Arc;
 use std::collections::HashSet;
+use std::sync::Arc;
 use tokio::sync::RwLock;
 
 /// Table for tracking pending promises and their resolution
@@ -184,7 +184,9 @@ mod tests {
         let call_id = CallId::new(1);
 
         table.register_promise(promise_id, call_id).await;
-        table.resolve_by_call(call_id, json!({"result": true})).await;
+        table
+            .resolve_by_call(call_id, json!({"result": true}))
+            .await;
 
         assert!(table.is_resolved(&promise_id).await);
 

@@ -1,9 +1,9 @@
 // Promise pipelining support for Cap'n Web protocol
 // Implements the official pipelining feature per specification
 
+use super::expression::{Expression, PropertyKey};
 use super::ids::ImportId;
 use super::tables::Value;
-use super::expression::{Expression, PropertyKey};
 use dashmap::DashMap;
 use std::collections::VecDeque;
 
@@ -31,14 +31,18 @@ impl PipelineManager {
 
         self.pipelines
             .entry(promise_id)
-            .or_insert_with(VecDeque::new)
+            .or_default()
             .push_back(operation);
 
         result_id
     }
 
     /// Execute all pipelined operations when a promise resolves (spec-compliant)
-    pub async fn resolve_promise(&self, promise_id: ImportId, value: Value) -> Result<Vec<(ImportId, Result<Value, PipelineError>)>, PipelineError> {
+    pub async fn resolve_promise(
+        &self,
+        promise_id: ImportId,
+        value: Value,
+    ) -> Result<Vec<(ImportId, Result<Value, PipelineError>)>, PipelineError> {
         let mut results = Vec::new();
 
         if let Some((_, operations)) = self.pipelines.remove(&promise_id) {
@@ -61,9 +65,10 @@ impl PipelineManager {
             PipelineOperationType::PropertyAccess { ref path } => {
                 self.access_property_path(value, path).await
             }
-            PipelineOperationType::MethodCall { ref method, ref args } => {
-                self.call_method(value, method, args).await
-            }
+            PipelineOperationType::MethodCall {
+                ref method,
+                ref args,
+            } => self.call_method(value, method, args).await,
         }
     }
 
@@ -73,40 +78,38 @@ impl PipelineManager {
         mut current_value: &Value,
         path: &[PropertyKey],
     ) -> Result<Value, PipelineError> {
+        #[allow(unused_assignments)] // Used to extend lifetime of cloned values
         let mut owned_value = None;
 
         for key in path {
             current_value = match current_value {
-                Value::Object(obj) => {
-                    match key {
-                        PropertyKey::String(key_str) => {
-                            if let Some(boxed_val) = obj.get(key_str) {
-                                boxed_val.as_ref()
-                            } else {
-                                return Err(PipelineError::PropertyNotFound(key_str.clone()));
-                            }
-                        }
-                        PropertyKey::Number(_) => {
-                            return Err(PipelineError::InvalidPropertyType);
+                Value::Object(obj) => match key {
+                    PropertyKey::String(key_str) => {
+                        if let Some(boxed_val) = obj.get(key_str) {
+                            boxed_val.as_ref()
+                        } else {
+                            return Err(PipelineError::PropertyNotFound(key_str.clone()));
                         }
                     }
-                }
-                Value::Array(arr) => {
-                    match key {
-                        PropertyKey::Number(index) => {
-                            let idx = *index as usize;
-                            if let Some(val) = arr.get(idx) {
-                                owned_value = Some(val.clone());
-                                owned_value.as_ref().unwrap()
-                            } else {
-                                return Err(PipelineError::IndexOutOfBounds(idx));
-                            }
-                        }
-                        PropertyKey::String(_) => {
-                            return Err(PipelineError::InvalidPropertyType);
+                    PropertyKey::Number(_) => {
+                        return Err(PipelineError::InvalidPropertyType);
+                    }
+                },
+                Value::Array(arr) => match key {
+                    PropertyKey::Number(index) => {
+                        let idx = *index;
+                        if let Some(val) = arr.get(idx) {
+                            owned_value = Some(val.clone());
+                            // Safe: we just assigned Some(val.clone()) above
+                            owned_value.as_ref().expect("owned_value was just assigned")
+                        } else {
+                            return Err(PipelineError::IndexOutOfBounds(idx));
                         }
                     }
-                }
+                    PropertyKey::String(_) => {
+                        return Err(PipelineError::InvalidPropertyType);
+                    }
+                },
                 _ => {
                     return Err(PipelineError::CannotAccessProperty);
                 }
@@ -146,14 +149,9 @@ pub struct PipelineOperation {
 #[derive(Debug, Clone)]
 pub enum PipelineOperationType {
     /// Property access with path (e.g., obj.foo.bar)
-    PropertyAccess {
-        path: Vec<PropertyKey>,
-    },
+    PropertyAccess { path: Vec<PropertyKey> },
     /// Method call with arguments
-    MethodCall {
-        method: String,
-        args: Expression,
-    },
+    MethodCall { method: String, args: Expression },
 }
 
 #[derive(Debug, thiserror::Error)]

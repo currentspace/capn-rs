@@ -1,6 +1,9 @@
 use crate::Server;
 use axum::{
-    extract::{State, ws::{WebSocket, WebSocketUpgrade, Message as WsMessage}},
+    extract::{
+        ws::{Message as WsMessage, WebSocket, WebSocketUpgrade},
+        State,
+    },
     response::Response,
 };
 use capnweb_core::Message;
@@ -44,7 +47,9 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
                         }
                     }
                     WsMessage::Binary(data) => {
-                        warn!("Received binary message, Cap'n Web over WebSocket expects text/JSON");
+                        warn!(
+                            "Received binary message, Cap'n Web over WebSocket expects text/JSON"
+                        );
                         // Try to decode as UTF-8 and process as text
                         if let Ok(text) = String::from_utf8(data) {
                             debug!("Converted binary to text: {}", text);

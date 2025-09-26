@@ -1,43 +1,40 @@
 // Legacy modules (to be deprecated)
-pub mod ids;
-pub mod msg;
 pub mod codec;
 pub mod error;
+pub mod ids;
+pub mod il;
+pub mod il_executor;
+pub mod il_extended;
+pub mod msg;
 pub mod promise;
+pub mod promise_map;
 #[cfg(feature = "validation")]
 pub mod validate;
-pub mod il;
-pub mod il_extended;
-pub mod il_executor;
-pub mod promise_map;
 
 // New Cap'n Web protocol implementation
 pub mod protocol;
 
 // Re-export legacy types for backward compatibility
-pub use ids::{CallId, PromiseId, CapId};
-pub use msg::{Message, Target, Outcome};
-pub use error::{RpcError, ErrorCode};
-pub use codec::{encode_message, decode_message};
-pub use il::{Source, Op, Plan};
-pub use il_extended::{ILExpression, ILContext, ILPlan, ILOperation, ILError};
+pub use codec::{decode_message, encode_message};
+pub use error::{ErrorCode, RpcError};
+pub use ids::{CallId, CapId, PromiseId};
+pub use il::{Op, Plan, Source};
 pub use il_executor::ILExecutor;
-pub use promise_map::{PromiseMapExecutor, MapOperation, PipelinedCall};
-pub use promise::{ArgValue, ExtendedTarget, PromiseDependencyGraph, PendingPromise};
+pub use il_extended::{ILContext, ILError, ILExpression, ILOperation, ILPlan};
+pub use msg::{Message, Outcome, Target};
+pub use promise::{ArgValue, ExtendedTarget, PendingPromise, PromiseDependencyGraph};
+pub use promise_map::{MapOperation, PipelinedCall, PromiseMapExecutor};
 
 // Re-export official Cap'n Web wire protocol (primary)
 pub use protocol::{
-    wire::{WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch},
-    ids::{ImportId, ExportId},
-    tables::{ImportTable, ExportTable, Value},
     capability_registry::{CapabilityRegistry, RegistrableCapability},
+    ids::{ExportId, ImportId},
+    tables::{ExportTable, ImportTable, Value},
+    wire::{parse_wire_batch, serialize_wire_batch, PropertyKey, WireExpression, WireMessage},
 };
 
 // Legacy protocol types
-pub use protocol::{
-    message::Message as LegacyMessage,
-    expression::Expression,
-};
+pub use protocol::{expression::Expression, message::Message as LegacyMessage};
 
 // RPC Target trait for capability implementations
 pub use async_trait::async_trait;
@@ -54,8 +51,7 @@ pub trait RpcTarget: Send + Sync + std::fmt::Debug {
 // Mock RPC target for testing
 #[cfg(test)]
 #[derive(Debug)]
-pub struct MockRpcTarget {
-}
+pub struct MockRpcTarget {}
 
 #[cfg(test)]
 impl MockRpcTarget {
@@ -75,7 +71,11 @@ impl Default for MockRpcTarget {
 #[async_trait]
 impl RpcTarget for MockRpcTarget {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        Ok(Value::String(format!("Mock call to {} with {} args", method, args.len())))
+        Ok(Value::String(format!(
+            "Mock call to {} with {} args",
+            method,
+            args.len()
+        )))
     }
 
     async fn get_property(&self, property: &str) -> Result<Value, RpcError> {

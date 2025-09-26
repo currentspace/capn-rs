@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use capnweb_core::{CallId, CapId, Message, RpcError, Target, Outcome};
+use capnweb_core::{CallId, CapId, Message, Outcome, RpcError, Target};
 use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
@@ -54,17 +54,17 @@ async fn test_server_batch_endpoint() {
         let response = match msg {
             Message::Call { call } => {
                 let result = match &call.target {
-                    Target::Cap { cap } => {
-                        match server.cap_table().lookup(&cap.id) {
-                            Some(cap_target) => match cap_target.call(&call.member, call.args.clone()).await {
+                    Target::Cap { cap } => match server.cap_table().lookup(&cap.id) {
+                        Some(cap_target) => {
+                            match cap_target.call(&call.member, call.args.clone()).await {
                                 Ok(value) => Outcome::Success { value },
                                 Err(error) => Outcome::Error { error },
-                            },
-                            None => Outcome::Error {
-                                error: RpcError::not_found("Capability not found"),
-                            },
+                            }
                         }
-                    }
+                        None => Outcome::Error {
+                            error: RpcError::not_found("Capability not found"),
+                        },
+                    },
                     Target::Special { .. } => Outcome::Error {
                         error: RpcError::not_found("Special target not implemented"),
                     },
@@ -149,12 +149,14 @@ async fn test_batch_size_limit() {
 
     // Create oversized batch
     let batch: Vec<Message> = (0..3)
-        .map(|i| Message::call(
-            CallId::new(i),
-            Target::cap(CapId::new(1)),
-            "test".to_string(),
-            vec![],
-        ))
+        .map(|i| {
+            Message::call(
+                CallId::new(i),
+                Target::cap(CapId::new(1)),
+                "test".to_string(),
+                vec![],
+            )
+        })
         .collect();
 
     // Check that batch exceeds limit (we know it's 3 > 2)

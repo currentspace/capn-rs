@@ -1,17 +1,19 @@
+use crate::server_wire_handler::{value_to_wire_expr, wire_expr_to_values};
 use crate::Server;
 use axum::{
-    extract::{State, ws::{WebSocket, WebSocketUpgrade, Message as WsMessage}},
+    extract::{
+        ws::{Message as WsMessage, WebSocket, WebSocketUpgrade},
+        State,
+    },
     response::Response,
 };
 use capnweb_core::{
-    WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch,
-    CapId,
+    parse_wire_batch, serialize_wire_batch, CapId, PropertyKey, WireExpression, WireMessage,
 };
 use futures::{SinkExt, StreamExt};
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::server_wire_handler::{wire_expr_to_values, value_to_wire_expr};
 
 /// WebSocket session state that persists across messages
 struct WsSession {
@@ -46,7 +48,10 @@ pub async fn websocket_wire_handler(
 
 async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
     let session_id = uuid::Uuid::new_v4().to_string();
-    tracing::info!("WebSocket wire protocol connection established: {}", session_id);
+    tracing::info!(
+        "WebSocket wire protocol connection established: {}",
+        session_id
+    );
 
     let session = Arc::new(RwLock::new(WsSession::new(session_id.clone())));
     let (mut sender, mut receiver) = socket.split();
@@ -74,38 +79,59 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                             let import_id = session_guard.next_import_id;
                                             session_guard.next_import_id += 1;
 
-                                            tracing::info!("WS Push assigned import ID: {}", import_id);
+                                            tracing::info!(
+                                                "WS Push assigned import ID: {}",
+                                                import_id
+                                            );
                                             session_guard.imports.insert(import_id, expr.clone());
 
                                             // Process pipeline expression
-                                            if let WireExpression::Pipeline { import_id: target_id, property_path, args } = expr {
+                                            if let WireExpression::Pipeline {
+                                                import_id: target_id,
+                                                property_path,
+                                                args,
+                                            } = expr
+                                            {
                                                 let cap_id = if target_id == 0 {
                                                     CapId::new(1) // Main capability
                                                 } else {
                                                     CapId::new(target_id as u64)
                                                 };
 
-                                                if let Some(capability) = server.cap_table().lookup(&cap_id) {
+                                                if let Some(capability) =
+                                                    server.cap_table().lookup(&cap_id)
+                                                {
                                                     if let Some(path) = property_path {
-                                                        if let Some(PropertyKey::String(method)) = path.first() {
+                                                        if let Some(PropertyKey::String(method)) =
+                                                            path.first()
+                                                        {
                                                             let json_args = args
                                                                 .as_ref()
                                                                 .map(|a| wire_expr_to_values(a))
                                                                 .unwrap_or_else(Vec::new);
 
-                                                            match capability.call(method, json_args).await {
+                                                            match capability
+                                                                .call(method, json_args)
+                                                                .await
+                                                            {
                                                                 Ok(result) => {
-                                                                    let result_expr = value_to_wire_expr(result);
-                                                                    session_guard.imports.insert(import_id, result_expr);
+                                                                    let result_expr =
+                                                                        value_to_wire_expr(result);
+                                                                    session_guard.imports.insert(
+                                                                        import_id,
+                                                                        result_expr,
+                                                                    );
                                                                 }
                                                                 Err(err) => {
                                                                     session_guard.imports.insert(
                                                                         import_id,
                                                                         WireExpression::Error {
-                                                                            error_type: err.code.to_string(),
+                                                                            error_type: err
+                                                                                .code
+                                                                                .to_string(),
                                                                             message: err.message,
                                                                             stack: None,
-                                                                        }
+                                                                        },
                                                                     );
                                                                 }
                                                             }
@@ -116,9 +142,12 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                                         import_id,
                                                         WireExpression::Error {
                                                             error_type: "not_found".to_string(),
-                                                            message: format!("Capability {} not found", target_id),
+                                                            message: format!(
+                                                                "Capability {} not found",
+                                                                target_id
+                                                            ),
                                                             stack: None,
-                                                        }
+                                                        },
                                                     );
                                                 }
                                             }
@@ -127,20 +156,31 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                         WireMessage::Pull(import_id) => {
                                             tracing::debug!("WS Pull for import_id: {}", import_id);
 
-                                            if let Some(result) = session_guard.imports.get(&import_id) {
+                                            if let Some(result) =
+                                                session_guard.imports.get(&import_id)
+                                            {
                                                 if let WireExpression::Error { .. } = result {
-                                                    responses.push(WireMessage::Reject(import_id, result.clone()));
+                                                    responses.push(WireMessage::Reject(
+                                                        import_id,
+                                                        result.clone(),
+                                                    ));
                                                 } else {
-                                                    responses.push(WireMessage::Resolve(import_id, result.clone()));
+                                                    responses.push(WireMessage::Resolve(
+                                                        import_id,
+                                                        result.clone(),
+                                                    ));
                                                 }
                                             } else {
                                                 responses.push(WireMessage::Reject(
                                                     import_id,
                                                     WireExpression::Error {
                                                         error_type: "not_found".to_string(),
-                                                        message: format!("No result for import ID {}", import_id),
+                                                        message: format!(
+                                                            "No result for import ID {}",
+                                                            import_id
+                                                        ),
                                                         stack: None,
-                                                    }
+                                                    },
                                                 ));
                                             }
                                         }
@@ -164,7 +204,9 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                     let response_text = serialize_wire_batch(&responses);
                                     tracing::debug!("WS sending: {}", response_text);
 
-                                    if let Err(e) = sender.send(WsMessage::Text(response_text)).await {
+                                    if let Err(e) =
+                                        sender.send(WsMessage::Text(response_text)).await
+                                    {
                                         tracing::error!("Failed to send WS response: {}", e);
                                         break;
                                     }
@@ -178,7 +220,7 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                         error_type: "bad_request".to_string(),
                                         message: format!("Invalid wire protocol: {}", e),
                                         stack: None,
-                                    }
+                                    },
                                 );
                                 let response_text = serialize_wire_batch(&[error_response]);
                                 if let Err(e) = sender.send(WsMessage::Text(response_text)).await {

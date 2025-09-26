@@ -1,12 +1,12 @@
 // TypeScript Interoperability Test Server
 // Complete server implementation to pass 100% of TypeScript client tests
 
-use std::{sync::Arc, collections::HashMap};
-use capnweb_core::{RpcTarget, RpcError, CapId, async_trait, Value};
+use capnweb_core::{async_trait, CapId, RpcError, RpcTarget, Value};
 use capnweb_server::{Server, ServerConfig};
 use serde_json::json;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 /// Enhanced Calculator capability with all methods expected by TypeScript tests
 #[derive(Debug)]
@@ -40,7 +40,9 @@ impl RpcTarget for Calculator {
 
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
@@ -49,7 +51,9 @@ impl RpcTarget for Calculator {
 
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
@@ -87,7 +91,9 @@ impl RpcTarget for Calculator {
                 let value = extract_number(&args[0])?;
 
                 if value < 0.0 {
-                    return Err(RpcError::bad_request("Cannot take square root of negative number"));
+                    return Err(RpcError::bad_request(
+                        "Cannot take square root of negative number",
+                    ));
                 }
 
                 Ok(json!(value.sqrt()))
@@ -95,12 +101,16 @@ impl RpcTarget for Calculator {
 
             "factorial" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("factorial requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "factorial requires exactly 1 argument",
+                    ));
                 }
                 let n = extract_number(&args[0])?;
 
                 if n < 0.0 {
-                    return Err(RpcError::bad_request("Factorial not defined for negative numbers"));
+                    return Err(RpcError::bad_request(
+                        "Factorial not defined for negative numbers",
+                    ));
                 }
 
                 if n > 20.0 {
@@ -119,10 +129,13 @@ impl RpcTarget for Calculator {
             // Variable storage
             "setVariable" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("setVariable requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "setVariable requires exactly 2 arguments",
+                    ));
                 }
 
-                let name = args[0].as_str()
+                let name = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
                 let value = extract_number(&args[1])?;
 
@@ -134,15 +147,19 @@ impl RpcTarget for Calculator {
 
             "getVariable" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("getVariable requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "getVariable requires exactly 1 argument",
+                    ));
                 }
 
-                let name = args[0].as_str()
+                let name = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Variable name must be a string"))?;
 
                 let vars = self.variables.read().await;
-                let value = vars.get(name)
-                    .ok_or_else(|| RpcError::not_found(&format!("Variable '{}' not found", name)))?;
+                let value = vars.get(name).ok_or_else(|| {
+                    RpcError::not_found(&format!("Variable '{}' not found", name))
+                })?;
 
                 Ok(json!(value))
             }
@@ -184,7 +201,10 @@ impl RpcTarget for Calculator {
                 }))
             }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", method)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on Calculator",
+                method
+            ))),
         }
     }
 
@@ -192,8 +212,25 @@ impl RpcTarget for Calculator {
         match property {
             "name" => Ok(json!("Calculator")),
             "version" => Ok(json!("1.0.0")),
-            "methods" => Ok(json!(["add", "subtract", "multiply", "divide", "power", "sqrt", "factorial", "setVariable", "getVariable", "clearAllVariables", "getAsyncProcessor", "getNested", "createSubCalculator"])),
-            _ => Err(RpcError::not_found(&format!("Property '{}' not found on Calculator", property)))
+            "methods" => Ok(json!([
+                "add",
+                "subtract",
+                "multiply",
+                "divide",
+                "power",
+                "sqrt",
+                "factorial",
+                "setVariable",
+                "getVariable",
+                "clearAllVariables",
+                "getAsyncProcessor",
+                "getNested",
+                "createSubCalculator"
+            ])),
+            _ => Err(RpcError::not_found(&format!(
+                "Property '{}' not found on Calculator",
+                property
+            ))),
         }
     }
 }
@@ -219,29 +256,38 @@ impl UserManager {
         let mut users = HashMap::new();
 
         // Pre-populate with test users
-        users.insert(1, User {
-            id: 1,
-            name: "Alice".to_string(),
-            email: "alice@example.com".to_string(),
-            role: Some("admin".to_string()),
-            created: false,
-        });
+        users.insert(
+            1,
+            User {
+                id: 1,
+                name: "Alice".to_string(),
+                email: "alice@example.com".to_string(),
+                role: Some("admin".to_string()),
+                created: false,
+            },
+        );
 
-        users.insert(2, User {
-            id: 2,
-            name: "Bob".to_string(),
-            email: "bob@example.com".to_string(),
-            role: Some("user".to_string()),
-            created: false,
-        });
+        users.insert(
+            2,
+            User {
+                id: 2,
+                name: "Bob".to_string(),
+                email: "bob@example.com".to_string(),
+                role: Some("user".to_string()),
+                created: false,
+            },
+        );
 
-        users.insert(3, User {
-            id: 3,
-            name: "Charlie".to_string(),
-            email: "charlie@example.com".to_string(),
-            role: Some("user".to_string()),
-            created: false,
-        });
+        users.insert(
+            3,
+            User {
+                id: 3,
+                name: "Charlie".to_string(),
+                email: "charlie@example.com".to_string(),
+                role: Some("user".to_string()),
+                created: false,
+            },
+        );
 
         Self {
             users: Arc::new(RwLock::new(users)),
@@ -261,37 +307,48 @@ impl RpcTarget for UserManager {
                     return Err(RpcError::bad_request("getUser requires exactly 1 argument"));
                 }
 
-                let user_id = args[0].as_i64()
-                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))? as i32;
+                let user_id = args[0]
+                    .as_i64()
+                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))?
+                    as i32;
 
                 let users = self.users.read().await;
-                let user = users.get(&user_id)
-                    .ok_or_else(|| RpcError::not_found(&format!("User with ID {} not found", user_id)))?;
+                let user = users.get(&user_id).ok_or_else(|| {
+                    RpcError::not_found(&format!("User with ID {} not found", user_id))
+                })?;
 
                 Ok(serde_json::to_value(user).unwrap())
             }
 
             "createUser" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("createUser requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "createUser requires exactly 1 argument",
+                    ));
                 }
 
-                let user_data = args[0].as_object()
+                let user_data = args[0]
+                    .as_object()
                     .ok_or_else(|| RpcError::bad_request("User data must be an object"))?;
 
-                let name = user_data.get("name")
+                let name = user_data
+                    .get("name")
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("User name is required"))?;
 
-                let email = user_data.get("email")
+                let email = user_data
+                    .get("email")
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("User email is required"))?;
 
-                let role = user_data.get("role")
+                let role = user_data
+                    .get("role")
                     .and_then(|v| v.as_str())
                     .map(|s| s.to_string());
 
-                let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                let id = self
+                    .next_id
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
                 let user = User {
                     id,
@@ -315,15 +372,20 @@ impl RpcTarget for UserManager {
 
             "deleteUser" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("deleteUser requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "deleteUser requires exactly 1 argument",
+                    ));
                 }
 
-                let user_id = args[0].as_i64()
-                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))? as i32;
+                let user_id = args[0]
+                    .as_i64()
+                    .ok_or_else(|| RpcError::bad_request("User ID must be a number"))?
+                    as i32;
 
                 let mut users = self.users.write().await;
-                let user = users.remove(&user_id)
-                    .ok_or_else(|| RpcError::not_found(&format!("User with ID {} not found", user_id)))?;
+                let user = users.remove(&user_id).ok_or_else(|| {
+                    RpcError::not_found(&format!("User with ID {} not found", user_id))
+                })?;
 
                 Ok(json!({
                     "deleted": true,
@@ -331,7 +393,10 @@ impl RpcTarget for UserManager {
                 }))
             }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on UserManager", method)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on UserManager",
+                method
+            ))),
         }
     }
 
@@ -340,7 +405,10 @@ impl RpcTarget for UserManager {
             "name" => Ok(json!("UserManager")),
             "version" => Ok(json!("1.0.0")),
             "methods" => Ok(json!(["getUser", "createUser", "listUsers", "deleteUser"])),
-            _ => Err(RpcError::not_found(&format!("Property '{}' not found on UserManager", property)))
+            _ => Err(RpcError::not_found(&format!(
+                "Property '{}' not found on UserManager",
+                property
+            ))),
         }
     }
 }
@@ -364,12 +432,16 @@ impl RpcTarget for EchoService {
                 if args.len() != 1 {
                     return Err(RpcError::bad_request("reverse requires exactly 1 argument"));
                 }
-                let text = args[0].as_str()
+                let text = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Argument must be a string"))?;
                 Ok(json!(text.chars().rev().collect::<String>()))
             }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on EchoService", method)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on EchoService",
+                method
+            ))),
         }
     }
 
@@ -377,7 +449,10 @@ impl RpcTarget for EchoService {
         match property {
             "name" => Ok(json!("EchoService")),
             "methods" => Ok(json!(["echo", "reverse"])),
-            _ => Err(RpcError::not_found(&format!("Property '{}' not found on EchoService", property)))
+            _ => Err(RpcError::not_found(&format!(
+                "Property '{}' not found on EchoService",
+                property
+            ))),
         }
     }
 }
@@ -385,8 +460,10 @@ impl RpcTarget for EchoService {
 // Helper function to extract numbers from capnweb Value
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
-        _ => Err(RpcError::bad_request("Expected a number"))
+        Value::Number(n) => n
+            .as_f64()
+            .ok_or_else(|| RpcError::bad_request("Invalid number")),
+        _ => Err(RpcError::bad_request("Expected a number")),
     }
 }
 
@@ -394,7 +471,7 @@ fn extract_number(value: &Value) -> Result<f64, RpcError> {
 fn extract_string(value: &Value) -> Result<&str, RpcError> {
     match value {
         Value::String(s) => Ok(s),
-        _ => Err(RpcError::bad_request("Expected a string"))
+        _ => Err(RpcError::bad_request("Expected a string")),
     }
 }
 
@@ -405,7 +482,9 @@ fn json_to_capnweb_value(json_val: serde_json::Value) -> Value {
         serde_json::Value::Bool(b) => Value::Bool(b),
         serde_json::Value::Number(n) => Value::Number(n),
         serde_json::Value::String(s) => Value::String(s),
-        serde_json::Value::Array(arr) => Value::Array(arr.into_iter().map(json_to_capnweb_value).collect()),
+        serde_json::Value::Array(arr) => {
+            Value::Array(arr.into_iter().map(json_to_capnweb_value).collect())
+        }
         serde_json::Value::Object(map) => {
             let mut result = std::collections::HashMap::new();
             for (k, v) in map {
@@ -436,9 +515,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server = Server::new(config);
 
     // Register capabilities with the exact IDs expected by TypeScript tests
-    server.register_capability(CapId::new(1), calculator);    // Calculator at ID 1
+    server.register_capability(CapId::new(1), calculator); // Calculator at ID 1
     server.register_capability(CapId::new(100), user_manager); // UserManager at ID 100
-    server.register_capability(CapId::new(2), echo);           // EchoService at ID 2
+    server.register_capability(CapId::new(2), echo); // EchoService at ID 2
 
     info!("✅ TypeScript Interoperability Test Server Configuration:");
     info!("   - Calculator (ID: 1) - Full mathematical operations");

@@ -77,8 +77,8 @@ impl Decoder for CapnWebCodec {
             .map_err(|e| CodecError::JsonError(e.to_string()))?;
 
         // Parse into Cap'n Web message
-        let message = Message::from_json(&json_value)
-            .map_err(|e| CodecError::MessageError(e.to_string()))?;
+        let message =
+            Message::from_json(&json_value).map_err(|e| CodecError::MessageError(e.to_string()))?;
 
         Ok(Some(message))
     }
@@ -91,8 +91,8 @@ impl Encoder<Message> for CapnWebCodec {
     fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
         // Convert message to JSON
         let json_value = item.to_json();
-        let json_bytes = serde_json::to_vec(&json_value)
-            .map_err(|e| CodecError::JsonError(e.to_string()))?;
+        let json_bytes =
+            serde_json::to_vec(&json_value).map_err(|e| CodecError::JsonError(e.to_string()))?;
 
         // Check frame size
         if json_bytes.len() > self.max_frame_size {
@@ -147,8 +147,8 @@ impl Decoder for NewlineDelimitedCodec {
             src.advance(1); // Skip the newline
 
             // Parse JSON
-            let json_value: serde_json::Value = serde_json::from_slice(&line)
-                .map_err(|e| CodecError::JsonError(e.to_string()))?;
+            let json_value: serde_json::Value =
+                serde_json::from_slice(&line).map_err(|e| CodecError::JsonError(e.to_string()))?;
 
             // Parse message
             let message = Message::from_json(&json_value)
@@ -172,8 +172,8 @@ impl Encoder<Message> for NewlineDelimitedCodec {
     fn encode(&mut self, item: Message, dst: &mut BytesMut) -> Result<(), Self::Error> {
         // Convert to JSON
         let json_value = item.to_json();
-        let json_bytes = serde_json::to_vec(&json_value)
-            .map_err(|e| CodecError::JsonError(e.to_string()))?;
+        let json_bytes =
+            serde_json::to_vec(&json_value).map_err(|e| CodecError::JsonError(e.to_string()))?;
 
         // Check line length
         if json_bytes.len() > self.max_line_length {
@@ -211,7 +211,10 @@ pub enum CodecError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use capnweb_core::{Expression, protocol::{ImportId, ExportId}};
+    use capnweb_core::{
+        protocol::{ExportId, ImportId},
+        Expression,
+    };
 
     #[test]
     fn test_length_prefixed_encode_decode() {
@@ -301,7 +304,10 @@ mod tests {
         // Encode multiple messages
         let msg1 = Message::Push(Expression::String("first".to_string()));
         let msg2 = Message::Pull(ImportId(1));
-        let msg3 = Message::Resolve(ExportId(-1), Expression::Number(serde_json::Number::from(42)));
+        let msg3 = Message::Resolve(
+            ExportId(-1),
+            Expression::Number(serde_json::Number::from(42)),
+        );
 
         codec.encode(msg1, &mut buffer).unwrap();
         codec.encode(msg2, &mut buffer).unwrap();

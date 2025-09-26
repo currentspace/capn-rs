@@ -1,6 +1,6 @@
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::{Message, encode_message, decode_message};
+use capnweb_core::{decode_message, encode_message, Message};
 use quinn::{Connection, Endpoint, RecvStream, SendStream};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -24,10 +24,9 @@ impl WebTransportTransport {
 
     /// Initialize bidirectional stream for communication
     pub async fn init_stream(&mut self) -> Result<(), TransportError> {
-        let (send, recv) = self.connection
-            .open_bi()
-            .await
-            .map_err(|e| TransportError::Protocol(format!("Failed to open bidirectional stream: {}", e)))?;
+        let (send, recv) = self.connection.open_bi().await.map_err(|e| {
+            TransportError::Protocol(format!("Failed to open bidirectional stream: {}", e))
+        })?;
 
         *self.send_stream.lock().await = Some(send);
         *self.recv_stream.lock().await = Some(recv);
@@ -39,22 +38,24 @@ impl WebTransportTransport {
 #[async_trait]
 impl RpcTransport for WebTransportTransport {
     async fn send(&mut self, message: Message) -> Result<(), TransportError> {
-        let encoded = encode_message(&message)
-            .map_err(|e| TransportError::Codec(e.to_string()))?;
+        let encoded = encode_message(&message).map_err(|e| TransportError::Codec(e.to_string()))?;
 
         let mut send_lock = self.send_stream.lock().await;
-        let send_stream = send_lock.as_mut()
+        let send_stream = send_lock
+            .as_mut()
             .ok_or_else(|| TransportError::Protocol("Stream not initialized".to_string()))?;
 
         // Send length prefix (4 bytes, big-endian)
         let len = encoded.len() as u32;
         let len_bytes = len.to_be_bytes();
-        send_stream.write_all(&len_bytes)
+        send_stream
+            .write_all(&len_bytes)
             .await
             .map_err(|e| TransportError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
 
         // Send message data
-        send_stream.write_all(&encoded)
+        send_stream
+            .write_all(&encoded)
             .await
             .map_err(|e| TransportError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
 
@@ -63,13 +64,14 @@ impl RpcTransport for WebTransportTransport {
 
     async fn recv(&mut self) -> Result<Option<Message>, TransportError> {
         let mut recv_lock = self.recv_stream.lock().await;
-        let recv_stream = recv_lock.as_mut()
+        let recv_stream = recv_lock
+            .as_mut()
             .ok_or_else(|| TransportError::Protocol("Stream not initialized".to_string()))?;
 
         // Read length prefix
         let mut len_bytes = [0u8; 4];
         match recv_stream.read_exact(&mut len_bytes).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(_) => return Ok(None), // Stream closed
         }
 
@@ -77,12 +79,12 @@ impl RpcTransport for WebTransportTransport {
 
         // Read message data
         let mut data = vec![0u8; len];
-        recv_stream.read_exact(&mut data)
+        recv_stream
+            .read_exact(&mut data)
             .await
             .map_err(|e| TransportError::Protocol(format!("Failed to read message: {}", e)))?;
 
-        let message = decode_message(&data)
-            .map_err(|e| TransportError::Codec(e.to_string()))?;
+        let message = decode_message(&data).map_err(|e| TransportError::Codec(e.to_string()))?;
 
         Ok(Some(message))
     }
@@ -106,8 +108,13 @@ impl WebTransportClient {
 
     /// Connect to a WebTransport server
     pub async fn connect(&self, addr: &str) -> Result<WebTransportTransport, TransportError> {
-        let connection = self.endpoint
-            .connect(addr.parse().map_err(|e| TransportError::Protocol(format!("Invalid address: {}", e)))?, "localhost")
+        let connection = self
+            .endpoint
+            .connect(
+                addr.parse()
+                    .map_err(|e| TransportError::Protocol(format!("Invalid address: {}", e)))?,
+                "localhost",
+            )
             .map_err(|e| TransportError::Protocol(format!("Connection failed: {}", e)))?
             .await
             .map_err(|e| TransportError::Protocol(format!("Connection failed: {}", e)))?;
@@ -134,7 +141,9 @@ fn configure_client() -> quinn::ClientConfig {
         .with_custom_certificate_verifier(SkipServerVerification::new())
         .with_no_client_auth();
 
-    quinn::ClientConfig::new(Arc::new(quinn::crypto::rustls::QuicClientConfig::try_from(crypto).unwrap()))
+    quinn::ClientConfig::new(Arc::new(
+        quinn::crypto::rustls::QuicClientConfig::try_from(crypto).unwrap(),
+    ))
 }
 
 /// Skip certificate verification for testing

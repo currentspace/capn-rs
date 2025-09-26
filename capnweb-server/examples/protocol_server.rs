@@ -1,6 +1,6 @@
-use capnweb_core::{protocol::Value, RpcTarget, RpcError, ErrorCode};
-use capnweb_server::capnweb_server::{CapnWebServer, CapnWebServerConfig};
 use async_trait::async_trait;
+use capnweb_core::{protocol::Value, ErrorCode, RpcError, RpcTarget};
+use capnweb_server::capnweb_server::{CapnWebServer, CapnWebServerConfig};
 use std::sync::Arc;
 
 /// Example Calculator capability that implements the Cap'n Web protocol
@@ -95,7 +95,9 @@ impl RpcTarget for Calculator {
         match property {
             "name" => Ok(Value::String("Calculator".to_string())),
             "version" => Ok(Value::String("1.0.0".to_string())),
-            "pi" => Ok(Value::Number(serde_json::Number::from_f64(std::f64::consts::PI).unwrap())),
+            "pi" => Ok(Value::Number(
+                serde_json::Number::from_f64(std::f64::consts::PI).unwrap(),
+            )),
             _ => Err(RpcError {
                 code: ErrorCode::NotFound,
                 message: format!("Property '{}' not found", property),
@@ -107,13 +109,11 @@ impl RpcTarget for Calculator {
 
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => {
-            n.as_f64().ok_or_else(|| RpcError {
-                code: ErrorCode::BadRequest,
-                message: "Invalid number".to_string(),
-                data: None,
-            })
-        }
+        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError {
+            code: ErrorCode::BadRequest,
+            message: "Invalid number".to_string(),
+            data: None,
+        }),
         _ => Err(RpcError {
             code: ErrorCode::BadRequest,
             message: "Expected number".to_string(),

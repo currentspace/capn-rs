@@ -15,8 +15,7 @@ async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
 
@@ -53,7 +52,10 @@ async fn main() -> Result<()> {
     // Test 2: Multiplication
     info!("");
     info!("📝 Test 2: Multiplication (7 * 6)");
-    match client.call(calc_cap, "multiply", vec![json!(7), json!(6)]).await {
+    match client
+        .call(calc_cap, "multiply", vec![json!(7), json!(6)])
+        .await
+    {
         Ok(result) => {
             info!("✅ Result: {}", result);
         }
@@ -65,7 +67,10 @@ async fn main() -> Result<()> {
     // Test 3: Subtraction
     info!("");
     info!("📝 Test 3: Subtraction (10 - 4)");
-    match client.call(calc_cap, "subtract", vec![json!(10), json!(4)]).await {
+    match client
+        .call(calc_cap, "subtract", vec![json!(10), json!(4)])
+        .await
+    {
         Ok(result) => {
             info!("✅ Result: {}", result);
         }
@@ -77,7 +82,10 @@ async fn main() -> Result<()> {
     // Test 4: Division
     info!("");
     info!("📝 Test 4: Division (20 / 5)");
-    match client.call(calc_cap, "divide", vec![json!(20), json!(5)]).await {
+    match client
+        .call(calc_cap, "divide", vec![json!(20), json!(5)])
+        .await
+    {
         Ok(result) => {
             info!("✅ Result: {}", result);
         }
@@ -89,7 +97,10 @@ async fn main() -> Result<()> {
     // Test 5: Division by zero (should error)
     info!("");
     info!("📝 Test 5: Division by zero (10 / 0)");
-    match client.call(calc_cap, "divide", vec![json!(10), json!(0)]).await {
+    match client
+        .call(calc_cap, "divide", vec![json!(10), json!(0)])
+        .await
+    {
         Ok(result) => {
             info!("⚠️ Unexpected success: {}", result);
         }
@@ -133,7 +144,10 @@ async fn main() -> Result<()> {
     // Test 7: Complex expression with floating point
     info!("");
     info!("📝 Test 7: Floating point operations");
-    match client.call(calc_cap, "divide", vec![json!(22.0), json!(7.0)]).await {
+    match client
+        .call(calc_cap, "divide", vec![json!(22.0), json!(7.0)])
+        .await
+    {
         Ok(result) => {
             info!("✅ 22.0 / 7.0 = {}", result);
         }

@@ -22,7 +22,7 @@ impl VariableStateManager {
     pub fn new() -> Self {
         Self {
             variables: Arc::new(RwLock::new(HashMap::new())),
-            max_variables: 1000, // Reasonable default limit
+            max_variables: 1000,  // Reasonable default limit
             max_name_length: 256, // Reasonable default limit
         }
     }
@@ -40,7 +40,9 @@ impl VariableStateManager {
     pub async fn set_variable(&self, name: String, value: Value) -> Result<bool, VariableError> {
         // Validate variable name
         if name.is_empty() {
-            return Err(VariableError::InvalidName("Variable name cannot be empty".to_string()));
+            return Err(VariableError::InvalidName(
+                "Variable name cannot be empty".to_string(),
+            ));
         }
 
         if name.len() > self.max_name_length {
@@ -53,7 +55,9 @@ impl VariableStateManager {
 
         // Check for invalid characters (optional - could be customized)
         if name.chars().any(|c| c.is_control() || c == '\0') {
-            return Err(VariableError::InvalidName("Variable name contains invalid characters".to_string()));
+            return Err(VariableError::InvalidName(
+                "Variable name contains invalid characters".to_string(),
+            ));
         }
 
         let mut variables = self.variables.write().await;
@@ -141,7 +145,10 @@ impl VariableStateManager {
     }
 
     /// Import variables from a HashMap (for deserialization/restoration)
-    pub async fn import_variables(&self, vars: HashMap<String, Value>) -> Result<(), VariableError> {
+    pub async fn import_variables(
+        &self,
+        vars: HashMap<String, Value>,
+    ) -> Result<(), VariableError> {
         // Validate all variables first
         if vars.len() > self.max_variables {
             return Err(VariableError::TooManyVariables(self.max_variables));
@@ -171,12 +178,17 @@ impl VariableStateManager {
     fn validate_value(&self, value: &Value) -> Result<(), VariableError> {
         match value {
             // Simple types are always valid
-            Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Date(_) => Ok(()),
+            Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Date(_) => {
+                Ok(())
+            }
 
             // Arrays and objects require recursive validation
             Value::Array(arr) => {
-                if arr.len() > 1000 { // Prevent overly large arrays
-                    return Err(VariableError::ValueTooComplex("Array too large".to_string()));
+                if arr.len() > 1000 {
+                    // Prevent overly large arrays
+                    return Err(VariableError::ValueTooComplex(
+                        "Array too large".to_string(),
+                    ));
                 }
                 for item in arr {
                     self.validate_value(item)?;
@@ -185,12 +197,17 @@ impl VariableStateManager {
             }
 
             Value::Object(obj) => {
-                if obj.len() > 100 { // Prevent overly complex objects
-                    return Err(VariableError::ValueTooComplex("Object too complex".to_string()));
+                if obj.len() > 100 {
+                    // Prevent overly complex objects
+                    return Err(VariableError::ValueTooComplex(
+                        "Object too complex".to_string(),
+                    ));
                 }
                 for (key, val) in obj {
                     if key.len() > self.max_name_length {
-                        return Err(VariableError::ValueTooComplex("Object key too long".to_string()));
+                        return Err(VariableError::ValueTooComplex(
+                            "Object key too long".to_string(),
+                        ));
                     }
                     self.validate_value(val)?;
                 }
@@ -201,8 +218,12 @@ impl VariableStateManager {
             Value::Error { .. } => Ok(()),
 
             // Complex types (stubs, promises) cannot be stored as variables
-            Value::Stub(_) => Err(VariableError::UnsupportedValueType("Cannot store stub as variable".to_string())),
-            Value::Promise(_) => Err(VariableError::UnsupportedValueType("Cannot store promise as variable".to_string())),
+            Value::Stub(_) => Err(VariableError::UnsupportedValueType(
+                "Cannot store stub as variable".to_string(),
+            )),
+            Value::Promise(_) => Err(VariableError::UnsupportedValueType(
+                "Cannot store promise as variable".to_string(),
+            )),
         }
     }
 }
@@ -284,19 +305,28 @@ impl DefaultVariableCapableTarget {
 #[async_trait::async_trait]
 impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
     async fn set_variable(&self, name: String, value: Value) -> Result<Value, crate::RpcError> {
-        let result = self.variable_manager.set_variable(name, value).await
+        let result = self
+            .variable_manager
+            .set_variable(name, value)
+            .await
             .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(Value::Bool(result))
     }
 
     async fn get_variable(&self, name: String) -> Result<Value, crate::RpcError> {
-        let value = self.variable_manager.get_variable(&name).await
+        let value = self
+            .variable_manager
+            .get_variable(&name)
+            .await
             .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(value)
     }
 
     async fn clear_all_variables(&self) -> Result<Value, crate::RpcError> {
-        let result = self.variable_manager.clear_all_variables().await
+        let result = self
+            .variable_manager
+            .clear_all_variables()
+            .await
             .map_err(|e| crate::RpcError::bad_request(e.to_string()))?;
         Ok(Value::Bool(result))
     }
@@ -316,12 +346,18 @@ impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
         match method {
             "setVariable" => {
                 if args.len() != 2 {
-                    return Err(crate::RpcError::bad_request("setVariable requires exactly 2 arguments (name, value)"));
+                    return Err(crate::RpcError::bad_request(
+                        "setVariable requires exactly 2 arguments (name, value)",
+                    ));
                 }
 
                 let name = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("Variable name must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "Variable name must be a string",
+                        ))
+                    }
                 };
 
                 self.set_variable(name, args[1].clone()).await
@@ -329,12 +365,18 @@ impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
 
             "getVariable" => {
                 if args.len() != 1 {
-                    return Err(crate::RpcError::bad_request("getVariable requires exactly 1 argument (name)"));
+                    return Err(crate::RpcError::bad_request(
+                        "getVariable requires exactly 1 argument (name)",
+                    ));
                 }
 
                 let name = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("Variable name must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "Variable name must be a string",
+                        ))
+                    }
                 };
 
                 self.get_variable(name).await
@@ -342,19 +384,27 @@ impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
 
             "clearAllVariables" => {
                 if !args.is_empty() {
-                    return Err(crate::RpcError::bad_request("clearAllVariables takes no arguments"));
+                    return Err(crate::RpcError::bad_request(
+                        "clearAllVariables takes no arguments",
+                    ));
                 }
                 self.clear_all_variables().await
             }
 
             "hasVariable" => {
                 if args.len() != 1 {
-                    return Err(crate::RpcError::bad_request("hasVariable requires exactly 1 argument (name)"));
+                    return Err(crate::RpcError::bad_request(
+                        "hasVariable requires exactly 1 argument (name)",
+                    ));
                 }
 
                 let name = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("Variable name must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "Variable name must be a string",
+                        ))
+                    }
                 };
 
                 self.has_variable(name).await
@@ -362,7 +412,9 @@ impl VariableCapableRpcTarget for DefaultVariableCapableTarget {
 
             "listVariables" => {
                 if !args.is_empty() {
-                    return Err(crate::RpcError::bad_request("listVariables takes no arguments"));
+                    return Err(crate::RpcError::bad_request(
+                        "listVariables takes no arguments",
+                    ));
                 }
                 self.list_variables().await
             }
@@ -400,7 +452,10 @@ mod tests {
         let manager = VariableStateManager::new();
 
         // Set a variable
-        let result = manager.set_variable("test".to_string(), Value::Number(Number::from(42))).await.unwrap();
+        let result = manager
+            .set_variable("test".to_string(), Value::Number(Number::from(42)))
+            .await
+            .unwrap();
         assert!(result);
 
         // Get the variable
@@ -424,18 +479,30 @@ mod tests {
 
         // Test name length validation
         let long_name = "a".repeat(20);
-        let result = manager.set_variable(long_name, Value::Number(Number::from(1))).await;
+        let result = manager
+            .set_variable(long_name, Value::Number(Number::from(1)))
+            .await;
         assert!(result.is_err());
 
         // Test empty name
-        let result = manager.set_variable("".to_string(), Value::Number(Number::from(1))).await;
+        let result = manager
+            .set_variable("".to_string(), Value::Number(Number::from(1)))
+            .await;
         assert!(result.is_err());
 
         // Test variable limit
-        manager.set_variable("var1".to_string(), Value::Number(Number::from(1))).await.unwrap();
-        manager.set_variable("var2".to_string(), Value::Number(Number::from(2))).await.unwrap();
+        manager
+            .set_variable("var1".to_string(), Value::Number(Number::from(1)))
+            .await
+            .unwrap();
+        manager
+            .set_variable("var2".to_string(), Value::Number(Number::from(2)))
+            .await
+            .unwrap();
 
-        let result = manager.set_variable("var3".to_string(), Value::Number(Number::from(3))).await;
+        let result = manager
+            .set_variable("var3".to_string(), Value::Number(Number::from(3)))
+            .await;
         assert!(result.is_err());
     }
 
@@ -449,7 +516,10 @@ mod tests {
             Value::String("test".to_string()),
             Value::Bool(true),
         ]);
-        manager.set_variable("array".to_string(), array_val).await.unwrap();
+        manager
+            .set_variable("array".to_string(), array_val)
+            .await
+            .unwrap();
 
         let retrieved = manager.get_variable("array").await.unwrap();
         match retrieved {
@@ -459,11 +529,17 @@ mod tests {
 
         // Test object storage
         let mut obj = std::collections::HashMap::new();
-        obj.insert("name".to_string(), Box::new(Value::String("Alice".to_string())));
+        obj.insert(
+            "name".to_string(),
+            Box::new(Value::String("Alice".to_string())),
+        );
         obj.insert("age".to_string(), Box::new(Value::Number(Number::from(30))));
 
         let obj_val = Value::Object(obj);
-        manager.set_variable("user".to_string(), obj_val).await.unwrap();
+        manager
+            .set_variable("user".to_string(), obj_val)
+            .await
+            .unwrap();
 
         let retrieved = manager.get_variable("user").await.unwrap();
         match retrieved {
@@ -481,9 +557,18 @@ mod tests {
         let manager = VariableStateManager::new();
 
         // Set multiple variables
-        manager.set_variable("var1".to_string(), Value::Number(Number::from(1))).await.unwrap();
-        manager.set_variable("var2".to_string(), Value::String("test".to_string())).await.unwrap();
-        manager.set_variable("var3".to_string(), Value::Bool(true)).await.unwrap();
+        manager
+            .set_variable("var1".to_string(), Value::Number(Number::from(1)))
+            .await
+            .unwrap();
+        manager
+            .set_variable("var2".to_string(), Value::String("test".to_string()))
+            .await
+            .unwrap();
+        manager
+            .set_variable("var3".to_string(), Value::Bool(true))
+            .await
+            .unwrap();
 
         assert_eq!(manager.variable_count().await, 3);
 
@@ -502,9 +587,18 @@ mod tests {
         let manager = VariableStateManager::new();
 
         // Set variables
-        manager.set_variable("alpha".to_string(), Value::Number(Number::from(1))).await.unwrap();
-        manager.set_variable("beta".to_string(), Value::Number(Number::from(2))).await.unwrap();
-        manager.set_variable("gamma".to_string(), Value::Number(Number::from(3))).await.unwrap();
+        manager
+            .set_variable("alpha".to_string(), Value::Number(Number::from(1)))
+            .await
+            .unwrap();
+        manager
+            .set_variable("beta".to_string(), Value::Number(Number::from(2)))
+            .await
+            .unwrap();
+        manager
+            .set_variable("gamma".to_string(), Value::Number(Number::from(3)))
+            .await
+            .unwrap();
 
         let names = manager.get_variable_names().await;
         assert_eq!(names.len(), 3);
@@ -518,8 +612,14 @@ mod tests {
         let manager = VariableStateManager::new();
 
         // Set up some variables
-        manager.set_variable("var1".to_string(), Value::Number(Number::from(42))).await.unwrap();
-        manager.set_variable("var2".to_string(), Value::String("hello".to_string())).await.unwrap();
+        manager
+            .set_variable("var1".to_string(), Value::Number(Number::from(42)))
+            .await
+            .unwrap();
+        manager
+            .set_variable("var2".to_string(), Value::String("hello".to_string()))
+            .await
+            .unwrap();
 
         // Export variables
         let exported = manager.export_variables().await;

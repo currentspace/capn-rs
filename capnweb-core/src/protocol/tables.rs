@@ -1,15 +1,16 @@
 use dashmap::DashMap;
-use std::sync::Arc;
+use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
-use serde::{Serialize, Deserialize};
+use std::sync::Arc;
 // use tokio::sync::oneshot; // TODO: Remove when promise handling is implemented
 
-use super::ids::{ImportId, ExportId, IdAllocator};
+use super::ids::{ExportId, IdAllocator, ImportId};
 // use super::expression::Expression; // TODO: Remove when expression integration is complete
 use crate::RpcTarget;
 
 /// Type alias for complex promise sender type
-type PromiseSender = Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>;
+type PromiseSender =
+    Arc<tokio::sync::Mutex<Option<tokio::sync::watch::Sender<Option<Result<Value, Value>>>>>>;
 
 /// Value that can be stored in tables
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -24,7 +25,7 @@ pub enum Value {
     Error {
         error_type: String,
         message: String,
-        stack: Option<String>
+        stack: Option<String>,
     },
     #[serde(skip)]
     Stub(StubReference),
@@ -265,10 +266,18 @@ impl ExportTable {
     }
 
     /// Export a new promise
-    pub fn export_promise(&self) -> (ExportId, tokio::sync::watch::Receiver<Option<Result<Value, Value>>>) {
+    pub fn export_promise(
+        &self,
+    ) -> (
+        ExportId,
+        tokio::sync::watch::Receiver<Option<Result<Value, Value>>>,
+    ) {
         let id = self.allocate_local();
         let (tx, rx) = tokio::sync::watch::channel(None);
-        let _ = self.insert(id, ExportValue::Promise(Arc::new(tokio::sync::Mutex::new(Some(tx)))));
+        let _ = self.insert(
+            id,
+            ExportValue::Promise(Arc::new(tokio::sync::Mutex::new(Some(tx)))),
+        );
         (id, rx)
     }
 
@@ -397,7 +406,7 @@ mod tests {
         table.insert(id, ImportValue::Stub(stub_ref)).unwrap();
 
         match table.get(id).unwrap() {
-            ImportValue::Stub(_) => {},
+            ImportValue::Stub(_) => {}
             _ => panic!("Expected stub"),
         }
 
@@ -418,7 +427,10 @@ mod tests {
         assert_eq!(id, ExportId(-1));
 
         // Resolve the promise
-        table.resolve(id, Value::String("result".to_string())).await.unwrap();
+        table
+            .resolve(id, Value::String("result".to_string()))
+            .await
+            .unwrap();
 
         // Check that watchers receive the resolution
         rx.changed().await.unwrap();
@@ -443,7 +455,7 @@ mod tests {
         let id = table.export_stub(stub.clone());
 
         match table.get(id).unwrap() {
-            ExportValueRef::Stub(_) => {},
+            ExportValueRef::Stub(_) => {}
             _ => panic!("Expected stub export"),
         }
     }

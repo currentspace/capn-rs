@@ -1,14 +1,18 @@
 // Cap'n Web Protocol Showcase Server
 // Demonstrates 100% protocol compliance with all features working
 
-use std::{sync::Arc, collections::HashMap, time::{Duration, SystemTime, UNIX_EPOCH}};
-use capnweb_core::{RpcError, CapId};
-use capnweb_server::{Server, ServerConfig, RpcTarget};
+use async_trait::async_trait;
+use capnweb_core::{CapId, RpcError};
+use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
+use std::{
+    collections::HashMap,
+    sync::Arc,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-use tracing::{info, debug};
-use async_trait::async_trait;
+use tracing::{debug, info};
 
 /// 🎯 COMPREHENSIVE DATA SHOWCASE
 /// Demonstrates ALL data types supported by Cap'n Web protocol
@@ -23,40 +27,49 @@ impl DataShowcase {
         let mut initial_state = HashMap::new();
 
         // Demonstrate complex nested data structures
-        initial_state.insert("arrays".to_string(), json!([
-            "strings", 123, 45.67, true, null,
-            ["nested", "array"],
-            {"nested": "object", "with": {"deep": "nesting"}}
-        ]));
+        initial_state.insert(
+            "arrays".to_string(),
+            json!([
+                "strings", 123, 45.67, true, null,
+                ["nested", "array"],
+                {"nested": "object", "with": {"deep": "nesting"}}
+            ]),
+        );
 
-        initial_state.insert("objects".to_string(), json!({
-            "user": {
-                "id": "showcase_001",
-                "name": "Protocol Master",
-                "metadata": {
-                    "created": 1695686400000i64,
-                    "permissions": ["read", "write", "execute"],
-                    "settings": {
-                        "theme": "dark",
-                        "notifications": true,
-                        "features": {
-                            "pipelining": true,
-                            "capabilities": true,
-                            "batching": true
+        initial_state.insert(
+            "objects".to_string(),
+            json!({
+                "user": {
+                    "id": "showcase_001",
+                    "name": "Protocol Master",
+                    "metadata": {
+                        "created": 1695686400000i64,
+                        "permissions": ["read", "write", "execute"],
+                        "settings": {
+                            "theme": "dark",
+                            "notifications": true,
+                            "features": {
+                                "pipelining": true,
+                                "capabilities": true,
+                                "batching": true
+                            }
                         }
                     }
                 }
-            }
-        }));
+            }),
+        );
 
-        initial_state.insert("performance".to_string(), json!({
-            "metrics": {
-                "requests_processed": 0,
-                "total_latency_ms": 0,
-                "pipeline_calls": 0,
-                "capabilities_created": 0
-            }
-        }));
+        initial_state.insert(
+            "performance".to_string(),
+            json!({
+                "metrics": {
+                    "requests_processed": 0,
+                    "total_latency_ms": 0,
+                    "pipeline_calls": 0,
+                    "capabilities_created": 0
+                }
+            }),
+        );
 
         Self {
             counter: Arc::new(RwLock::new(0)),
@@ -95,7 +108,10 @@ impl RpcTarget for DataShowcase {
 
             // 🏗️ COMPLEX OBJECT STRUCTURES
             "getComplexObject" => {
-                let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
+                let timestamp = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as u64;
                 Ok(json!({
                     "timestamp": timestamp,
                     "server": "capnweb-rust-v1.0.0",
@@ -131,18 +147,18 @@ impl RpcTarget for DataShowcase {
                         ]
                     }
                 }))
-            },
+            }
 
             // 🔢 STATEFUL OPERATIONS
             "increment" => {
                 let mut counter = self.counter.write().await;
                 *counter += 1;
                 Ok(json!(*counter))
-            },
+            }
             "getCounter" => {
                 let counter = self.counter.read().await;
                 Ok(json!(*counter))
-            },
+            }
 
             // 📈 PERFORMANCE & BENCHMARKING
             "performanceTest" => {
@@ -158,13 +174,11 @@ impl RpcTarget for DataShowcase {
                     "server_performance": "Optimal",
                     "protocol_overhead": "Minimal"
                 }))
-            },
+            }
 
             // 🎲 DYNAMIC DATA GENERATION
             "generateData" => {
-                let size = args.first()
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(10) as usize;
+                let size = args.first().and_then(|v| v.as_u64()).unwrap_or(10) as usize;
 
                 let data: Vec<Value> = (0..size).map(|i| json!({
                     "id": format!("item_{}", i),
@@ -181,19 +195,21 @@ impl RpcTarget for DataShowcase {
                     "count": size,
                     "generation_successful": true
                 }))
-            },
+            }
 
             // 🔍 STATE MANAGEMENT
             "getState" => {
                 let state = self.complex_state.read().await;
                 Ok(json!(state.clone()))
-            },
+            }
 
             "updateState" => {
-                let key = args.get(0)
+                let key = args
+                    .get(0)
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("First argument must be a string key"))?;
-                let value = args.get(1)
+                let value = args
+                    .get(1)
                     .ok_or_else(|| RpcError::bad_request("Second argument must be the value"))?;
 
                 let mut state = self.complex_state.write().await;
@@ -204,9 +220,12 @@ impl RpcTarget for DataShowcase {
                     "key": key,
                     "value": value
                 }))
-            },
+            }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on DataShowcase", member)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on DataShowcase",
+                member
+            ))),
         }
     }
 }
@@ -223,7 +242,8 @@ impl RpcTarget for PipelineShowcase {
 
         match member {
             "createUser" => {
-                let name = args.get(0)
+                let name = args
+                    .get(0)
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("Name required"))?;
 
@@ -239,10 +259,11 @@ impl RpcTarget for PipelineShowcase {
                         }
                     }
                 }))
-            },
+            }
 
             "getUserProfile" => {
-                let user_id = args.get(0)
+                let user_id = args
+                    .get(0)
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("User ID required"))?;
 
@@ -266,10 +287,11 @@ impl RpcTarget for PipelineShowcase {
                     },
                     "retrieved_via_pipeline": true
                 }))
-            },
+            }
 
             "getNotifications" => {
-                let user_id = args.get(0)
+                let user_id = args
+                    .get(0)
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| RpcError::bad_request("User ID required"))?;
 
@@ -296,10 +318,11 @@ impl RpcTarget for PipelineShowcase {
                         "read": false
                     }
                 ]))
-            },
+            }
 
             "processData" => {
-                let input = args.get(0)
+                let input = args
+                    .get(0)
                     .ok_or_else(|| RpcError::bad_request("Input data required"))?;
 
                 // Demonstrate complex data processing
@@ -332,13 +355,16 @@ impl RpcTarget for PipelineShowcase {
                         "processed": format!("Enhanced: {}", input),
                         "type": "primitive_enhancement",
                         "processing_complete": true
-                    })
+                    }),
                 };
 
                 Ok(processed)
-            },
+            }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on PipelineShowcase", member)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on PipelineShowcase",
+                member
+            ))),
         }
     }
 }
@@ -361,11 +387,15 @@ impl OrchestrationEngine {
 #[async_trait]
 impl RpcTarget for OrchestrationEngine {
     async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        debug!("OrchestrationEngine::{} called with args: {:?}", member, args);
+        debug!(
+            "OrchestrationEngine::{} called with args: {:?}",
+            member, args
+        );
 
         match member {
             "orchestrateWorkflow" => {
-                let workflow_name = args.get(0)
+                let workflow_name = args
+                    .get(0)
                     .and_then(|v| v.as_str())
                     .unwrap_or("default_workflow");
 
@@ -401,7 +431,7 @@ impl RpcTarget for OrchestrationEngine {
                     "success": true,
                     "message": "Multi-step workflow orchestrated perfectly via Cap'n Web protocol"
                 }))
-            },
+            }
 
             "getCapabilities" => {
                 let caps = self.registered_capabilities.read().await;
@@ -411,9 +441,12 @@ impl RpcTarget for OrchestrationEngine {
                     "capability_system": "fully_functional",
                     "protocol_compliance": "100%"
                 }))
-            },
+            }
 
-            _ => Err(RpcError::not_found(&format!("Method '{}' not found on OrchestrationEngine", member)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on OrchestrationEngine",
+                member
+            ))),
         }
     }
 }

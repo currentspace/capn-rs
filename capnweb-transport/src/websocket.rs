@@ -1,10 +1,10 @@
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::{Message, encode_message, decode_message};
+use capnweb_core::{decode_message, encode_message, Message};
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
-use tokio_tungstenite::{WebSocketStream, tungstenite};
+use tokio_tungstenite::{tungstenite, WebSocketStream};
 use tungstenite::protocol::Message as WsMessage;
 
 /// WebSocket transport implementation
@@ -94,7 +94,8 @@ where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Send + Sync + Unpin + 'static,
 {
     async fn send(&mut self, message: Message) -> Result<(), TransportError> {
-        self.tx.send(message)
+        self.tx
+            .send(message)
             .map_err(|_| TransportError::ConnectionClosed)
     }
 
@@ -105,7 +106,9 @@ where
 
     async fn close(&mut self) -> Result<(), TransportError> {
         let mut stream = self.stream.lock().await;
-        stream.close(None).await
+        stream
+            .close(None)
+            .await
             .map_err(|e| TransportError::Protocol(format!("Failed to close WebSocket: {}", e)))
     }
 }
@@ -118,13 +121,18 @@ pub struct WebSocketClient {
 impl WebSocketClient {
     /// Create a new WebSocket client
     pub fn new(url: impl Into<String>) -> Self {
-        Self {
-            url: url.into(),
-        }
+        Self { url: url.into() }
     }
 
     /// Connect to the WebSocket server
-    pub async fn connect(&self) -> Result<WebSocketTransport<impl tokio::io::AsyncRead + tokio::io::AsyncWrite + Send + Sync + Unpin + 'static>, TransportError> {
+    pub async fn connect(
+        &self,
+    ) -> Result<
+        WebSocketTransport<
+            impl tokio::io::AsyncRead + tokio::io::AsyncWrite + Send + Sync + Unpin + 'static,
+        >,
+        TransportError,
+    > {
         let (stream, _) = tokio_tungstenite::connect_async(&self.url)
             .await
             .map_err(|e| TransportError::Protocol(format!("Failed to connect: {}", e)))?;

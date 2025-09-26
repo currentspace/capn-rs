@@ -2,11 +2,10 @@
 // Exposes Resume Tokens, Nested Capabilities, and IL Plan Runner via RPC
 
 use capnweb_server::{
-    NewCapnWebServer, CapnWebServerConfig,
-    AdvancedCapability, AdvancedCapabilityBuilder,
+    AdvancedCapability, AdvancedCapabilityBuilder, CapnWebServerConfig, NewCapnWebServer,
 };
 use std::sync::Arc;
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber;
 
 #[tokio::main]
@@ -36,12 +35,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the advanced capability using the builder pattern
     let advanced_cap = Arc::new(
         AdvancedCapabilityBuilder::new()
-            .with_token_ttl(7200)        // 2 hour token TTL
+            .with_token_ttl(7200) // 2 hour token TTL
             .with_max_session_age(86400) // 24 hour max session age
-            .with_max_capabilities(500)  // Support up to 500 nested capabilities
+            .with_max_capabilities(500) // Support up to 500 nested capabilities
             .with_max_plan_operations(2000) // Allow complex plans with many ops
-            .with_plan_timeout(60000)    // 60 second timeout for plan execution
-            .build()
+            .with_plan_timeout(60000) // 60 second timeout for plan execution
+            .build(),
     );
 
     // Create and configure server

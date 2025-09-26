@@ -1,13 +1,16 @@
 // Capability Registry for bidirectional capability marshaling
 // This enables real capability passing across HTTP batch requests and WebSocket connections
 
+use crate::protocol::tables::StubReference;
+use crate::RpcTarget;
 use std::{
     collections::HashMap,
-    sync::{Arc, RwLock, atomic::{AtomicI64, Ordering}},
+    sync::{
+        atomic::{AtomicI64, Ordering},
+        Arc, RwLock,
+    },
 };
-use crate::{RpcTarget, RpcError};
-use crate::protocol::tables::StubReference;
-use tracing::{debug, warn, info};
+use tracing::{debug, info, warn};
 
 /// Registry for managing capability references across protocol boundaries
 /// Supports both import and export of capabilities with proper lifecycle management
@@ -59,7 +62,7 @@ impl CapabilityRegistry {
         if let (Ok(mut capabilities), Ok(mut reverse_map), Ok(mut ref_counts)) = (
             self.capabilities.write(),
             self.reverse_map.write(),
-            self.ref_counts.write()
+            self.ref_counts.write(),
         ) {
             capabilities.insert(id, capability);
             reverse_map.insert(ptr_addr, id);
@@ -99,10 +102,9 @@ impl CapabilityRegistry {
                     // Remove from all maps
                     ref_counts.remove(&id);
 
-                    if let (Ok(mut capabilities), Ok(mut reverse_map)) = (
-                        self.capabilities.write(),
-                        self.reverse_map.write()
-                    ) {
+                    if let (Ok(mut capabilities), Ok(mut reverse_map)) =
+                        (self.capabilities.write(), self.reverse_map.write())
+                    {
                         if let Some(capability) = capabilities.remove(&id) {
                             let ptr_addr = Arc::as_ptr(&capability) as *const () as usize;
                             reverse_map.remove(&ptr_addr);
@@ -112,7 +114,10 @@ impl CapabilityRegistry {
                     info!("Released capability: ID {}", id);
                     true
                 } else {
-                    debug!("Decremented capability ref count: ID {} (count: {})", id, count);
+                    debug!(
+                        "Decremented capability ref count: ID {} (count: {})",
+                        id, count
+                    );
                     false
                 }
             } else {
@@ -144,11 +149,7 @@ impl CapabilityRegistry {
 
     /// Create a stub reference for a capability (for import table integration)
     pub fn create_stub_reference(&self, id: i64) -> Option<StubReference> {
-        if let Some(capability) = self.import_capability(id) {
-            Some(StubReference::new(capability))
-        } else {
-            None
-        }
+        self.import_capability(id).map(StubReference::new)
     }
 }
 

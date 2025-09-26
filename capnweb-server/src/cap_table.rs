@@ -1,7 +1,7 @@
+use crate::RpcTarget;
+use capnweb_core::CapId;
 use dashmap::DashMap;
 use std::sync::Arc;
-use capnweb_core::CapId;
-use crate::RpcTarget;
 
 pub struct CapTable {
     caps: DashMap<CapId, Arc<dyn RpcTarget>>,

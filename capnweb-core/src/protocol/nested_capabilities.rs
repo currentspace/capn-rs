@@ -67,13 +67,17 @@ pub trait NestedCapableRpcTarget: RpcTarget {
     async fn list_capability_types(&self) -> Result<Value, crate::RpcError>;
 
     /// Get capability metadata
-    async fn get_capability_metadata(&self, capability_type: &str) -> Result<Value, crate::RpcError>;
+    async fn get_capability_metadata(
+        &self,
+        capability_type: &str,
+    ) -> Result<Value, crate::RpcError>;
 
     /// Get all child capabilities
     async fn list_child_capabilities(&self) -> Result<Value, crate::RpcError>;
 
     /// Dispose of a child capability
-    async fn dispose_child_capability(&self, capability_id: &str) -> Result<Value, crate::RpcError>;
+    async fn dispose_child_capability(&self, capability_id: &str)
+        -> Result<Value, crate::RpcError>;
 }
 
 /// Capability graph manager for tracking nested capability relationships
@@ -109,10 +113,7 @@ impl CapabilityGraph {
     }
 
     /// Add a capability to the graph
-    pub async fn add_capability(
-        &self,
-        node: CapabilityNode,
-    ) -> Result<(), CapabilityError> {
+    pub async fn add_capability(&self, node: CapabilityNode) -> Result<(), CapabilityError> {
         let mut nodes = self.nodes.write().await;
         let mut edges = self.edges.write().await;
         let mut ref_counts = self.reference_counts.write().await;
@@ -132,7 +133,8 @@ impl CapabilityGraph {
 
         // Add parent-child relationship
         if let Some(parent_id) = &node.parent_id {
-            edges.entry(parent_id.clone())
+            edges
+                .entry(parent_id.clone())
                 .or_insert_with(Vec::new)
                 .push(node.id.clone());
         }
@@ -255,7 +257,10 @@ impl CapabilityGraph {
         let edges = self.edges.read().await;
 
         let total_capabilities = nodes.len();
-        let root_capabilities = nodes.values().filter(|node| node.parent_id.is_none()).count();
+        let root_capabilities = nodes
+            .values()
+            .filter(|node| node.parent_id.is_none())
+            .count();
         let max_depth = self.calculate_max_depth(&nodes, &edges).await;
 
         CapabilityGraphStats {
@@ -292,7 +297,8 @@ impl CapabilityGraph {
 
         if let Some(children) = edges.get(node_id) {
             for child_id in children {
-                let child_depth = Self::calculate_depth_recursive(child_id, edges, current_depth + 1);
+                let child_depth =
+                    Self::calculate_depth_recursive(child_id, edges, current_depth + 1);
                 max_child_depth = max_child_depth.max(child_depth);
             }
         }
@@ -365,13 +371,18 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
         );
 
         // Create the capability using the factory
-        let capability = self.factory.create_capability(capability_type, config.clone()).await
+        let capability = self
+            .factory
+            .create_capability(capability_type, config.clone())
+            .await
             .map_err(|e| crate::RpcError::internal(e.to_string()))?;
 
         let capability_id = Uuid::new_v4().to_string();
 
         // Create metadata (simplified)
-        let metadata = self.factory.get_capability_metadata(capability_type)
+        let metadata = self
+            .factory
+            .get_capability_metadata(capability_type)
             .unwrap_or_else(|| CapabilityMetadata {
                 name: capability_type.to_string(),
                 description: format!("Dynamically created {} capability", capability_type),
@@ -394,11 +405,16 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
         };
 
         // Add to graph
-        self.graph.add_capability(node).await
+        self.graph
+            .add_capability(node)
+            .await
             .map_err(|e| crate::RpcError::internal(e.to_string()))?;
 
         // Store the capability
-        self.children.write().await.insert(capability_id.clone(), capability);
+        self.children
+            .write()
+            .await
+            .insert(capability_id.clone(), capability);
 
         tracing::debug!(
             parent_id = %self.id,
@@ -410,9 +426,18 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
         // Return capability reference
         Ok(Value::Object({
             let mut obj = std::collections::HashMap::new();
-            obj.insert("capability_id".to_string(), Box::new(Value::String(capability_id)));
-            obj.insert("capability_type".to_string(), Box::new(Value::String(capability_type.to_string())));
-            obj.insert("parent_id".to_string(), Box::new(Value::String(self.id.clone())));
+            obj.insert(
+                "capability_id".to_string(),
+                Box::new(Value::String(capability_id)),
+            );
+            obj.insert(
+                "capability_type".to_string(),
+                Box::new(Value::String(capability_type.to_string())),
+            );
+            obj.insert(
+                "parent_id".to_string(),
+                Box::new(Value::String(self.id.clone())),
+            );
             obj
         }))
     }
@@ -423,32 +448,67 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
         Ok(Value::Array(values))
     }
 
-    async fn get_capability_metadata(&self, capability_type: &str) -> Result<Value, crate::RpcError> {
+    async fn get_capability_metadata(
+        &self,
+        capability_type: &str,
+    ) -> Result<Value, crate::RpcError> {
         match self.factory.get_capability_metadata(capability_type) {
             Some(metadata) => {
                 let mut obj = std::collections::HashMap::new();
                 obj.insert("name".to_string(), Box::new(Value::String(metadata.name)));
-                obj.insert("description".to_string(), Box::new(Value::String(metadata.description)));
-                obj.insert("version".to_string(), Box::new(Value::String(metadata.version)));
+                obj.insert(
+                    "description".to_string(),
+                    Box::new(Value::String(metadata.description)),
+                );
+                obj.insert(
+                    "version".to_string(),
+                    Box::new(Value::String(metadata.version)),
+                );
 
-                let methods: Vec<Value> = metadata.methods.into_iter().map(|method| {
-                    let mut method_obj = std::collections::HashMap::new();
-                    method_obj.insert("name".to_string(), Box::new(Value::String(method.name)));
-                    method_obj.insert("description".to_string(), Box::new(Value::String(method.description)));
-                    method_obj.insert("return_type".to_string(), Box::new(Value::String(method.return_type)));
+                let methods: Vec<Value> = metadata
+                    .methods
+                    .into_iter()
+                    .map(|method| {
+                        let mut method_obj = std::collections::HashMap::new();
+                        method_obj.insert("name".to_string(), Box::new(Value::String(method.name)));
+                        method_obj.insert(
+                            "description".to_string(),
+                            Box::new(Value::String(method.description)),
+                        );
+                        method_obj.insert(
+                            "return_type".to_string(),
+                            Box::new(Value::String(method.return_type)),
+                        );
 
-                    let params: Vec<Value> = method.parameters.into_iter().map(|param| {
-                        let mut param_obj = std::collections::HashMap::new();
-                        param_obj.insert("name".to_string(), Box::new(Value::String(param.name)));
-                        param_obj.insert("type".to_string(), Box::new(Value::String(param.type_name)));
-                        param_obj.insert("required".to_string(), Box::new(Value::Bool(param.required)));
-                        param_obj.insert("description".to_string(), Box::new(Value::String(param.description)));
-                        Value::Object(param_obj)
-                    }).collect();
+                        let params: Vec<Value> = method
+                            .parameters
+                            .into_iter()
+                            .map(|param| {
+                                let mut param_obj = std::collections::HashMap::new();
+                                param_obj.insert(
+                                    "name".to_string(),
+                                    Box::new(Value::String(param.name)),
+                                );
+                                param_obj.insert(
+                                    "type".to_string(),
+                                    Box::new(Value::String(param.type_name)),
+                                );
+                                param_obj.insert(
+                                    "required".to_string(),
+                                    Box::new(Value::Bool(param.required)),
+                                );
+                                param_obj.insert(
+                                    "description".to_string(),
+                                    Box::new(Value::String(param.description)),
+                                );
+                                Value::Object(param_obj)
+                            })
+                            .collect();
 
-                    method_obj.insert("parameters".to_string(), Box::new(Value::Array(params)));
-                    Value::Object(method_obj)
-                }).collect();
+                        method_obj.insert("parameters".to_string(), Box::new(Value::Array(params)));
+                        Value::Object(method_obj)
+                    })
+                    .collect();
 
                 obj.insert("methods".to_string(), Box::new(Value::Array(methods)));
 
@@ -458,7 +518,10 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
 
                 Ok(Value::Object(obj))
             }
-            None => Err(crate::RpcError::not_found(format!("Capability type not found: {}", capability_type))),
+            None => Err(crate::RpcError::not_found(format!(
+                "Capability type not found: {}",
+                capability_type
+            ))),
         }
     }
 
@@ -471,8 +534,14 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
             if let Some(node) = self.graph.get_capability(&child_id).await {
                 let mut child_obj = std::collections::HashMap::new();
                 child_obj.insert("id".to_string(), Box::new(Value::String(node.id)));
-                child_obj.insert("type".to_string(), Box::new(Value::String(node.capability_type)));
-                child_obj.insert("created_at".to_string(), Box::new(Value::Number(serde_json::Number::from(node.created_at))));
+                child_obj.insert(
+                    "type".to_string(),
+                    Box::new(Value::String(node.capability_type)),
+                );
+                child_obj.insert(
+                    "created_at".to_string(),
+                    Box::new(Value::Number(serde_json::Number::from(node.created_at))),
+                );
                 children_info.push(Value::Object(child_obj));
             }
         }
@@ -480,7 +549,10 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
         Ok(Value::Array(children_info))
     }
 
-    async fn dispose_child_capability(&self, capability_id: &str) -> Result<Value, crate::RpcError> {
+    async fn dispose_child_capability(
+        &self,
+        capability_id: &str,
+    ) -> Result<Value, crate::RpcError> {
         tracing::debug!(
             parent_id = %self.id,
             child_id = %capability_id,
@@ -492,7 +564,9 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
 
         if removed {
             // Remove from graph (this will handle reference counting)
-            self.graph.remove_reference(capability_id).await
+            self.graph
+                .remove_reference(capability_id)
+                .await
                 .map_err(|e| crate::RpcError::internal(e.to_string()))?;
 
             tracing::debug!(
@@ -503,7 +577,10 @@ impl NestedCapableRpcTarget for DefaultNestedCapableTarget {
 
             Ok(Value::Bool(true))
         } else {
-            Err(crate::RpcError::not_found(format!("Child capability not found: {}", capability_id)))
+            Err(crate::RpcError::not_found(format!(
+                "Child capability not found: {}",
+                capability_id
+            )))
         }
     }
 }
@@ -514,32 +591,47 @@ impl RpcTarget for DefaultNestedCapableTarget {
         match method {
             "createSubCapability" => {
                 if args.len() != 2 {
-                    return Err(crate::RpcError::bad_request("createSubCapability requires 2 arguments: capability_type, config"));
+                    return Err(crate::RpcError::bad_request(
+                        "createSubCapability requires 2 arguments: capability_type, config",
+                    ));
                 }
 
                 let capability_type = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("capability_type must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "capability_type must be a string",
+                        ))
+                    }
                 };
 
-                self.create_sub_capability(&capability_type, args[1].clone()).await
+                self.create_sub_capability(&capability_type, args[1].clone())
+                    .await
             }
 
             "listCapabilityTypes" => {
                 if !args.is_empty() {
-                    return Err(crate::RpcError::bad_request("listCapabilityTypes takes no arguments"));
+                    return Err(crate::RpcError::bad_request(
+                        "listCapabilityTypes takes no arguments",
+                    ));
                 }
                 self.list_capability_types().await
             }
 
             "getCapabilityMetadata" => {
                 if args.len() != 1 {
-                    return Err(crate::RpcError::bad_request("getCapabilityMetadata requires 1 argument: capability_type"));
+                    return Err(crate::RpcError::bad_request(
+                        "getCapabilityMetadata requires 1 argument: capability_type",
+                    ));
                 }
 
                 let capability_type = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("capability_type must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "capability_type must be a string",
+                        ))
+                    }
                 };
 
                 self.get_capability_metadata(&capability_type).await
@@ -547,19 +639,27 @@ impl RpcTarget for DefaultNestedCapableTarget {
 
             "listChildCapabilities" => {
                 if !args.is_empty() {
-                    return Err(crate::RpcError::bad_request("listChildCapabilities takes no arguments"));
+                    return Err(crate::RpcError::bad_request(
+                        "listChildCapabilities takes no arguments",
+                    ));
                 }
                 self.list_child_capabilities().await
             }
 
             "disposeChildCapability" => {
                 if args.len() != 1 {
-                    return Err(crate::RpcError::bad_request("disposeChildCapability requires 1 argument: capability_id"));
+                    return Err(crate::RpcError::bad_request(
+                        "disposeChildCapability requires 1 argument: capability_id",
+                    ));
                 }
 
                 let capability_id = match &args[0] {
                     Value::String(s) => s.clone(),
-                    _ => return Err(crate::RpcError::bad_request("capability_id must be a string")),
+                    _ => {
+                        return Err(crate::RpcError::bad_request(
+                            "capability_id must be a string",
+                        ))
+                    }
                 };
 
                 self.dispose_child_capability(&capability_id).await
@@ -576,10 +676,15 @@ impl RpcTarget for DefaultNestedCapableTarget {
                     if let Some(child) = children.get(child_id) {
                         child.call(child_method, args).await
                     } else {
-                        Err(crate::RpcError::not_found(format!("Child capability not found: {}", child_id)))
+                        Err(crate::RpcError::not_found(format!(
+                            "Child capability not found: {}",
+                            child_id
+                        )))
                     }
                 } else {
-                    Err(crate::RpcError::bad_request("Invalid child method format: use 'child:id:method'"))
+                    Err(crate::RpcError::bad_request(
+                        "Invalid child method format: use 'child:id:method'",
+                    ))
                 }
             }
 
@@ -634,7 +739,9 @@ mod tests {
         ) -> Result<Arc<dyn RpcTarget>, CapabilityError> {
             match capability_type {
                 "calculator" => Ok(Arc::new(crate::MockRpcTarget::new())),
-                _ => Err(CapabilityError::InvalidCapabilityType(capability_type.to_string())),
+                _ => Err(CapabilityError::InvalidCapabilityType(
+                    capability_type.to_string(),
+                )),
             }
         }
 
@@ -648,27 +755,25 @@ mod tests {
                     name: "Calculator".to_string(),
                     description: "Basic calculator capability".to_string(),
                     version: "1.0.0".to_string(),
-                    methods: vec![
-                        MethodMetadata {
-                            name: "add".to_string(),
-                            description: "Add two numbers".to_string(),
-                            parameters: vec![
-                                ParameterMetadata {
-                                    name: "a".to_string(),
-                                    type_name: "number".to_string(),
-                                    required: true,
-                                    description: "First number".to_string(),
-                                },
-                                ParameterMetadata {
-                                    name: "b".to_string(),
-                                    type_name: "number".to_string(),
-                                    required: true,
-                                    description: "Second number".to_string(),
-                                },
-                            ],
-                            return_type: "number".to_string(),
-                        },
-                    ],
+                    methods: vec![MethodMetadata {
+                        name: "add".to_string(),
+                        description: "Add two numbers".to_string(),
+                        parameters: vec![
+                            ParameterMetadata {
+                                name: "a".to_string(),
+                                type_name: "number".to_string(),
+                                required: true,
+                                description: "First number".to_string(),
+                            },
+                            ParameterMetadata {
+                                name: "b".to_string(),
+                                type_name: "number".to_string(),
+                                required: true,
+                                description: "Second number".to_string(),
+                            },
+                        ],
+                        return_type: "number".to_string(),
+                    }],
                     config_schema: None,
                 }),
                 _ => None,
@@ -713,12 +818,8 @@ mod tests {
         let graph = Arc::new(CapabilityGraph::new());
         let delegate = Arc::new(crate::MockRpcTarget::new());
 
-        let nested_target = DefaultNestedCapableTarget::new(
-            "parent".to_string(),
-            factory,
-            graph.clone(),
-            delegate,
-        );
+        let nested_target =
+            DefaultNestedCapableTarget::new("parent".to_string(), factory, graph.clone(), delegate);
 
         // Test listing capability types
         let types = nested_target.list_capability_types().await.unwrap();
@@ -736,11 +837,17 @@ mod tests {
         // Test creating a sub-capability
         let config = Value::Object({
             let mut obj = HashMap::new();
-            obj.insert("precision".to_string(), Box::new(Value::Number(Number::from(2))));
+            obj.insert(
+                "precision".to_string(),
+                Box::new(Value::Number(Number::from(2))),
+            );
             obj
         });
 
-        let result = nested_target.create_sub_capability("calculator", config).await.unwrap();
+        let result = nested_target
+            .create_sub_capability("calculator", config)
+            .await
+            .unwrap();
 
         // Verify the result contains the expected structure
         match result {
@@ -774,24 +881,21 @@ mod tests {
         let graph = Arc::new(CapabilityGraph::new());
         let delegate = Arc::new(crate::MockRpcTarget::new());
 
-        let nested_target = DefaultNestedCapableTarget::new(
-            "parent".to_string(),
-            factory,
-            graph.clone(),
-            delegate,
-        );
+        let nested_target =
+            DefaultNestedCapableTarget::new("parent".to_string(), factory, graph.clone(), delegate);
 
         // Create a sub-capability
         let config = Value::Object(HashMap::new());
-        let result = nested_target.create_sub_capability("calculator", config).await.unwrap();
+        let result = nested_target
+            .create_sub_capability("calculator", config)
+            .await
+            .unwrap();
 
         let capability_id = match result {
-            Value::Object(ref obj) => {
-                match obj.get("capability_id").unwrap().as_ref() {
-                    Value::String(id) => id.clone(),
-                    _ => panic!("Expected string capability_id"),
-                }
-            }
+            Value::Object(ref obj) => match obj.get("capability_id").unwrap().as_ref() {
+                Value::String(id) => id.clone(),
+                _ => panic!("Expected string capability_id"),
+            },
             _ => panic!("Expected object result"),
         };
 
@@ -803,9 +907,12 @@ mod tests {
         }
 
         // Dispose the capability
-        let disposed = nested_target.dispose_child_capability(&capability_id).await.unwrap();
+        let disposed = nested_target
+            .dispose_child_capability(&capability_id)
+            .await
+            .unwrap();
         match disposed {
-            Value::Bool(true) => {},
+            Value::Bool(true) => {}
             _ => panic!("Expected true"),
         }
 

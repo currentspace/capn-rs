@@ -3,13 +3,13 @@
 // Based on: https://github.com/cloudflare/capnweb/blob/main/protocol.md
 
 use capnweb_core::{
-    Message, Expression, ImportId, ExportId, CallId,
-    ImportTable, ExportTable, IdAllocator, RpcTarget, RpcError,
-    protocol::{Value, SessionSnapshot, ResumeTokenManager}
+    protocol::{ResumeTokenManager, SessionSnapshot, Value},
+    CallId, ExportId, ExportTable, Expression, IdAllocator, ImportId, ImportTable, Message,
+    RpcError, RpcTarget,
 };
-use serde_json::{json, Value as JsonValue, Number};
-use std::sync::Arc;
+use serde_json::{json, Number, Value as JsonValue};
 use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 #[cfg(test)]
@@ -43,11 +43,14 @@ mod protocol_message_tests {
         println!("✅ RESOLVE message serialization verified");
 
         // Test REJECT message
-        let reject_msg = Message::Reject(ExportId(-2), Expression::Error {
-            error_type: "test_error".to_string(),
-            message: "Test error message".to_string(),
-            stack: None
-        });
+        let reject_msg = Message::Reject(
+            ExportId(-2),
+            Expression::Error {
+                error_type: "test_error".to_string(),
+                message: "Test error message".to_string(),
+                stack: None,
+            },
+        );
         let reject_json = reject_msg.to_json();
         let reject_deserialized = Message::from_json(&reject_json).unwrap();
         assert_eq!(reject_msg, reject_deserialized);
@@ -55,7 +58,7 @@ mod protocol_message_tests {
 
         // Test RELEASE message
         let release_msg = Message::Release {
-            release: vec![ImportId(1), ImportId(2), ImportId(3)]
+            release: vec![ImportId(1), ImportId(2), ImportId(3)],
         };
         let release_json = release_msg.to_json();
         let release_deserialized = Message::from_json(&release_json).unwrap();
@@ -67,8 +70,8 @@ mod protocol_message_tests {
             abort: Expression::Error {
                 error_type: "protocol_error".to_string(),
                 message: "Session terminated".to_string(),
-                stack: None
-            }
+                stack: None,
+            },
         };
         let abort_json = abort_msg.to_json();
         let abort_deserialized = Message::from_json(&abort_json).unwrap();
@@ -92,7 +95,7 @@ mod protocol_message_tests {
             Expression::Array(vec![
                 Expression::Number(Number::from(1)),
                 Expression::String("item".to_string()),
-                Expression::Bool(true)
+                Expression::Bool(true),
             ]),
         ];
 
@@ -105,8 +108,14 @@ mod protocol_message_tests {
 
         // Test object expression
         let mut obj_map = HashMap::new();
-        obj_map.insert("key1".to_string(), Box::new(Expression::String("value1".to_string())));
-        obj_map.insert("key2".to_string(), Box::new(Expression::Number(Number::from(42))));
+        obj_map.insert(
+            "key1".to_string(),
+            Box::new(Expression::String("value1".to_string())),
+        );
+        obj_map.insert(
+            "key2".to_string(),
+            Box::new(Expression::Number(Number::from(42))),
+        );
         let obj_expr = Expression::Object(obj_map);
 
         let obj_json = serde_json::to_string(&obj_expr).unwrap();
@@ -125,7 +134,7 @@ mod protocol_message_tests {
         let error_expr = Expression::Error {
             error_type: "validation_error".to_string(),
             message: "Invalid input provided".to_string(),
-            stack: Some("at line 42 in test.rs".to_string())
+            stack: Some("at line 42 in test.rs".to_string()),
         };
         let error_json = serde_json::to_string(&error_expr).unwrap();
         let error_deserialized: Expression = serde_json::from_str(&error_json).unwrap();
@@ -142,7 +151,7 @@ mod protocol_message_tests {
         // Test export expression
         let export_expr = Expression::Export {
             export: ExportId(-456),
-            promise: false
+            promise: false,
         };
         let export_json = serde_json::to_string(&export_expr).unwrap();
         let export_deserialized: Expression = serde_json::from_str(&export_json).unwrap();
@@ -151,7 +160,7 @@ mod protocol_message_tests {
 
         // Test promise expression
         let promise_expr = Expression::Promise {
-            promise: ExportId(-789)
+            promise: ExportId(-789),
         };
         let promise_json = serde_json::to_string(&promise_expr).unwrap();
         let promise_deserialized: Expression = serde_json::from_str(&promise_json).unwrap();
@@ -164,8 +173,8 @@ mod protocol_message_tests {
             property: vec!["method".to_string(), "property".to_string()],
             args: Some(Box::new(Expression::Array(vec![
                 Expression::String("arg1".to_string()),
-                Expression::Number(Number::from(42))
-            ])))
+                Expression::Number(Number::from(42)),
+            ]))),
         };
         let pipeline_json = serde_json::to_string(&pipeline_expr).unwrap();
         let pipeline_deserialized: Expression = serde_json::from_str(&pipeline_json).unwrap();
@@ -188,7 +197,10 @@ mod protocol_message_tests {
 
         // Verify IDs are unique and increasing
         for i in 1..positive_ids.len() {
-            assert!(positive_ids[i].0 > positive_ids[i-1].0, "IDs should be increasing");
+            assert!(
+                positive_ids[i].0 > positive_ids[i - 1].0,
+                "IDs should be increasing"
+            );
         }
         println!("✅ Positive ID allocation (imports) verified");
 
@@ -200,7 +212,10 @@ mod protocol_message_tests {
 
         // Verify IDs are unique and decreasing
         for i in 1..negative_ids.len() {
-            assert!(negative_ids[i].0 < negative_ids[i-1].0, "Export IDs should be decreasing");
+            assert!(
+                negative_ids[i].0 < negative_ids[i - 1].0,
+                "Export IDs should be decreasing"
+            );
         }
         println!("✅ Negative ID allocation (exports) verified");
 
@@ -224,7 +239,12 @@ mod protocol_table_tests {
     #[async_trait::async_trait]
     impl RpcTarget for TestRpcTarget {
         async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-            Ok(Value::String(format!("{}::{} called with {} args", self.name, method, args.len())))
+            Ok(Value::String(format!(
+                "{}::{} called with {} args",
+                self.name,
+                method,
+                args.len()
+            )))
         }
 
         async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
@@ -242,7 +262,9 @@ mod protocol_table_tests {
         let export_table = ExportTable::new(allocator.clone());
 
         // Test import table operations
-        let target = Arc::new(TestRpcTarget { name: "test_target".to_string() });
+        let target = Arc::new(TestRpcTarget {
+            name: "test_target".to_string(),
+        });
         let import_id = import_table.add_import(target.clone()).await;
         assert!(import_id.0 > 0, "Import ID should be positive");
 
@@ -262,7 +284,11 @@ mod protocol_table_tests {
         let ref_count_before = import_table.get_ref_count(&import_id).await;
         import_table.add_ref(&import_id).await;
         let ref_count_after = import_table.get_ref_count(&import_id).await;
-        assert_eq!(ref_count_after, ref_count_before + 1, "Reference count should increase");
+        assert_eq!(
+            ref_count_after,
+            ref_count_before + 1,
+            "Reference count should increase"
+        );
         println!("✅ Reference counting verified");
 
         // Test disposal
@@ -270,7 +296,10 @@ mod protocol_table_tests {
         assert!(removed.is_some(), "Import should be removable");
 
         let retrieved_after_removal = import_table.get_import(&import_id).await;
-        assert!(retrieved_after_removal.is_none(), "Import should not exist after removal");
+        assert!(
+            retrieved_after_removal.is_none(),
+            "Import should not exist after removal"
+        );
         println!("✅ Import disposal verified");
     }
 
@@ -284,12 +313,19 @@ mod protocol_table_tests {
 
         // Create multiple capabilities
         let targets: Vec<Arc<TestRpcTarget>> = (0..3)
-            .map(|i| Arc::new(TestRpcTarget { name: format!("target_{}", i) }))
+            .map(|i| {
+                Arc::new(TestRpcTarget {
+                    name: format!("target_{}", i),
+                })
+            })
             .collect();
 
         let import_ids: Vec<ImportId> = futures::future::join_all(
-            targets.iter().map(|target| import_table.add_import(target.clone()))
-        ).await;
+            targets
+                .iter()
+                .map(|target| import_table.add_import(target.clone())),
+        )
+        .await;
 
         // Verify all imports exist
         for (i, id) in import_ids.iter().enumerate() {
@@ -300,7 +336,11 @@ mod protocol_table_tests {
 
         // Test batch disposal (RELEASE message behavior)
         let disposed_count = import_table.batch_remove(&import_ids).await;
-        assert_eq!(disposed_count, import_ids.len(), "All imports should be disposed");
+        assert_eq!(
+            disposed_count,
+            import_ids.len(),
+            "All imports should be disposed"
+        );
 
         // Verify all imports are gone
         for (i, id) in import_ids.iter().enumerate() {
@@ -375,17 +415,22 @@ mod protocol_session_tests {
         let client_to_server_messages = vec![
             Message::Push(Expression::String("client_request".to_string())),
             Message::Pull(ImportId(1)),
-            Message::Release { release: vec![ImportId(2)] },
+            Message::Release {
+                release: vec![ImportId(2)],
+            },
         ];
 
         let server_to_client_messages = vec![
             Message::Push(Expression::String("server_notification".to_string())),
             Message::Resolve(ExportId(-1), Expression::Number(Number::from(42))),
-            Message::Reject(ExportId(-2), Expression::Error {
-                error_type: "server_error".to_string(),
-                message: "Operation failed".to_string(),
-                stack: None
-            }),
+            Message::Reject(
+                ExportId(-2),
+                Expression::Error {
+                    error_type: "server_error".to_string(),
+                    message: "Operation failed".to_string(),
+                    stack: None,
+                },
+            ),
         ];
 
         // Test serialization in both directions
@@ -418,7 +463,7 @@ mod protocol_error_tests {
         let structured_error = Expression::Error {
             error_type: "validation_error".to_string(),
             message: "Required field missing: 'name'".to_string(),
-            stack: Some("ValidationError\n    at validate_user_input (user.rs:42:5)".to_string())
+            stack: Some("ValidationError\n    at validate_user_input (user.rs:42:5)".to_string()),
         };
 
         let error_json = serde_json::to_string(&structured_error).unwrap();
@@ -438,7 +483,9 @@ mod protocol_error_tests {
         println!("✅ Error in REJECT message verified");
 
         // Test error in ABORT message
-        let abort_msg = Message::Abort { abort: structured_error };
+        let abort_msg = Message::Abort {
+            abort: structured_error,
+        };
         let abort_json = abort_msg.to_json();
         let abort_deserialized = Message::from_json(&abort_json).unwrap();
         assert_eq!(abort_msg, abort_deserialized);
@@ -450,8 +497,8 @@ mod protocol_error_tests {
             Expression::Error {
                 error_type: "computation_error".to_string(),
                 message: "Division by zero".to_string(),
-                stack: None
-            }
+                stack: None,
+            },
         ]);
 
         let array_json = serde_json::to_string(&error_in_array).unwrap();
@@ -505,26 +552,38 @@ mod protocol_error_tests {
         let import_table = ImportTable::new(allocator.clone());
 
         // Simulate partial failure scenario
-        let target = Arc::new(TestRpcTarget { name: "recoverable_target".to_string() });
+        let target = Arc::new(TestRpcTarget {
+            name: "recoverable_target".to_string(),
+        });
         let import_id = import_table.add_import(target).await;
 
         // Test that errors don't corrupt ID allocation
         let id_before_error = allocator.allocate_import();
 
         // Simulate error
-        let error_msg = Message::Reject(ExportId(-1), Expression::Error {
-            error_type: "temporary_failure".to_string(),
-            message: "Temporary failure, please retry".to_string(),
-            stack: None,
-        });
+        let error_msg = Message::Reject(
+            ExportId(-1),
+            Expression::Error {
+                error_type: "temporary_failure".to_string(),
+                message: "Temporary failure, please retry".to_string(),
+                stack: None,
+            },
+        );
 
         // Verify ID allocation continues correctly after error
         let id_after_error = allocator.allocate_import();
-        assert_eq!(id_after_error.0, id_before_error.0 + 1, "ID allocation should continue after error");
+        assert_eq!(
+            id_after_error.0,
+            id_before_error.0 + 1,
+            "ID allocation should continue after error"
+        );
 
         // Verify import table integrity after error
         let retrieved = import_table.get_import(&import_id).await;
-        assert!(retrieved.is_some(), "Import table should maintain integrity after error");
+        assert!(
+            retrieved.is_some(),
+            "Import table should maintain integrity after error"
+        );
 
         println!("✅ Error recovery and session continuity verified");
     }
@@ -544,7 +603,10 @@ mod protocol_validation_tests {
             // Import IDs should be positive
             ("negative_import", Message::Pull(ImportId(-1))),
             // Export IDs should be negative
-            ("positive_export", Message::Resolve(ExportId(1), Expression::Null)),
+            (
+                "positive_export",
+                Message::Resolve(ExportId(1), Expression::Null),
+            ),
         ];
 
         for (name, msg) in invalid_messages {
@@ -592,7 +654,9 @@ mod protocol_validation_tests {
 
         // Test large array handling
         let large_array = Expression::Array(
-            (0..10000).map(|i| Expression::Number(Number::from(i))).collect()
+            (0..10000)
+                .map(|i| Expression::Number(Number::from(i)))
+                .collect(),
         );
         let array_json = serde_json::to_string(&large_array).unwrap();
         let array_parsed: Expression = serde_json::from_str(&array_json).unwrap();

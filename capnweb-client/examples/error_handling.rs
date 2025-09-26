@@ -10,24 +10,23 @@ use anyhow::Result;
 use capnweb_client::{Client, ClientConfig};
 use capnweb_core::CapId;
 use serde_json::json;
-use tracing::info;
 use std::time::Duration;
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
 
     info!("⚠️ Cap'n Web Rust Client - Error Handling Example");
     info!("================================================");
 
-    let base_url = std::env::var("RPC_URL")
-        .unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
+    let base_url =
+        std::env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
 
     // Test 1: Connection to non-existent server
     info!("");
@@ -39,12 +38,10 @@ async fn main() -> Result<()> {
     };
 
     match Client::new(bad_config) {
-        Ok(client) => {
-            match client.call(CapId::new(1), "test", vec![]).await {
-                Ok(_) => info!("⚠️ Unexpected success"),
-                Err(e) => info!("✅ Expected error: {}", e),
-            }
-        }
+        Ok(client) => match client.call(CapId::new(1), "test", vec![]).await {
+            Ok(_) => info!("⚠️ Unexpected success"),
+            Err(e) => info!("✅ Expected error: {}", e),
+        },
         Err(e) => {
             info!("✅ Expected error during client creation: {}", e);
         }
@@ -62,7 +59,10 @@ async fn main() -> Result<()> {
     // Test 2: Call to non-existent method
     info!("");
     info!("📝 Test 2: Call to non-existent method");
-    match client.call(CapId::new(1), "nonExistentMethod", vec![]).await {
+    match client
+        .call(CapId::new(1), "nonExistentMethod", vec![])
+        .await
+    {
         Ok(result) => {
             info!("⚠️ Unexpected success: {}", result);
         }
@@ -74,7 +74,10 @@ async fn main() -> Result<()> {
     // Test 3: Invalid arguments
     info!("");
     info!("📝 Test 3: Invalid arguments (wrong type)");
-    match client.call(CapId::new(1), "authenticate", vec![json!(12345)]).await {
+    match client
+        .call(CapId::new(1), "authenticate", vec![json!(12345)])
+        .await
+    {
         Ok(result) => {
             info!("⚠️ Unexpected success: {}", result);
         }
@@ -156,7 +159,10 @@ async fn main() -> Result<()> {
 
     match Client::new(timeout_config) {
         Ok(timeout_client) => {
-            match timeout_client.call(CapId::new(1), "authenticate", vec![json!("cookie-123")]).await {
+            match timeout_client
+                .call(CapId::new(1), "authenticate", vec![json!("cookie-123")])
+                .await
+            {
                 Ok(_) => info!("  Call completed within timeout"),
                 Err(e) => {
                     if e.to_string().contains("timeout") || e.to_string().contains("elapsed") {
@@ -223,7 +229,11 @@ async fn main() -> Result<()> {
 
             // Try to add more operations than allowed
             for i in 0..10 {
-                large_batch.call(CapId::new(1), "authenticate", vec![json!(format!("token-{}", i))]);
+                large_batch.call(
+                    CapId::new(1),
+                    "authenticate",
+                    vec![json!(format!("token-{}", i))],
+                );
             }
 
             match large_batch.execute().await {

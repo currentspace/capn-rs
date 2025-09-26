@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use thiserror::Error;
 use bytes::Bytes;
 use capnweb_core::Message;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum TransportError {

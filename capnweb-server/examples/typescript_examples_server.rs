@@ -2,14 +2,14 @@
 // Implements the exact API required by the official Cap'n Web TypeScript examples
 // (batch-pipelining and worker-react)
 
-use std::{sync::Arc, collections::HashMap, time::Duration};
-use capnweb_core::{RpcError, CapId};
-use capnweb_server::{Server, ServerConfig, RpcTarget};
+use async_trait::async_trait;
+use capnweb_core::{CapId, RpcError};
+use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-use tracing::{info, debug};
-use async_trait::async_trait;
+use tracing::{debug, info};
 
 // User data structure matching TypeScript examples
 #[derive(Debug, Clone)]
@@ -51,34 +51,52 @@ impl Api {
         // Set up initial data
         tokio::spawn(async move {
             let mut sess = sessions.write().await;
-            sess.insert("cookie-123".to_string(), User {
-                id: "u_1".to_string(),
-                name: "Ada Lovelace".to_string(),
-            });
-            sess.insert("cookie-456".to_string(), User {
-                id: "u_2".to_string(),
-                name: "Alan Turing".to_string(),
-            });
+            sess.insert(
+                "cookie-123".to_string(),
+                User {
+                    id: "u_1".to_string(),
+                    name: "Ada Lovelace".to_string(),
+                },
+            );
+            sess.insert(
+                "cookie-456".to_string(),
+                User {
+                    id: "u_2".to_string(),
+                    name: "Alan Turing".to_string(),
+                },
+            );
 
             let mut profs = profiles.write().await;
-            profs.insert("u_1".to_string(), Profile {
-                id: "u_1".to_string(),
-                bio: "Mathematician & first programmer".to_string(),
-            });
-            profs.insert("u_2".to_string(), Profile {
-                id: "u_2".to_string(),
-                bio: "Mathematician & computer science pioneer".to_string(),
-            });
+            profs.insert(
+                "u_1".to_string(),
+                Profile {
+                    id: "u_1".to_string(),
+                    bio: "Mathematician & first programmer".to_string(),
+                },
+            );
+            profs.insert(
+                "u_2".to_string(),
+                Profile {
+                    id: "u_2".to_string(),
+                    bio: "Mathematician & computer science pioneer".to_string(),
+                },
+            );
 
             let mut notifs = notifications.write().await;
-            notifs.insert("u_1".to_string(), vec![
-                "Welcome to jsrpc!".to_string(),
-                "You have 2 new followers".to_string(),
-            ]);
-            notifs.insert("u_2".to_string(), vec![
-                "New feature: pipelining!".to_string(),
-                "Security tips for your account".to_string(),
-            ]);
+            notifs.insert(
+                "u_1".to_string(),
+                vec![
+                    "Welcome to jsrpc!".to_string(),
+                    "You have 2 new followers".to_string(),
+                ],
+            );
+            notifs.insert(
+                "u_2".to_string(),
+                vec![
+                    "New feature: pipelining!".to_string(),
+                    "Security tips for your account".to_string(),
+                ],
+            );
         });
 
         api
@@ -94,10 +112,13 @@ impl RpcTarget for Api {
             // Authenticate user with session token
             "authenticate" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("authenticate requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "authenticate requires exactly 1 argument",
+                    ));
                 }
 
-                let session_token = args[0].as_str()
+                let session_token = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("sessionToken must be a string"))?;
 
                 // Simulate processing delay
@@ -108,7 +129,8 @@ impl RpcTarget for Api {
                 sleep(Duration::from_millis(delay)).await;
 
                 let sessions = self.sessions.read().await;
-                let user = sessions.get(session_token)
+                let user = sessions
+                    .get(session_token)
                     .ok_or_else(|| RpcError::bad_request("Invalid session"))?;
 
                 Ok(json!({
@@ -120,10 +142,13 @@ impl RpcTarget for Api {
             // Get user profile by user ID
             "getUserProfile" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("getUserProfile requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "getUserProfile requires exactly 1 argument",
+                    ));
                 }
 
-                let user_id = args[0].as_str()
+                let user_id = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("userId must be a string"))?;
 
                 // Simulate processing delay
@@ -134,7 +159,8 @@ impl RpcTarget for Api {
                 sleep(Duration::from_millis(delay)).await;
 
                 let profiles = self.profiles.read().await;
-                let profile = profiles.get(user_id)
+                let profile = profiles
+                    .get(user_id)
                     .ok_or_else(|| RpcError::not_found("No such user"))?;
 
                 Ok(json!({
@@ -146,10 +172,13 @@ impl RpcTarget for Api {
             // Get notifications for a user
             "getNotifications" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("getNotifications requires exactly 1 argument"));
+                    return Err(RpcError::bad_request(
+                        "getNotifications requires exactly 1 argument",
+                    ));
                 }
 
-                let user_id = args[0].as_str()
+                let user_id = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("userId must be a string"))?;
 
                 // Simulate processing delay
@@ -160,16 +189,15 @@ impl RpcTarget for Api {
                 sleep(Duration::from_millis(delay)).await;
 
                 let notifications = self.notifications.read().await;
-                let notifs = notifications.get(user_id)
-                    .cloned()
-                    .unwrap_or_else(Vec::new);
+                let notifs = notifications.get(user_id).cloned().unwrap_or_else(Vec::new);
 
                 Ok(json!(notifs))
             }
 
-            _ => {
-                Err(RpcError::not_found(&format!("Method '{}' not found", member)))
-            }
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -188,29 +216,39 @@ impl RpcTarget for Calculator {
                 if args.len() != 2 {
                     return Err(RpcError::bad_request("add requires exactly 2 arguments"));
                 }
-                let a = args[0].as_f64()
+                let a = args[0]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
-                let b = args[1].as_f64()
+                let b = args[1]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
                 Ok(json!(a + b))
             }
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
-                let a = args[0].as_f64()
+                let a = args[0]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
-                let b = args[1].as_f64()
+                let b = args[1]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
                 Ok(json!(a * b))
             }
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
-                let a = args[0].as_f64()
+                let a = args[0]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
-                let b = args[1].as_f64()
+                let b = args[1]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
                 Ok(json!(a - b))
             }
@@ -218,18 +256,21 @@ impl RpcTarget for Calculator {
                 if args.len() != 2 {
                     return Err(RpcError::bad_request("divide requires exactly 2 arguments"));
                 }
-                let a = args[0].as_f64()
+                let a = args[0]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
-                let b = args[1].as_f64()
+                let b = args[1]
+                    .as_f64()
                     .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
                 if b == 0.0 {
                     return Err(RpcError::bad_request("Cannot divide by zero"));
                 }
                 Ok(json!(a / b))
             }
-            _ => {
-                Err(RpcError::not_found(&format!("Method '{}' not found on Calculator", member)))
-            }
+            _ => Err(RpcError::not_found(&format!(
+                "Method '{}' not found on Calculator",
+                member
+            ))),
         }
     }
 }
@@ -256,10 +297,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         max_batch_size: 100,
     };
 
-    info!("🚀 Starting TypeScript Examples Compatible Server on http://{}:{}", config.host, config.port);
+    info!(
+        "🚀 Starting TypeScript Examples Compatible Server on http://{}:{}",
+        config.host, config.port
+    );
     info!("📍 Endpoints:");
-    info!("   - HTTP Batch: http://{}:{}/rpc/batch", config.host, config.port);
-    info!("   - WebSocket: ws://{}:{}/rpc/ws", config.host, config.port);
+    info!(
+        "   - HTTP Batch: http://{}:{}/rpc/batch",
+        config.host, config.port
+    );
+    info!(
+        "   - WebSocket: ws://{}:{}/rpc/ws",
+        config.host, config.port
+    );
     info!("   - Health: http://{}:{}/health", config.host, config.port);
     info!("");
     info!("🔧 API Capabilities:");

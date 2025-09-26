@@ -65,7 +65,10 @@ impl CapabilityLifecycle {
             debug!("Retained capability {:?}, ref_count = {}", cap_id, *count);
             Ok(())
         } else {
-            Err(RpcError::not_found(format!("Capability {:?} not found", cap_id)))
+            Err(RpcError::not_found(format!(
+                "Capability {:?} not found",
+                cap_id
+            )))
         }
     }
 
@@ -82,7 +85,10 @@ impl CapabilityLifecycle {
                     should_dispose = true;
                 }
             } else {
-                return Err(RpcError::not_found(format!("Capability {:?} not found", cap_id)));
+                return Err(RpcError::not_found(format!(
+                    "Capability {:?} not found",
+                    cap_id
+                )));
             }
 
             should_dispose
@@ -111,7 +117,10 @@ impl CapabilityLifecycle {
         if let Some((_, disposable)) = self.dispose_callbacks.remove(cap_id) {
             debug!("Calling disposal callback for capability {:?}", cap_id);
             if let Err(e) = disposable.dispose().await {
-                warn!("Disposal callback failed for capability {:?}: {}", cap_id, e);
+                warn!(
+                    "Disposal callback failed for capability {:?}: {}",
+                    cap_id, e
+                );
                 return Err(e);
             }
         }
@@ -168,7 +177,9 @@ impl CapabilityLifecycle {
 
     /// Check if a capability is alive (has references)
     pub fn is_alive(&self, cap_id: &CapId) -> bool {
-        self.ref_count(cap_id).map(|count| count > 0).unwrap_or(false)
+        self.ref_count(cap_id)
+            .map(|count| count > 0)
+            .unwrap_or(false)
     }
 
     /// Get all capabilities for a session
@@ -282,8 +293,12 @@ mod tests {
         let cap1 = CapId::new(1);
         let cap2 = CapId::new(2);
 
-        lifecycle.register(cap1, Some(session_id.clone()), None).await;
-        lifecycle.register(cap2, Some(session_id.clone()), None).await;
+        lifecycle
+            .register(cap1, Some(session_id.clone()), None)
+            .await;
+        lifecycle
+            .register(cap2, Some(session_id.clone()), None)
+            .await;
 
         let caps = lifecycle.session_capabilities(&session_id).await;
         assert_eq!(caps.len(), 2);
@@ -315,13 +330,19 @@ mod tests {
     async fn test_lifecycle_stats() {
         let lifecycle = CapabilityLifecycle::new();
 
-        lifecycle.register(CapId::new(1), Some("s1".to_string()), None).await;
-        lifecycle.register(
-            CapId::new(2),
-            Some("s1".to_string()),
-            Some(Arc::new(DisposableResource::new("r1".to_string()))),
-        ).await;
-        lifecycle.register(CapId::new(3), Some("s2".to_string()), None).await;
+        lifecycle
+            .register(CapId::new(1), Some("s1".to_string()), None)
+            .await;
+        lifecycle
+            .register(
+                CapId::new(2),
+                Some("s1".to_string()),
+                Some(Arc::new(DisposableResource::new("r1".to_string()))),
+            )
+            .await;
+        lifecycle
+            .register(CapId::new(3), Some("s2".to_string()), None)
+            .await;
 
         let stats = lifecycle.stats().await;
         assert_eq!(stats.total_capabilities, 3);

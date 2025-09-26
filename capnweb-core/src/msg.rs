@@ -1,6 +1,6 @@
+use crate::ids::{CallId, CapId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::ids::{CallId, CapId};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -24,13 +24,19 @@ pub enum Outcome {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Message {
-    Call { call: CallMessage },
-    Result { result: ResultMessage },
+    Call {
+        call: CallMessage,
+    },
+    Result {
+        result: ResultMessage,
+    },
     CapRef {
         #[serde(rename = "capRef")]
-        cap_ref: CapRefMessage
+        cap_ref: CapRefMessage,
     },
-    Dispose { dispose: DisposeMessage },
+    Dispose {
+        dispose: DisposeMessage,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -60,7 +66,9 @@ pub struct DisposeMessage {
 
 impl Target {
     pub fn cap(id: CapId) -> Self {
-        Target::Cap { cap: CapIdWrapper { id } }
+        Target::Cap {
+            cap: CapIdWrapper { id },
+        }
     }
 
     pub fn special(name: String) -> Self {

@@ -2,24 +2,22 @@
 // Implements the official Cap'n Web protocol using newline-delimited arrays
 
 use async_trait::async_trait;
-use serde_json::Value;
-use capnweb_core::{
-    RpcError,
-    WireMessage, WireExpression, PropertyKey, parse_wire_batch, serialize_wire_batch,
-};
-use std::sync::Arc;
 use axum::{
-    Router,
-    routing::{post, get},
-    extract::State,
-    response::IntoResponse,
-    http::{StatusCode, HeaderMap},
     body::Bytes,
-    Json,
+    extract::State,
+    http::{HeaderMap, StatusCode},
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
 };
-use tokio::net::TcpListener;
-use tracing::{info, warn, error, debug};
+use capnweb_core::{
+    parse_wire_batch, serialize_wire_batch, PropertyKey, RpcError, WireExpression, WireMessage,
+};
 use dashmap::DashMap;
+use serde_json::Value;
+use std::sync::Arc;
+use tokio::net::TcpListener;
+use tracing::{debug, error, info, warn};
 
 #[async_trait]
 pub trait WireCapability: Send + Sync {
@@ -100,7 +98,7 @@ impl WireServer {
                         error_type: "not_implemented".to_string(),
                         message: "Promise resolution not yet implemented".to_string(),
                         stack: None,
-                    }
+                    },
                 )]
             }
 
@@ -122,8 +120,15 @@ impl WireServer {
 
     async fn handle_push_expression(&self, expr: WireExpression) -> Vec<WireMessage> {
         match expr {
-            WireExpression::Pipeline { import_id, property_path, args } => {
-                info!("Handling pipeline expression: import_id={}, property_path={:?}", import_id, property_path);
+            WireExpression::Pipeline {
+                import_id,
+                property_path,
+                args,
+            } => {
+                info!(
+                    "Handling pipeline expression: import_id={}, property_path={:?}",
+                    import_id, property_path
+                );
 
                 // For now, treat import_id as a capability ID to call
                 if let Some(capability) = self.capabilities.get(&import_id) {
@@ -140,15 +145,19 @@ impl WireServer {
                             // Call the capability
                             match capability.call(method, json_args).await {
                                 Ok(result) => {
-                                    let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                                    let export_id = self
+                                        .next_export_id
+                                        .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                                     vec![WireMessage::Resolve(
                                         export_id,
-                                        self.json_to_wire_expression(result)
+                                        self.json_to_wire_expression(result),
                                     )]
                                 }
                                 Err(err) => {
-                                    let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                                    let export_id = self
+                                        .next_export_id
+                                        .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                                     vec![WireMessage::Reject(
                                         export_id,
@@ -156,12 +165,14 @@ impl WireServer {
                                             error_type: err.code.to_string(),
                                             message: err.message.to_string(),
                                             stack: None,
-                                        }
+                                        },
                                     )]
                                 }
                             }
                         } else {
-                            let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                            let export_id = self
+                                .next_export_id
+                                .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                             vec![WireMessage::Reject(
                                 export_id,
@@ -169,11 +180,13 @@ impl WireServer {
                                     error_type: "bad_request".to_string(),
                                     message: "Invalid property path".to_string(),
                                     stack: None,
-                                }
+                                },
                             )]
                         }
                     } else {
-                        let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                        let export_id = self
+                            .next_export_id
+                            .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                         vec![WireMessage::Reject(
                             export_id,
@@ -181,11 +194,13 @@ impl WireServer {
                                 error_type: "bad_request".to_string(),
                                 message: "Missing property path".to_string(),
                                 stack: None,
-                            }
+                            },
                         )]
                     }
                 } else {
-                    let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                    let export_id = self
+                        .next_export_id
+                        .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                     vec![WireMessage::Reject(
                         export_id,
@@ -193,14 +208,16 @@ impl WireServer {
                             error_type: "not_found".to_string(),
                             message: format!("Capability {} not found", import_id),
                             stack: None,
-                        }
+                        },
                     )]
                 }
             }
 
             other => {
                 warn!("Unhandled push expression: {:?}", other);
-                let export_id = self.next_export_id.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                let export_id = self
+                    .next_export_id
+                    .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
                 vec![WireMessage::Reject(
                     export_id,
@@ -208,7 +225,7 @@ impl WireServer {
                         error_type: "not_implemented".to_string(),
                         message: "Expression type not implemented".to_string(),
                         stack: None,
-                    }
+                    },
                 )]
             }
         }
@@ -216,12 +233,11 @@ impl WireServer {
 
     fn wire_expression_to_json_args(&self, expr: WireExpression) -> Vec<Value> {
         match expr {
-            WireExpression::Array(items) => {
-                items.into_iter()
-                    .map(|item| self.wire_expression_to_json_value(item))
-                    .collect()
-            }
-            single => vec![self.wire_expression_to_json_value(single)]
+            WireExpression::Array(items) => items
+                .into_iter()
+                .map(|item| self.wire_expression_to_json_value(item))
+                .collect(),
+            single => vec![self.wire_expression_to_json_value(single)],
         }
     }
 
@@ -231,13 +247,18 @@ impl WireServer {
             WireExpression::Bool(b) => Value::Bool(b),
             WireExpression::Number(n) => Value::Number(n),
             WireExpression::String(s) => Value::String(s),
-            WireExpression::Array(items) => {
-                Value::Array(items.into_iter().map(|item| self.wire_expression_to_json_value(item)).collect())
-            }
-            WireExpression::Object(map) => {
-                Value::Object(map.into_iter().map(|(k, v)| (k, self.wire_expression_to_json_value(v))).collect())
-            }
-            _ => Value::String(format!("Unsupported expression: {:?}", expr))
+            WireExpression::Array(items) => Value::Array(
+                items
+                    .into_iter()
+                    .map(|item| self.wire_expression_to_json_value(item))
+                    .collect(),
+            ),
+            WireExpression::Object(map) => Value::Object(
+                map.into_iter()
+                    .map(|(k, v)| (k, self.wire_expression_to_json_value(v)))
+                    .collect(),
+            ),
+            _ => Value::String(format!("Unsupported expression: {:?}", expr)),
         }
     }
 
@@ -247,12 +268,17 @@ impl WireServer {
             Value::Bool(b) => WireExpression::Bool(b),
             Value::Number(n) => WireExpression::Number(n),
             Value::String(s) => WireExpression::String(s),
-            Value::Array(items) => {
-                WireExpression::Array(items.into_iter().map(|item| self.json_to_wire_expression(item)).collect())
-            }
-            Value::Object(map) => {
-                WireExpression::Object(map.into_iter().map(|(k, v)| (k, self.json_to_wire_expression(v))).collect())
-            }
+            Value::Array(items) => WireExpression::Array(
+                items
+                    .into_iter()
+                    .map(|item| self.json_to_wire_expression(item))
+                    .collect(),
+            ),
+            Value::Object(map) => WireExpression::Object(
+                map.into_iter()
+                    .map(|(k, v)| (k, self.json_to_wire_expression(v)))
+                    .collect(),
+            ),
         }
     }
 }
@@ -286,13 +312,13 @@ async fn handle_wire_batch(
                     error_type: "bad_request".to_string(),
                     message: format!("Invalid wire protocol: {}", e),
                     stack: None,
-                }
+                },
             );
             let response = serialize_wire_batch(&[error_response]);
             return (
                 StatusCode::BAD_REQUEST,
                 [("Content-Type", "text/plain")],
-                response
+                response,
             );
         }
     };
@@ -303,15 +329,19 @@ async fn handle_wire_batch(
             -1,
             WireExpression::Error {
                 error_type: "bad_request".to_string(),
-                message: format!("Batch size {} exceeds maximum {}", wire_messages.len(), server.config.max_batch_size),
+                message: format!(
+                    "Batch size {} exceeds maximum {}",
+                    wire_messages.len(),
+                    server.config.max_batch_size
+                ),
                 stack: None,
-            }
+            },
         );
         let response = serialize_wire_batch(&[error_response]);
         return (
             StatusCode::BAD_REQUEST,
             [("Content-Type", "text/plain")],
-            response
+            response,
         );
     }
 
@@ -329,7 +359,7 @@ async fn handle_wire_batch(
     (
         StatusCode::OK,
         [("Content-Type", "text/plain")],
-        response_body
+        response_body,
     )
 }
 

@@ -1,16 +1,14 @@
 use crate::{Message, RpcError};
+use bytes::{BufMut, Bytes, BytesMut};
 use serde_json;
 use std::io::{self, Read, Write};
-use bytes::{Bytes, BytesMut, BufMut};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum FrameFormat {
     LengthPrefixed,
     #[default]
     NewlineDelimited,
 }
-
 
 pub fn encode_message(msg: &Message) -> Result<Bytes, RpcError> {
     let json = serde_json::to_vec(msg)?;
@@ -46,7 +44,9 @@ pub fn decode_frame(data: &[u8], format: FrameFormat) -> Result<(Message, usize)
     match format {
         FrameFormat::LengthPrefixed => {
             if data.len() < 4 {
-                return Err(RpcError::bad_request("Incomplete frame: missing length prefix"));
+                return Err(RpcError::bad_request(
+                    "Incomplete frame: missing length prefix",
+                ));
             }
 
             let len = u32::from_be_bytes([data[0], data[1], data[2], data[3]]) as usize;
@@ -60,7 +60,9 @@ pub fn decode_frame(data: &[u8], format: FrameFormat) -> Result<(Message, usize)
             Ok((msg, total_len))
         }
         FrameFormat::NewlineDelimited => {
-            let newline_pos = data.iter().position(|&b| b == b'\n')
+            let newline_pos = data
+                .iter()
+                .position(|&b| b == b'\n')
                 .ok_or_else(|| RpcError::bad_request("No newline found in frame"))?;
 
             let msg = decode_message(&data[..newline_pos])?;
@@ -157,7 +159,7 @@ pub mod simd {
 mod tests {
     use super::*;
     use crate::ids::{CallId, CapId};
-    use crate::msg::{Target, Outcome};
+    use crate::msg::{Outcome, Target};
     use serde_json::json;
 
     #[test]
@@ -211,7 +213,9 @@ mod tests {
             ),
             Message::result(
                 CallId::new(1),
-                Outcome::Success { value: json!({"result": true}) },
+                Outcome::Success {
+                    value: json!({"result": true}),
+                },
             ),
         ];
 
@@ -242,7 +246,7 @@ mod tests {
         let result = decode_frame(&frame[..2], FrameFormat::LengthPrefixed);
         assert!(result.is_err());
 
-        let result = decode_frame(&frame[..frame.len()-1], FrameFormat::LengthPrefixed);
+        let result = decode_frame(&frame[..frame.len() - 1], FrameFormat::LengthPrefixed);
         assert!(result.is_err());
     }
 
@@ -261,7 +265,8 @@ mod tests {
         let (decoded1, consumed1) = decode_frame(&combined, FrameFormat::NewlineDelimited).unwrap();
         assert_eq!(decoded1, msg1);
 
-        let (decoded2, _consumed2) = decode_frame(&combined[consumed1..], FrameFormat::NewlineDelimited).unwrap();
+        let (decoded2, _consumed2) =
+            decode_frame(&combined[consumed1..], FrameFormat::NewlineDelimited).unwrap();
         assert_eq!(decoded2, msg2);
     }
 }

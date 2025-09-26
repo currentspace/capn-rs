@@ -3,27 +3,24 @@
 
 use async_trait::async_trait;
 use capnweb_core::{
-    RpcTarget, RpcError, CapId, Value,
-    Plan, Op, Source,
-    il::{CallOp, ObjectOp, ArrayOp, CaptureRef, ResultRef, ParamRef, ValueRef},
+    il::{ArrayOp, CallOp, CaptureRef, ObjectOp, ParamRef, ResultRef, ValueRef},
     protocol::{
-        resume_tokens::{ResumeTokenManager, PersistentSessionManager, ResumeToken},
-        nested_capabilities::{
-            CapabilityGraph,
-            CapabilityFactory as CapabilityFactoryTrait,
-            CapabilityError,
-            CapabilityMetadata, MethodMetadata, ParameterMetadata
-        },
-        il_runner::PlanRunner,
         ids::IdAllocator,
-        tables::{ImportTable, ExportTable},
-    }
+        il_runner::PlanRunner,
+        nested_capabilities::{
+            CapabilityError, CapabilityFactory as CapabilityFactoryTrait, CapabilityGraph,
+            CapabilityMetadata, MethodMetadata, ParameterMetadata,
+        },
+        resume_tokens::{PersistentSessionManager, ResumeToken, ResumeTokenManager},
+        tables::{ExportTable, ImportTable},
+    },
+    CapId, Op, Plan, RpcError, RpcTarget, Source, Value,
 };
+use chrono::Utc;
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{RwLock, Mutex};
-use chrono::Utc;
+use tokio::sync::{Mutex, RwLock};
 
 /// Session state for resume tokens
 #[derive(Clone, Debug)]
@@ -61,9 +58,10 @@ impl CapabilityFactoryTrait for SimpleCapabilityFactory {
     ) -> Result<Arc<dyn RpcTarget>, CapabilityError> {
         let mut count = self.created_count.lock().await;
         if *count >= self.max_capabilities {
-            return Err(CapabilityError::InvalidConfiguration(
-                format!("Maximum capabilities limit ({}) exceeded", self.max_capabilities)
-            ));
+            return Err(CapabilityError::InvalidConfiguration(format!(
+                "Maximum capabilities limit ({}) exceeded",
+                self.max_capabilities
+            )));
         }
         *count += 1;
 
@@ -116,29 +114,42 @@ impl CapabilityFactoryTrait for SimpleCapabilityFactory {
                     MethodMetadata {
                         name: "setRules".to_string(),
                         description: "Configure validation rules".to_string(),
-                        parameters: vec![
-                            ParameterMetadata {
-                                name: "rules".to_string(),
-                                type_name: "object".to_string(),
-                                description: "New validation rules".to_string(),
-                                required: true,
-                            },
-                        ],
+                        parameters: vec![ParameterMetadata {
+                            name: "rules".to_string(),
+                            type_name: "object".to_string(),
+                            description: "New validation rules".to_string(),
+                            required: true,
+                        }],
                         return_type: "void".to_string(),
                     },
                 ],
                 config_schema: Some(Value::Object({
                     let mut obj = std::collections::HashMap::new();
-                    obj.insert("type".to_string(), Box::new(Value::String("object".to_string())));
+                    obj.insert(
+                        "type".to_string(),
+                        Box::new(Value::String("object".to_string())),
+                    );
                     let mut props = std::collections::HashMap::new();
                     let mut strict_prop = std::collections::HashMap::new();
-                    strict_prop.insert("type".to_string(), Box::new(Value::String("boolean".to_string())));
+                    strict_prop.insert(
+                        "type".to_string(),
+                        Box::new(Value::String("boolean".to_string())),
+                    );
                     props.insert("strict".to_string(), Box::new(Value::Object(strict_prop)));
                     let mut allow_prop = std::collections::HashMap::new();
-                    allow_prop.insert("type".to_string(), Box::new(Value::String("boolean".to_string())));
-                    props.insert("allowExtraFields".to_string(), Box::new(Value::Object(allow_prop)));
+                    allow_prop.insert(
+                        "type".to_string(),
+                        Box::new(Value::String("boolean".to_string())),
+                    );
+                    props.insert(
+                        "allowExtraFields".to_string(),
+                        Box::new(Value::Object(allow_prop)),
+                    );
                     let mut depth_prop = std::collections::HashMap::new();
-                    depth_prop.insert("type".to_string(), Box::new(Value::String("number".to_string())));
+                    depth_prop.insert(
+                        "type".to_string(),
+                        Box::new(Value::String("number".to_string())),
+                    );
                     props.insert("maxDepth".to_string(), Box::new(Value::Object(depth_prop)));
                     obj.insert("properties".to_string(), Box::new(Value::Object(props)));
                     obj
@@ -152,14 +163,12 @@ impl CapabilityFactoryTrait for SimpleCapabilityFactory {
                     MethodMetadata {
                         name: "add".to_string(),
                         description: "Add data to aggregation".to_string(),
-                        parameters: vec![
-                            ParameterMetadata {
-                                name: "data".to_string(),
-                                type_name: "any".to_string(),
-                                description: "Data to aggregate".to_string(),
-                                required: true,
-                            },
-                        ],
+                        parameters: vec![ParameterMetadata {
+                            name: "data".to_string(),
+                            type_name: "any".to_string(),
+                            description: "Data to aggregate".to_string(),
+                            required: true,
+                        }],
                         return_type: "void".to_string(),
                     },
                     MethodMetadata {
@@ -181,72 +190,62 @@ impl CapabilityFactoryTrait for SimpleCapabilityFactory {
                 name: "processor".to_string(),
                 description: "Processes data through transformation pipeline".to_string(),
                 version: "1.0.0".to_string(),
-                methods: vec![
-                    MethodMetadata {
-                        name: "process".to_string(),
-                        description: "Process input data".to_string(),
-                        parameters: vec![
-                            ParameterMetadata {
-                                name: "input".to_string(),
-                                type_name: "any".to_string(),
-                                description: "Input data".to_string(),
-                                required: true,
-                            },
-                        ],
-                        return_type: "ProcessedData".to_string(),
-                    },
-                ],
+                methods: vec![MethodMetadata {
+                    name: "process".to_string(),
+                    description: "Process input data".to_string(),
+                    parameters: vec![ParameterMetadata {
+                        name: "input".to_string(),
+                        type_name: "any".to_string(),
+                        description: "Input data".to_string(),
+                        required: true,
+                    }],
+                    return_type: "ProcessedData".to_string(),
+                }],
                 config_schema: None,
             }),
             "analyzer" => Some(CapabilityMetadata {
                 name: "analyzer".to_string(),
                 description: "Analyzes data patterns and metrics".to_string(),
                 version: "1.0.0".to_string(),
-                methods: vec![
-                    MethodMetadata {
-                        name: "analyze".to_string(),
-                        description: "Analyze data".to_string(),
-                        parameters: vec![
-                            ParameterMetadata {
-                                name: "data".to_string(),
-                                type_name: "any".to_string(),
-                                description: "Data to analyze".to_string(),
-                                required: true,
-                            },
-                        ],
-                        return_type: "AnalysisResult".to_string(),
-                    },
-                ],
+                methods: vec![MethodMetadata {
+                    name: "analyze".to_string(),
+                    description: "Analyze data".to_string(),
+                    parameters: vec![ParameterMetadata {
+                        name: "data".to_string(),
+                        type_name: "any".to_string(),
+                        description: "Data to analyze".to_string(),
+                        required: true,
+                    }],
+                    return_type: "AnalysisResult".to_string(),
+                }],
                 config_schema: None,
             }),
             "transformer" => Some(CapabilityMetadata {
                 name: "transformer".to_string(),
                 description: "Transforms data between formats".to_string(),
                 version: "1.0.0".to_string(),
-                methods: vec![
-                    MethodMetadata {
-                        name: "transform".to_string(),
-                        description: "Transform data".to_string(),
-                        parameters: vec![
-                            ParameterMetadata {
-                                name: "input".to_string(),
-                                type_name: "any".to_string(),
-                                description: "Input data".to_string(),
-                                required: true,
-                            },
-                            ParameterMetadata {
-                                name: "format".to_string(),
-                                type_name: "string".to_string(),
-                                description: "Target format".to_string(),
-                                required: false,
-                            },
-                        ],
-                        return_type: "TransformedData".to_string(),
-                    },
-                ],
+                methods: vec![MethodMetadata {
+                    name: "transform".to_string(),
+                    description: "Transform data".to_string(),
+                    parameters: vec![
+                        ParameterMetadata {
+                            name: "input".to_string(),
+                            type_name: "any".to_string(),
+                            description: "Input data".to_string(),
+                            required: true,
+                        },
+                        ParameterMetadata {
+                            name: "format".to_string(),
+                            type_name: "string".to_string(),
+                            description: "Target format".to_string(),
+                            required: false,
+                        },
+                    ],
+                    return_type: "TransformedData".to_string(),
+                }],
                 config_schema: None,
             }),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -299,11 +298,11 @@ impl Default for AdvancedCapabilityConfig {
     fn default() -> Self {
         Self {
             secret_key: None,
-            token_ttl: 3600,           // 1 hour
-            max_session_age: 86400,     // 24 hours
+            token_ttl: 3600,        // 1 hour
+            max_session_age: 86400, // 24 hours
             max_capabilities: 1000,
             max_plan_operations: 1000,
-            plan_timeout_ms: 30000,     // 30 seconds
+            plan_timeout_ms: 30000, // 30 seconds
         }
     }
 }
@@ -331,11 +330,7 @@ impl AdvancedCapability {
         ));
 
         let persistent_manager = Arc::new(PersistentSessionManager::new(
-            ResumeTokenManager::with_settings(
-                secret_key,
-                config.token_ttl,
-                config.max_session_age,
-            )
+            ResumeTokenManager::with_settings(secret_key, config.token_ttl, config.max_session_age),
         ));
 
         // Create ID allocator for tables
@@ -397,7 +392,11 @@ impl AdvancedCapability {
         let result = if let Some(result_json) = json.get("result") {
             self.parse_source(Some(result_json))?
         } else {
-            Source::Result { result: ResultRef { index: ops.len().saturating_sub(1) as u32 } }
+            Source::Result {
+                result: ResultRef {
+                    index: ops.len().saturating_sub(1) as u32,
+                },
+            }
         };
 
         Ok(Plan {
@@ -412,12 +411,14 @@ impl AdvancedCapability {
         // Check if it's a call operation
         if let Some(call_obj) = json.get("call") {
             let target = self.parse_source(call_obj.get("target"))?;
-            let member = call_obj.get("member")
+            let member = call_obj
+                .get("member")
                 .and_then(|m| m.as_str())
                 .ok_or_else(|| RpcError::bad_request("Call missing member"))?
                 .to_string();
             let args = self.parse_sources(call_obj.get("args"))?;
-            let result = call_obj.get("result")
+            let result = call_obj
+                .get("result")
                 .and_then(|r| r.as_u64())
                 .ok_or_else(|| RpcError::bad_request("Call missing result index"))?
                 as u32;
@@ -428,7 +429,7 @@ impl AdvancedCapability {
                     member,
                     args,
                     result,
-                }
+                },
             })
         }
         // Check if it's an object operation
@@ -439,31 +440,27 @@ impl AdvancedCapability {
                     fields.insert(key.clone(), self.parse_source(Some(val))?);
                 }
             }
-            let result = obj_obj.get("result")
+            let result = obj_obj
+                .get("result")
                 .and_then(|r| r.as_u64())
                 .ok_or_else(|| RpcError::bad_request("Object missing result index"))?
                 as u32;
 
             Ok(Op::Object {
-                object: ObjectOp {
-                    fields,
-                    result,
-                }
+                object: ObjectOp { fields, result },
             })
         }
         // Check if it's an array operation
         else if let Some(array_obj) = json.get("array") {
             let items = self.parse_sources(array_obj.get("items"))?;
-            let result = array_obj.get("result")
+            let result = array_obj
+                .get("result")
                 .and_then(|r| r.as_u64())
                 .ok_or_else(|| RpcError::bad_request("Array missing result index"))?
                 as u32;
 
             Ok(Op::Array {
-                array: ArrayOp {
-                    items,
-                    result,
-                }
+                array: ArrayOp { items, result },
             })
         }
         // For backward compatibility, also check direct type field
@@ -471,14 +468,13 @@ impl AdvancedCapability {
             match op_type {
                 "call" => {
                     let target = self.parse_source(json.get("target"))?;
-                    let member = json.get("member")
+                    let member = json
+                        .get("member")
                         .and_then(|m| m.as_str())
                         .ok_or_else(|| RpcError::bad_request("Call missing member"))?
                         .to_string();
                     let args = self.parse_sources(json.get("args"))?;
-                    let result = json.get("result")
-                        .and_then(|r| r.as_u64())
-                        .unwrap_or(0) as u32;
+                    let result = json.get("result").and_then(|r| r.as_u64()).unwrap_or(0) as u32;
 
                     Ok(Op::Call {
                         call: CallOp {
@@ -486,23 +482,25 @@ impl AdvancedCapability {
                             member,
                             args,
                             result,
-                        }
+                        },
                     })
                 }
-                _ => Err(RpcError::bad_request(&format!("Unknown operation type: {}", op_type)))
+                _ => Err(RpcError::bad_request(&format!(
+                    "Unknown operation type: {}",
+                    op_type
+                ))),
             }
-        }
-        else {
-            Err(RpcError::bad_request("Operation must have 'call', 'object', or 'array' field"))
+        } else {
+            Err(RpcError::bad_request(
+                "Operation must have 'call', 'object', or 'array' field",
+            ))
         }
     }
 
     /// Parse sources array
     fn parse_sources(&self, json: Option<&JsonValue>) -> Result<Vec<Source>, RpcError> {
         if let Some(array) = json.and_then(|j| j.as_array()) {
-            array.iter()
-                .map(|s| self.parse_source(Some(s)))
-                .collect()
+            array.iter().map(|s| self.parse_source(Some(s))).collect()
         } else {
             Ok(vec![])
         }
@@ -514,97 +512,102 @@ impl AdvancedCapability {
 
         // Check for capture
         if let Some(capture_obj) = json.get("capture") {
-            let index = capture_obj.get("index")
+            let index = capture_obj
+                .get("index")
                 .and_then(|i| i.as_u64())
                 .ok_or_else(|| RpcError::bad_request("Capture missing index"))?
                 as u32;
             Ok(Source::Capture {
-                capture: CaptureRef { index }
+                capture: CaptureRef { index },
             })
         }
         // Check for result
         else if let Some(result_obj) = json.get("result") {
-            let index = result_obj.get("index")
+            let index = result_obj
+                .get("index")
                 .and_then(|i| i.as_u64())
                 .ok_or_else(|| RpcError::bad_request("Result missing index"))?
                 as u32;
             Ok(Source::Result {
-                result: ResultRef { index }
+                result: ResultRef { index },
             })
         }
         // Check for param
         else if let Some(param_obj) = json.get("param") {
             let path = if let Some(path_array) = param_obj.get("path").and_then(|p| p.as_array()) {
-                path_array.iter()
+                path_array
+                    .iter()
                     .filter_map(|v| v.as_str().map(String::from))
                     .collect()
             } else {
                 vec![]
             };
             Ok(Source::Param {
-                param: ParamRef { path }
+                param: ParamRef { path },
             })
         }
         // Check for byValue
         else if let Some(value_obj) = json.get("byValue") {
-            let value = value_obj.get("value")
+            let value = value_obj
+                .get("value")
                 .ok_or_else(|| RpcError::bad_request("ByValue missing value"))?;
             Ok(Source::ByValue {
                 by_value: ValueRef {
-                    value: value.clone()
-                }
+                    value: value.clone(),
+                },
             })
         }
         // For backward compatibility, check type field
         else if let Some(source_type) = json.get("type").and_then(|t| t.as_str()) {
             match source_type {
                 "capture" => {
-                    let index = json.get("index")
-                        .and_then(|i| i.as_u64())
-                        .unwrap_or(0) as u32;
+                    let index = json.get("index").and_then(|i| i.as_u64()).unwrap_or(0) as u32;
                     Ok(Source::Capture {
-                        capture: CaptureRef { index }
+                        capture: CaptureRef { index },
                     })
                 }
                 "result" => {
-                    let index = json.get("index")
-                        .and_then(|i| i.as_u64())
-                        .unwrap_or(0) as u32;
+                    let index = json.get("index").and_then(|i| i.as_u64()).unwrap_or(0) as u32;
                     Ok(Source::Result {
-                        result: ResultRef { index }
+                        result: ResultRef { index },
                     })
                 }
                 "param" | "parameter" => {
                     let path = if let Some(path_str) = json.get("path").and_then(|p| p.as_str()) {
                         vec![path_str.to_string()]
                     } else if let Some(path_array) = json.get("path").and_then(|p| p.as_array()) {
-                        path_array.iter()
+                        path_array
+                            .iter()
                             .filter_map(|v| v.as_str().map(String::from))
                             .collect()
                     } else {
                         vec![]
                     };
                     Ok(Source::Param {
-                        param: ParamRef { path }
+                        param: ParamRef { path },
                     })
                 }
                 "literal" | "value" => {
-                    let value = json.get("value")
+                    let value = json
+                        .get("value")
                         .ok_or_else(|| RpcError::bad_request("Literal source missing value"))?;
                     Ok(Source::ByValue {
                         by_value: ValueRef {
-                            value: value.clone()
-                        }
+                            value: value.clone(),
+                        },
                     })
                 }
-                _ => Err(RpcError::bad_request(&format!("Unknown source type: {}", source_type)))
+                _ => Err(RpcError::bad_request(&format!(
+                    "Unknown source type: {}",
+                    source_type
+                ))),
             }
         } else {
             // If no recognized structure, treat as literal value
             Ok(Source::ByValue {
                 by_value: ValueRef {
-                    value: json.clone()
-                }
+                    value: json.clone(),
+                },
             })
         }
     }
@@ -614,12 +617,11 @@ impl AdvancedCapability {
         match json {
             JsonValue::Null => Ok(Value::Null),
             JsonValue::Bool(b) => Ok(Value::Bool(*b)),
-            JsonValue::Number(n) => {
-                Ok(Value::Number(n.clone()))
-            }
+            JsonValue::Number(n) => Ok(Value::Number(n.clone())),
             JsonValue::String(s) => Ok(Value::String(s.clone())),
             JsonValue::Array(arr) => {
-                let values = arr.iter()
+                let values = arr
+                    .iter()
                     .map(|v| self.json_to_value(v))
                     .collect::<Result<Vec<_>, _>>()?;
                 Ok(Value::Array(values))
@@ -652,7 +654,11 @@ impl AdvancedCapability {
                 JsonValue::Object(json_obj)
             }
             Value::Date(timestamp) => json!(timestamp),
-            Value::Error { error_type, message, stack } => json!({
+            Value::Error {
+                error_type,
+                message,
+                stack,
+            } => json!({
                 "error": error_type,
                 "message": message,
                 "stack": stack
@@ -680,7 +686,10 @@ impl RpcTarget for NestedCapabilityImpl {
             "process" => {
                 // Simple processing for nested capability
                 if let Some(input) = args.first() {
-                    Ok(Value::String(format!("{} processed: {:?}", self.name, input)))
+                    Ok(Value::String(format!(
+                        "{} processed: {:?}",
+                        self.name, input
+                    )))
                 } else {
                     Err(RpcError::bad_request("Process requires input"))
                 }
@@ -689,7 +698,10 @@ impl RpcTarget for NestedCapabilityImpl {
                 // Validation logic
                 Ok(Value::Bool(true))
             }
-            _ => Err(RpcError::not_found(&format!("Method {} not found on nested capability", method)))
+            _ => Err(RpcError::not_found(&format!(
+                "Method {} not found on nested capability",
+                method
+            ))),
         }
     }
 
@@ -701,7 +713,10 @@ impl RpcTarget for NestedCapabilityImpl {
                 Some(id) => Value::String(id.as_u64().to_string()),
                 None => Value::Null,
             }),
-            _ => Err(RpcError::not_found(&format!("Property {} not found", property)))
+            _ => Err(RpcError::not_found(&format!(
+                "Property {} not found",
+                property
+            ))),
         }
     }
 }
@@ -719,64 +734,80 @@ impl RpcTarget for AdvancedCapability {
             // ============================================================================
             // RESUME TOKEN METHODS
             // ============================================================================
-
             "createResumeToken" => {
                 // Parse arguments
-                let config = args.first()
+                let config = args
+                    .first()
                     .and_then(|v| match v {
                         Value::Object(obj) => Some(obj),
-                        _ => None
+                        _ => None,
                     })
-                    .ok_or_else(|| RpcError::bad_request("createResumeToken requires config object"))?;
+                    .ok_or_else(|| {
+                        RpcError::bad_request("createResumeToken requires config object")
+                    })?;
 
-                let session_id = config.get("sessionId")
+                let session_id = config
+                    .get("sessionId")
                     .and_then(|v| match v.as_ref() {
                         Value::String(s) => Some(s.as_str()),
-                        _ => None
+                        _ => None,
                     })
                     .ok_or_else(|| RpcError::bad_request("Missing sessionId"))?;
 
-                let include_state = config.get("includeState")
+                let include_state = config
+                    .get("includeState")
                     .and_then(|v| match v.as_ref() {
                         Value::Bool(b) => Some(*b),
-                        _ => None
+                        _ => None,
                     })
                     .unwrap_or(true);
 
-                let expiration_minutes = config.get("expirationMinutes")
+                let expiration_minutes = config
+                    .get("expirationMinutes")
                     .and_then(|v| match v.as_ref() {
                         Value::Number(n) => n.as_u64(),
-                        _ => None
+                        _ => None,
                     })
                     .unwrap_or(60);
 
                 // Create session snapshot
-                let snapshot = self.resume_manager.create_snapshot(
-                    session_id.to_string(),
-                    &self.id_allocator,
-                    &self.import_table,
-                    &self.export_table,
-                    None, // No variable state manager for now
-                ).await.map_err(|e| RpcError::internal(&format!("Failed to create snapshot: {:?}", e)))?;
+                let snapshot = self
+                    .resume_manager
+                    .create_snapshot(
+                        session_id.to_string(),
+                        &self.id_allocator,
+                        &self.import_table,
+                        &self.export_table,
+                        None, // No variable state manager for now
+                    )
+                    .await
+                    .map_err(|e| {
+                        RpcError::internal(&format!("Failed to create snapshot: {:?}", e))
+                    })?;
 
                 // Store session state if requested
                 if include_state {
                     let mut sessions = self.sessions.write().await;
-                    let session_state = sessions.entry(session_id.to_string()).or_insert_with(|| {
-                        SessionState {
-                            variables: HashMap::new(),
-                            operations: Vec::new(),
-                            last_result: None,
-                            created_at: Utc::now().timestamp(),
-                            last_accessed: Utc::now().timestamp(),
-                        }
-                    });
+                    let session_state =
+                        sessions
+                            .entry(session_id.to_string())
+                            .or_insert_with(|| SessionState {
+                                variables: HashMap::new(),
+                                operations: Vec::new(),
+                                last_result: None,
+                                created_at: Utc::now().timestamp(),
+                                last_accessed: Utc::now().timestamp(),
+                            });
                     session_state.last_accessed = Utc::now().timestamp();
                 }
 
                 // Generate token
-                let token = self.resume_manager.generate_token(snapshot.clone())
-                    .map_err(|e| RpcError::internal(&format!("Failed to generate token: {:?}", e)))?;
+                let token = self
+                    .resume_manager
+                    .generate_token(snapshot.clone())
+                    .map_err(|e| {
+                        RpcError::internal(&format!("Failed to generate token: {:?}", e))
+                    })?;
 
                 // Persistent manager will handle storage internally
 
@@ -793,7 +824,9 @@ impl RpcTarget for AdvancedCapability {
                 let config = if let Some(Value::Object(obj)) = args.first() {
                     obj
                 } else {
-                    return Err(RpcError::bad_request("restoreSession requires config object"));
+                    return Err(RpcError::bad_request(
+                        "restoreSession requires config object",
+                    ));
                 };
 
                 let token = if let Some(val) = config.get("token") {
@@ -811,19 +844,24 @@ impl RpcTarget for AdvancedCapability {
                     .map_err(|e| RpcError::bad_request(&format!("Invalid token format: {}", e)))?;
 
                 // Parse and validate token
-                let snapshot = self.resume_manager.parse_token(&resume_token)
+                let snapshot = self
+                    .resume_manager
+                    .parse_token(&resume_token)
                     .map_err(|e| RpcError::bad_request(&format!("Invalid token: {:?}", e)))?;
 
                 // Restore session state
                 let session_id = format!("restored_{}", Utc::now().timestamp());
                 let mut sessions = self.sessions.write().await;
-                sessions.insert(session_id.clone(), SessionState {
-                    variables: HashMap::new(),
-                    operations: Vec::new(),
-                    last_result: None,
-                    created_at: snapshot.created_at as i64,
-                    last_accessed: Utc::now().timestamp(),
-                });
+                sessions.insert(
+                    session_id.clone(),
+                    SessionState {
+                        variables: HashMap::new(),
+                        operations: Vec::new(),
+                        last_result: None,
+                        created_at: snapshot.created_at as i64,
+                        last_accessed: Utc::now().timestamp(),
+                    },
+                );
 
                 let response = json!({
                     "sessionId": session_id,
@@ -841,22 +879,26 @@ impl RpcTarget for AdvancedCapability {
                     return Err(RpcError::bad_request("setVariable requires variable name"));
                 };
 
-                let var_value = args.get(1)
+                let var_value = args
+                    .get(1)
                     .ok_or_else(|| RpcError::bad_request("setVariable requires value"))?;
 
                 // Find or create current session
                 let mut sessions = self.sessions.write().await;
-                let session = sessions.entry("default".to_string()).or_insert_with(|| {
-                    SessionState {
-                        variables: HashMap::new(),
-                        operations: Vec::new(),
-                        last_result: None,
-                        created_at: Utc::now().timestamp(),
-                        last_accessed: Utc::now().timestamp(),
-                    }
-                });
+                let session =
+                    sessions
+                        .entry("default".to_string())
+                        .or_insert_with(|| SessionState {
+                            variables: HashMap::new(),
+                            operations: Vec::new(),
+                            last_result: None,
+                            created_at: Utc::now().timestamp(),
+                            last_accessed: Utc::now().timestamp(),
+                        });
 
-                session.variables.insert(var_name.to_string(), var_value.clone());
+                session
+                    .variables
+                    .insert(var_name.to_string(), var_value.clone());
                 session.last_accessed = Utc::now().timestamp();
 
                 Ok(Value::Bool(true))
@@ -870,10 +912,13 @@ impl RpcTarget for AdvancedCapability {
                 };
 
                 let sessions = self.sessions.read().await;
-                let session = sessions.get("default")
+                let session = sessions
+                    .get("default")
                     .ok_or_else(|| RpcError::not_found("No active session"))?;
 
-                session.variables.get(var_name)
+                session
+                    .variables
+                    .get(var_name)
                     .cloned()
                     .ok_or_else(|| RpcError::not_found(&format!("Variable {} not found", var_name)))
             }
@@ -881,7 +926,6 @@ impl RpcTarget for AdvancedCapability {
             // ============================================================================
             // NESTED CAPABILITY METHODS
             // ============================================================================
-
             "createSubCapability" => {
                 let cap_type = if let Some(Value::String(s)) = args.first() {
                     s.as_str()
@@ -889,7 +933,8 @@ impl RpcTarget for AdvancedCapability {
                     return Err(RpcError::bad_request("createSubCapability requires type"));
                 };
 
-                let config = args.get(1)
+                let config = args
+                    .get(1)
                     .cloned()
                     .unwrap_or(Value::Object(std::collections::HashMap::new()));
 
@@ -903,7 +948,7 @@ impl RpcTarget for AdvancedCapability {
                 let nested_cap = Arc::new(NestedCapabilityImpl {
                     name: cap_type.to_string(),
                     config: config.clone(),
-                    parent: None,  // Could track parent hierarchy
+                    parent: None, // Could track parent hierarchy
                 });
 
                 // Add to capability graph
@@ -914,7 +959,9 @@ impl RpcTarget for AdvancedCapability {
                     parent_id: None,
                     created_at: chrono::Utc::now().timestamp() as u64,
                     config: config.clone(),
-                    metadata: self.capability_factory.get_capability_metadata(cap_type)
+                    metadata: self
+                        .capability_factory
+                        .get_capability_metadata(cap_type)
                         .unwrap_or(CapabilityMetadata {
                             name: cap_type.to_string(),
                             description: format!("{} capability", cap_type),
@@ -923,8 +970,12 @@ impl RpcTarget for AdvancedCapability {
                             config_schema: None,
                         }),
                 };
-                self.capability_graph.add_capability(node).await
-                    .map_err(|e| RpcError::internal(&format!("Failed to add capability: {:?}", e)))?;
+                self.capability_graph
+                    .add_capability(node)
+                    .await
+                    .map_err(|e| {
+                        RpcError::internal(&format!("Failed to add capability: {:?}", e))
+                    })?;
 
                 // Store in local registry
                 let mut capabilities = self.nested_capabilities.write().await;
@@ -943,23 +994,26 @@ impl RpcTarget for AdvancedCapability {
                 let cap_name = if let Some(Value::String(s)) = args.first() {
                     s.as_str()
                 } else {
-                    return Err(RpcError::bad_request("callSubCapability requires capability name"));
+                    return Err(RpcError::bad_request(
+                        "callSubCapability requires capability name",
+                    ));
                 };
 
                 let sub_method = if let Some(Value::String(s)) = args.get(1) {
                     s.as_str()
                 } else {
-                    return Err(RpcError::bad_request("callSubCapability requires method name"));
+                    return Err(RpcError::bad_request(
+                        "callSubCapability requires method name",
+                    ));
                 };
 
-                let sub_args = args.get(2..)
-                    .map(|a| a.to_vec())
-                    .unwrap_or_else(Vec::new);
+                let sub_args = args.get(2..).map(|a| a.to_vec()).unwrap_or_else(Vec::new);
 
                 // Find and call the sub-capability
                 let capabilities = self.nested_capabilities.read().await;
-                let capability = capabilities.get(cap_name)
-                    .ok_or_else(|| RpcError::not_found(&format!("Capability {} not found", cap_name)))?;
+                let capability = capabilities.get(cap_name).ok_or_else(|| {
+                    RpcError::not_found(&format!("Capability {} not found", cap_name))
+                })?;
 
                 capability.call(sub_method, sub_args).await
             }
@@ -968,13 +1022,16 @@ impl RpcTarget for AdvancedCapability {
                 let cap_name = if let Some(Value::String(s)) = args.first() {
                     s.as_str()
                 } else {
-                    return Err(RpcError::bad_request("disposeSubCapability requires capability name"));
+                    return Err(RpcError::bad_request(
+                        "disposeSubCapability requires capability name",
+                    ));
                 };
 
                 // Remove from registry
                 let mut capabilities = self.nested_capabilities.write().await;
-                capabilities.remove(cap_name)
-                    .ok_or_else(|| RpcError::not_found(&format!("Capability {} not found", cap_name)))?;
+                capabilities.remove(cap_name).ok_or_else(|| {
+                    RpcError::not_found(&format!("Capability {} not found", cap_name))
+                })?;
 
                 Ok(Value::Bool(true))
             }
@@ -984,21 +1041,23 @@ impl RpcTarget for AdvancedCapability {
                 let cap_list: Vec<String> = capabilities.keys().cloned().collect();
 
                 Ok(Value::Array(
-                    cap_list.into_iter()
+                    cap_list
+                        .into_iter()
                         .map(|name| Value::String(name))
-                        .collect()
+                        .collect(),
                 ))
             }
 
             // ============================================================================
             // IL PLAN RUNNER METHODS
             // ============================================================================
-
             "executePlan" => {
-                let plan_json = args.first()
+                let plan_json = args
+                    .first()
                     .ok_or_else(|| RpcError::bad_request("executePlan requires plan"))?;
 
-                let parameters = args.get(1)
+                let parameters = args
+                    .get(1)
                     .cloned()
                     .unwrap_or(Value::Object(std::collections::HashMap::new()));
 
@@ -1023,21 +1082,25 @@ impl RpcTarget for AdvancedCapability {
                 };
 
                 // Execute the plan
-                let result = self.plan_runner.execute_plan(&plan, parameters, captures).await
+                let result = self
+                    .plan_runner
+                    .execute_plan(&plan, parameters, captures)
+                    .await
                     .map_err(|e| RpcError::internal(&format!("Plan execution failed: {:?}", e)))?;
 
                 // Store result in session
                 {
                     let mut sessions = self.sessions.write().await;
-                    let session = sessions.entry("default".to_string()).or_insert_with(|| {
-                        SessionState {
-                            variables: HashMap::new(),
-                            operations: Vec::new(),
-                            last_result: None,
-                            created_at: Utc::now().timestamp(),
-                            last_accessed: Utc::now().timestamp(),
-                        }
-                    });
+                    let session =
+                        sessions
+                            .entry("default".to_string())
+                            .or_insert_with(|| SessionState {
+                                variables: HashMap::new(),
+                                operations: Vec::new(),
+                                last_result: None,
+                                created_at: Utc::now().timestamp(),
+                                last_accessed: Utc::now().timestamp(),
+                            });
                     session.last_result = Some(result.clone());
                     session.operations.push("executePlan".to_string());
                 }
@@ -1052,7 +1115,8 @@ impl RpcTarget for AdvancedCapability {
                     return Err(RpcError::bad_request("createPlan requires name"));
                 };
 
-                let operations = args.get(1)
+                let operations = args
+                    .get(1)
                     .ok_or_else(|| RpcError::bad_request("createPlan requires operations"))?;
 
                 // Parse and cache the plan
@@ -1075,21 +1139,28 @@ impl RpcTarget for AdvancedCapability {
                 let plan_name = if let Some(Value::String(s)) = args.first() {
                     s.as_str()
                 } else {
-                    return Err(RpcError::bad_request("executeCachedPlan requires plan name"));
+                    return Err(RpcError::bad_request(
+                        "executeCachedPlan requires plan name",
+                    ));
                 };
 
-                let parameters = args.get(1)
+                let parameters = args
+                    .get(1)
                     .cloned()
                     .unwrap_or(Value::Object(std::collections::HashMap::new()));
 
                 // Get cached plan
                 let cache = self.plan_cache.read().await;
-                let plan = cache.get(plan_name)
+                let plan = cache
+                    .get(plan_name)
                     .ok_or_else(|| RpcError::not_found(&format!("Plan {} not found", plan_name)))?
                     .clone();
 
                 // Execute it
-                let result = self.plan_runner.execute_plan(&plan, parameters, vec![]).await
+                let result = self
+                    .plan_runner
+                    .execute_plan(&plan, parameters, vec![])
+                    .await
                     .map_err(|e| RpcError::internal(&format!("Plan execution failed: {:?}", e)))?;
 
                 Ok(result)
@@ -1098,38 +1169,42 @@ impl RpcTarget for AdvancedCapability {
             // ============================================================================
             // BASIC CALCULATOR METHODS (for compatibility with existing tests)
             // ============================================================================
-
             "add" => {
                 if args.len() != 2 {
                     return Err(RpcError::bad_request("add requires 2 arguments"));
                 }
 
                 let a = if let Value::Number(n) = &args[0] {
-                    n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number"))?
+                    n.as_f64()
+                        .ok_or_else(|| RpcError::bad_request("Invalid number"))?
                 } else {
                     return Err(RpcError::bad_request("First argument must be a number"));
                 };
                 let b = if let Value::Number(n) = &args[1] {
-                    n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number"))?
+                    n.as_f64()
+                        .ok_or_else(|| RpcError::bad_request("Invalid number"))?
                 } else {
                     return Err(RpcError::bad_request("Second argument must be a number"));
                 };
 
-                let result = Value::Number(serde_json::Number::from_f64(a + b)
-                    .ok_or_else(|| RpcError::internal("Invalid number result"))?);
+                let result = Value::Number(
+                    serde_json::Number::from_f64(a + b)
+                        .ok_or_else(|| RpcError::internal("Invalid number result"))?,
+                );
 
                 // Store in session
                 {
                     let mut sessions = self.sessions.write().await;
-                    let session = sessions.entry("default".to_string()).or_insert_with(|| {
-                        SessionState {
-                            variables: HashMap::new(),
-                            operations: Vec::new(),
-                            last_result: None,
-                            created_at: Utc::now().timestamp(),
-                            last_accessed: Utc::now().timestamp(),
-                        }
-                    });
+                    let session =
+                        sessions
+                            .entry("default".to_string())
+                            .or_insert_with(|| SessionState {
+                                variables: HashMap::new(),
+                                operations: Vec::new(),
+                                last_result: None,
+                                created_at: Utc::now().timestamp(),
+                                last_accessed: Utc::now().timestamp(),
+                            });
                     session.last_result = Some(result.clone());
                     session.operations.push("add".to_string());
                 }
@@ -1143,31 +1218,36 @@ impl RpcTarget for AdvancedCapability {
                 }
 
                 let a = if let Value::Number(n) = &args[0] {
-                    n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number"))?
+                    n.as_f64()
+                        .ok_or_else(|| RpcError::bad_request("Invalid number"))?
                 } else {
                     return Err(RpcError::bad_request("First argument must be a number"));
                 };
                 let b = if let Value::Number(n) = &args[1] {
-                    n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number"))?
+                    n.as_f64()
+                        .ok_or_else(|| RpcError::bad_request("Invalid number"))?
                 } else {
                     return Err(RpcError::bad_request("Second argument must be a number"));
                 };
 
-                let result = Value::Number(serde_json::Number::from_f64(a * b)
-                    .ok_or_else(|| RpcError::internal("Invalid number result"))?);
+                let result = Value::Number(
+                    serde_json::Number::from_f64(a * b)
+                        .ok_or_else(|| RpcError::internal("Invalid number result"))?,
+                );
 
                 // Store in session
                 {
                     let mut sessions = self.sessions.write().await;
-                    let session = sessions.entry("default".to_string()).or_insert_with(|| {
-                        SessionState {
-                            variables: HashMap::new(),
-                            operations: Vec::new(),
-                            last_result: None,
-                            created_at: Utc::now().timestamp(),
-                            last_accessed: Utc::now().timestamp(),
-                        }
-                    });
+                    let session =
+                        sessions
+                            .entry("default".to_string())
+                            .or_insert_with(|| SessionState {
+                                variables: HashMap::new(),
+                                operations: Vec::new(),
+                                last_result: None,
+                                created_at: Utc::now().timestamp(),
+                                last_accessed: Utc::now().timestamp(),
+                            });
                     session.last_result = Some(result.clone());
                     session.operations.push("multiply".to_string());
                 }
@@ -1190,7 +1270,7 @@ impl RpcTarget for AdvancedCapability {
                 self.json_to_value(&response)
             }
 
-            _ => Err(RpcError::not_found(&format!("Method {} not found", method)))
+            _ => Err(RpcError::not_found(&format!("Method {} not found", method))),
         }
     }
 
@@ -1212,7 +1292,10 @@ impl RpcTarget for AdvancedCapability {
                 let plans = self.plan_cache.read().await;
                 Ok(Value::Number(serde_json::Number::from(plans.len())))
             }
-            _ => Err(RpcError::not_found(&format!("Property {} not found", property)))
+            _ => Err(RpcError::not_found(&format!(
+                "Property {} not found",
+                property
+            ))),
         }
     }
 }
@@ -1326,9 +1409,15 @@ mod tests {
 
         // Create resume token config
         let mut config_map = std::collections::HashMap::new();
-        config_map.insert("sessionId".to_string(), Box::new(Value::String("test123".to_string())));
+        config_map.insert(
+            "sessionId".to_string(),
+            Box::new(Value::String("test123".to_string())),
+        );
         config_map.insert("includeState".to_string(), Box::new(Value::Bool(true)));
-        config_map.insert("expirationMinutes".to_string(), Box::new(Value::Number(serde_json::Number::from(60))));
+        config_map.insert(
+            "expirationMinutes".to_string(),
+            Box::new(Value::Number(serde_json::Number::from(60))),
+        );
         let config = Value::Object(config_map);
 
         let result = cap.call("createResumeToken", vec![config]).await;
@@ -1350,12 +1439,20 @@ mod tests {
 
         // Create sub-capability
         let mut config_map = std::collections::HashMap::new();
-        config_map.insert("maxLength".to_string(), Box::new(Value::Number(serde_json::Number::from(100))));
+        config_map.insert(
+            "maxLength".to_string(),
+            Box::new(Value::Number(serde_json::Number::from(100))),
+        );
 
-        let result = cap.call("createSubCapability", vec![
-            Value::String("validator".to_string()),
-            Value::Object(config_map)
-        ]).await;
+        let result = cap
+            .call(
+                "createSubCapability",
+                vec![
+                    Value::String("validator".to_string()),
+                    Value::Object(config_map),
+                ],
+            )
+            .await;
 
         assert!(result.is_ok());
 
@@ -1421,13 +1518,35 @@ mod tests {
         let cap = AdvancedCapability::new();
 
         // Test add
-        let result = cap.call("add", vec![Value::Number(serde_json::Number::from(10)), Value::Number(serde_json::Number::from(20))]).await;
+        let result = cap
+            .call(
+                "add",
+                vec![
+                    Value::Number(serde_json::Number::from(10)),
+                    Value::Number(serde_json::Number::from(20)),
+                ],
+            )
+            .await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Value::Number(serde_json::Number::from_f64(30.0).unwrap()));
+        assert_eq!(
+            result.unwrap(),
+            Value::Number(serde_json::Number::from_f64(30.0).unwrap())
+        );
 
         // Test multiply
-        let result = cap.call("multiply", vec![Value::Number(serde_json::Number::from(5)), Value::Number(serde_json::Number::from(6))]).await;
+        let result = cap
+            .call(
+                "multiply",
+                vec![
+                    Value::Number(serde_json::Number::from(5)),
+                    Value::Number(serde_json::Number::from(6)),
+                ],
+            )
+            .await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Value::Number(serde_json::Number::from_f64(30.0).unwrap()));
+        assert_eq!(
+            result.unwrap(),
+            Value::Number(serde_json::Number::from_f64(30.0).unwrap())
+        );
     }
 }

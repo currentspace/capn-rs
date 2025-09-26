@@ -1,17 +1,23 @@
+use crate::CapId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
-use crate::CapId;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Source {
-    Capture { capture: CaptureRef },
-    Result { result: ResultRef },
-    Param { param: ParamRef },
+    Capture {
+        capture: CaptureRef,
+    },
+    Result {
+        result: ResultRef,
+    },
+    Param {
+        param: ParamRef,
+    },
     ByValue {
         #[serde(rename = "byValue")]
-        by_value: ValueRef
+        by_value: ValueRef,
     },
 }
 
@@ -72,19 +78,27 @@ pub struct Plan {
 
 impl Source {
     pub fn capture(index: u32) -> Self {
-        Source::Capture { capture: CaptureRef { index } }
+        Source::Capture {
+            capture: CaptureRef { index },
+        }
     }
 
     pub fn result(index: u32) -> Self {
-        Source::Result { result: ResultRef { index } }
+        Source::Result {
+            result: ResultRef { index },
+        }
     }
 
     pub fn param(path: Vec<String>) -> Self {
-        Source::Param { param: ParamRef { path } }
+        Source::Param {
+            param: ParamRef { path },
+        }
     }
 
     pub fn by_value(value: Value) -> Self {
-        Source::ByValue { by_value: ValueRef { value } }
+        Source::ByValue {
+            by_value: ValueRef { value },
+        }
     }
 
     pub fn get_capture_index(&self) -> Option<u32> {
@@ -162,19 +176,15 @@ impl Plan {
                     sources.extend(&call.args);
                     sources
                 }
-                Op::Object { object } => {
-                    object.fields.values().collect()
-                }
-                Op::Array { array } => {
-                    array.items.iter().collect()
-                }
+                Op::Object { object } => object.fields.values().collect(),
+                Op::Array { array } => array.items.iter().collect(),
             };
 
             for source in sources {
                 if let Some(index) = source.get_result_index() {
-                    let found = self.ops[..i].iter().any(|prev_op| {
-                        prev_op.get_result_index() == index
-                    });
+                    let found = self.ops[..i]
+                        .iter()
+                        .any(|prev_op| prev_op.get_result_index() == index);
 
                     if !found {
                         return Err(format!("Result {} referenced before being defined", index));
@@ -253,18 +263,8 @@ mod tests {
         let plan = Plan::new(
             vec![CapId::new(1)],
             vec![
-                Op::call(
-                    Source::capture(0),
-                    "method1".to_string(),
-                    vec![],
-                    0,
-                ),
-                Op::call(
-                    Source::result(0),
-                    "method2".to_string(),
-                    vec![],
-                    1,
-                ),
+                Op::call(Source::capture(0), "method1".to_string(), vec![], 0),
+                Op::call(Source::result(0), "method2".to_string(), vec![], 1),
             ],
             Source::result(1),
         );
@@ -277,12 +277,7 @@ mod tests {
         let plan = Plan::new(
             vec![CapId::new(1)],
             vec![
-                Op::call(
-                    Source::capture(0),
-                    "method1".to_string(),
-                    vec![],
-                    0,
-                ),
+                Op::call(Source::capture(0), "method1".to_string(), vec![], 0),
                 Op::call(
                     Source::capture(0),
                     "method2".to_string(),
@@ -300,14 +295,12 @@ mod tests {
     fn test_plan_validation_undefined_result() {
         let plan = Plan::new(
             vec![CapId::new(1)],
-            vec![
-                Op::call(
-                    Source::result(99), // Undefined!
-                    "method".to_string(),
-                    vec![],
-                    0,
-                ),
-            ],
+            vec![Op::call(
+                Source::result(99), // Undefined!
+                "method".to_string(),
+                vec![],
+                0,
+            )],
             Source::result(0),
         );
 
@@ -325,12 +318,7 @@ mod tests {
                     vec![],
                     0,
                 ),
-                Op::call(
-                    Source::capture(0),
-                    "method2".to_string(),
-                    vec![],
-                    1,
-                ),
+                Op::call(Source::capture(0), "method2".to_string(), vec![], 1),
             ],
             Source::result(0),
         );
@@ -342,14 +330,12 @@ mod tests {
     fn test_plan_validation_capture_out_of_bounds() {
         let plan = Plan::new(
             vec![CapId::new(1)],
-            vec![
-                Op::call(
-                    Source::capture(1), // Out of bounds!
-                    "method".to_string(),
-                    vec![],
-                    0,
-                ),
-            ],
+            vec![Op::call(
+                Source::capture(1), // Out of bounds!
+                "method".to_string(),
+                vec![],
+                0,
+            )],
             Source::result(0),
         );
 
@@ -392,12 +378,7 @@ mod tests {
         let plan = Plan::new(
             vec![CapId::new(1), CapId::new(2)],
             vec![
-                Op::call(
-                    Source::capture(0),
-                    "getData".to_string(),
-                    vec![],
-                    0,
-                ),
+                Op::call(Source::capture(0), "getData".to_string(), vec![], 0),
                 Op::object(
                     BTreeMap::from([
                         ("data".to_string(), Source::result(0)),
@@ -405,13 +386,7 @@ mod tests {
                     ]),
                     1,
                 ),
-                Op::array(
-                    vec![
-                        Source::result(1),
-                        Source::capture(1),
-                    ],
-                    2,
-                ),
+                Op::array(vec![Source::result(1), Source::capture(1)], 2),
             ],
             Source::result(2),
         );

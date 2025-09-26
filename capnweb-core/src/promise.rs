@@ -1,4 +1,4 @@
-use crate::ids::{PromiseId, CapId, CallId};
+use crate::ids::{CallId, CapId, PromiseId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -92,7 +92,9 @@ impl PromiseDependencyGraph {
         // Calculate in-degrees
         // In-degree = number of dependencies this node has
         for (promise, deps) in &self.dependencies {
-            *in_degree.get_mut(promise).expect("Promise should exist in in_degree map") = deps.len();
+            *in_degree
+                .get_mut(promise)
+                .expect("Promise should exist in in_degree map") = deps.len();
         }
 
         // Find all nodes with in-degree 0 (no dependencies)
@@ -109,7 +111,9 @@ impl PromiseDependencyGraph {
             // For each promise that depends on this one
             if let Some(dependents) = self.dependents.get(&promise) {
                 for &dependent in dependents {
-                    let degree = in_degree.get_mut(&dependent).expect("Dependent should exist in in_degree map");
+                    let degree = in_degree
+                        .get_mut(&dependent)
+                        .expect("Dependent should exist in in_degree map");
                     *degree -= 1;
                     if *degree == 0 {
                         queue.push(dependent);
@@ -202,14 +206,16 @@ mod tests {
         assert_eq!(json, r#"{"cap":1}"#);
 
         // Test PromiseRef variant
-        let arg = ArgValue::PromiseRef { promise: PromiseId::new(2) };
+        let arg = ArgValue::PromiseRef {
+            promise: PromiseId::new(2),
+        };
         let json = serde_json::to_string(&arg).unwrap();
         assert_eq!(json, r#"{"promise":2}"#);
 
         // Test PromiseField variant (ensure it has both fields)
         let arg = ArgValue::PromiseField {
             promise: PromiseId::new(3),
-            field: "result".to_string()
+            field: "result".to_string(),
         };
         let json = serde_json::to_string(&arg).unwrap();
         // Check that it serializes both fields
@@ -231,10 +237,12 @@ mod tests {
         graph.add_dependency(p3, p2);
 
         // Check dependencies
-        assert!(graph.dependencies_of(&p2)
+        assert!(graph
+            .dependencies_of(&p2)
             .map(|deps| deps.contains(&p1))
             .unwrap_or(false));
-        assert!(graph.dependents_of(&p1)
+        assert!(graph
+            .dependents_of(&p1)
             .map(|deps| deps.contains(&p2))
             .unwrap_or(false));
 
@@ -242,16 +250,28 @@ mod tests {
         println!("Graph dependencies: {:?}", graph.dependencies);
         println!("Graph dependents: {:?}", graph.dependents);
         let sorted = graph.topological_sort();
-        assert!(sorted.is_some(), "Topological sort should succeed (no cycle)");
+        assert!(
+            sorted.is_some(),
+            "Topological sort should succeed (no cycle)"
+        );
         let sorted = sorted.unwrap();
 
         // The sort should include all three nodes
         assert_eq!(sorted.len(), 3);
 
         // p1 should come before p2
-        let p1_index = sorted.iter().position(|&p| p == p1).expect("p1 should be in sorted list");
-        let p2_index = sorted.iter().position(|&p| p == p2).expect("p2 should be in sorted list");
-        let p3_index = sorted.iter().position(|&p| p == p3).expect("p3 should be in sorted list");
+        let p1_index = sorted
+            .iter()
+            .position(|&p| p == p1)
+            .expect("p1 should be in sorted list");
+        let p2_index = sorted
+            .iter()
+            .position(|&p| p == p2)
+            .expect("p2 should be in sorted list");
+        let p3_index = sorted
+            .iter()
+            .position(|&p| p == p3)
+            .expect("p3 should be in sorted list");
 
         assert!(p1_index < p2_index, "p1 should come before p2");
         assert!(p2_index < p3_index, "p2 should come before p3");

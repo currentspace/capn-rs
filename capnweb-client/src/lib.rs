@@ -1,9 +1,9 @@
 pub mod client;
-pub mod recorder;
-pub mod stubs;
 #[cfg(feature = "macros")]
 pub mod macros;
+pub mod recorder;
+pub mod stubs;
 
-pub use client::{Client, ClientConfig, BatchBuilder, BatchResults, PendingResult};
-pub use recorder::{Recorder, RecordedPlan};
+pub use client::{BatchBuilder, BatchResults, Client, ClientConfig, PendingResult};
+pub use recorder::{RecordedPlan, Recorder};
 pub use stubs::{Capability, StubError};

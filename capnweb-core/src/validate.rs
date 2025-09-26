@@ -1,8 +1,8 @@
+use crate::RpcError;
 #[cfg(feature = "validation")]
 use jsonschema;
-use schemars::{JsonSchema, schema_for};
+use schemars::{schema_for, JsonSchema};
 use serde_json::Value;
-use crate::RpcError;
 
 #[cfg(feature = "validation")]
 pub struct Validator {

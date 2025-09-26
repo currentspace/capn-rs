@@ -1,7 +1,7 @@
 use crate::Server;
-use std::sync::Arc;
-use std::net::SocketAddr;
 use quinn::{Endpoint, ServerConfig as QuinnServerConfig};
+use std::net::SocketAddr;
+use std::sync::Arc;
 use tracing::info;
 
 /// HTTP/3 server for Cap'n Web protocol
@@ -47,7 +47,6 @@ impl H3Server {
     }
 }
 
-
 /// Configure server with self-signed certificate for testing
 fn configure_server() -> Result<QuinnServerConfig, Box<dyn std::error::Error>> {
     let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()])?;
@@ -63,7 +62,7 @@ fn configure_server() -> Result<QuinnServerConfig, Box<dyn std::error::Error>> {
     server_config.alpn_protocols = vec![b"h3".to_vec()];
 
     let server_config = QuinnServerConfig::with_crypto(Arc::new(
-        quinn::crypto::rustls::QuicServerConfig::try_from(server_config)?
+        quinn::crypto::rustls::QuicServerConfig::try_from(server_config)?,
     ));
 
     Ok(server_config)

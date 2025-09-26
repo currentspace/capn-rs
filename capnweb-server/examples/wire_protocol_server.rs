@@ -3,7 +3,7 @@
 
 use async_trait::async_trait;
 use capnweb_core::RpcError;
-use capnweb_server::{WireServer, WireServerConfig, WireCapability};
+use capnweb_server::{WireCapability, WireServer, WireServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tracing_subscriber;
@@ -33,7 +33,9 @@ impl WireCapability for Calculator {
 
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()
@@ -46,7 +48,9 @@ impl WireCapability for Calculator {
 
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()

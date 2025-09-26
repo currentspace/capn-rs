@@ -1,4 +1,4 @@
-use capnweb_core::{Plan, Op, Source, CapId};
+use capnweb_core::{CapId, Op, Plan, Source};
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
@@ -44,22 +44,14 @@ impl Recorder {
     }
 
     /// Record a method call
-    pub fn call(
-        &self,
-        target: Source,
-        method: &str,
-        args: Vec<Source>,
-    ) -> RecordedResult {
+    pub fn call(&self, target: Source, method: &str, args: Vec<Source>) -> RecordedResult {
         let mut inner = self.inner.lock().unwrap();
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::call(
-            target,
-            method.to_string(),
-            args,
-            result_index,
-        ));
+        inner
+            .ops
+            .push(Op::call(target, method.to_string(), args, result_index));
 
         RecordedResult {
             recorder: self.clone(),
@@ -73,10 +65,7 @@ impl Recorder {
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::object(
-            fields,
-            result_index,
-        ));
+        inner.ops.push(Op::object(fields, result_index));
 
         RecordedResult {
             recorder: self.clone(),
@@ -90,10 +79,7 @@ impl Recorder {
         let result_index = inner.next_result_index;
         inner.next_result_index += 1;
 
-        inner.ops.push(Op::array(
-            items,
-            result_index,
-        ));
+        inner.ops.push(Op::array(items, result_index));
 
         RecordedResult {
             recorder: self.clone(),
@@ -104,19 +90,16 @@ impl Recorder {
     /// Build the final plan
     pub fn build(&self, result: Source) -> Plan {
         let inner = self.inner.lock().unwrap();
-        Plan::new(
-            inner.captures.clone(),
-            inner.ops.clone(),
-            result,
-        )
+        Plan::new(inner.captures.clone(), inner.ops.clone(), result)
     }
 
     /// Get a capability source by name
     pub fn cap(&self, name: &str) -> Option<Source> {
         let inner = self.inner.lock().unwrap();
-        inner.capability_map.get(name).map(|&index| {
-            Source::capture(index)
-        })
+        inner
+            .capability_map
+            .get(name)
+            .map(|&index| Source::capture(index))
     }
 }
 
@@ -137,11 +120,8 @@ pub struct RecordedCapability {
 impl RecordedCapability {
     /// Call a method on this capability
     pub fn call(&self, method: &str, args: Vec<Source>) -> RecordedResult {
-        self.recorder.call(
-            Source::capture(self.index),
-            method,
-            args,
-        )
+        self.recorder
+            .call(Source::capture(self.index), method, args)
     }
 
     /// Get the source for this capability
@@ -159,11 +139,7 @@ pub struct RecordedResult {
 impl RecordedResult {
     /// Call a method on this result
     pub fn call(&self, method: &str, args: Vec<Source>) -> RecordedResult {
-        self.recorder.call(
-            Source::result(self.index),
-            method,
-            args,
-        )
+        self.recorder.call(Source::result(self.index), method, args)
     }
 
     /// Get the source for this result
@@ -211,9 +187,7 @@ pub struct Param;
 impl Param {
     /// Create a parameter source from a path
     pub fn path(segments: &[&str]) -> Source {
-        Source::param(
-            segments.iter().map(|s| s.to_string()).collect(),
-        )
+        Source::param(segments.iter().map(|s| s.to_string()).collect())
     }
 
     /// Create a value source
@@ -274,10 +248,13 @@ mod tests {
         let cap = recorder.capture("calculator", CapId::new(1));
 
         // Call a method
-        let result = cap.call("add", vec![
-            Param::value(serde_json::json!(5)),
-            Param::value(serde_json::json!(3)),
-        ]);
+        let result = cap.call(
+            "add",
+            vec![
+                Param::value(serde_json::json!(5)),
+                Param::value(serde_json::json!(3)),
+            ],
+        );
 
         // Build the plan
         let plan = recorder.build(result.as_source());
@@ -295,10 +272,7 @@ mod tests {
         let calc = plan_builder.capture("calc", CapId::new(1));
 
         // Perform operations
-        let sum = calc.call("add", vec![
-            Param::path(&["a"]),
-            Param::path(&["b"]),
-        ]);
+        let sum = calc.call("add", vec![Param::path(&["a"]), Param::path(&["b"])]);
 
         // Build final plan
         let plan = plan_builder.finish(sum.as_source());
@@ -348,9 +322,12 @@ mod tests {
         let api = recorder.capture("api", CapId::new(1));
 
         let items = vec![
-            api.call("getValue", vec![Param::value(serde_json::json!(1))]).as_source(),
-            api.call("getValue", vec![Param::value(serde_json::json!(2))]).as_source(),
-            api.call("getValue", vec![Param::value(serde_json::json!(3))]).as_source(),
+            api.call("getValue", vec![Param::value(serde_json::json!(1))])
+                .as_source(),
+            api.call("getValue", vec![Param::value(serde_json::json!(2))])
+                .as_source(),
+            api.call("getValue", vec![Param::value(serde_json::json!(3))])
+                .as_source(),
         ];
 
         let arr = recorder.array(items);

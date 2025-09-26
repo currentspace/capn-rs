@@ -1,6 +1,6 @@
+use capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use capnweb_core::{Plan, Op, Source, CapId, Message, CallId, Target, Outcome};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestFixture {
@@ -49,10 +49,7 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 vec![Op::call(
                     Source::capture(0),
                     "add".to_string(),
-                    vec![
-                        Source::by_value(json!(5)),
-                        Source::by_value(json!(3)),
-                    ],
+                    vec![Source::by_value(json!(5)), Source::by_value(json!(3))],
                     0,
                 )],
                 Source::result(0),
@@ -83,7 +80,6 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 }],
             }],
         },
-
         // Promise pipelining test
         TestFixture {
             name: "promise_pipelining".to_string(),
@@ -98,12 +94,7 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                         vec![Source::by_value(json!(123))],
                         0,
                     ),
-                    Op::call(
-                        Source::result(0),
-                        "getName".to_string(),
-                        vec![],
-                        1,
-                    ),
+                    Op::call(Source::result(0), "getName".to_string(), vec![], 1),
                 ],
                 Source::result(1),
             )),
@@ -147,7 +138,6 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 ],
             }],
         },
-
         // Object construction test
         TestFixture {
             name: "object_construction".to_string(),
@@ -156,18 +146,8 @@ pub fn load_fixtures() -> Vec<TestFixture> {
             rust_plan: Some(Plan::new(
                 vec![CapId::new(1)],
                 vec![
-                    Op::call(
-                        Source::capture(0),
-                        "getName".to_string(),
-                        vec![],
-                        0,
-                    ),
-                    Op::call(
-                        Source::capture(0),
-                        "getAge".to_string(),
-                        vec![],
-                        1,
-                    ),
+                    Op::call(Source::capture(0), "getName".to_string(), vec![], 0),
+                    Op::call(Source::capture(0), "getAge".to_string(), vec![], 1),
                     Op::object(
                         {
                             let mut map = std::collections::BTreeMap::new();
@@ -229,7 +209,6 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 ],
             }],
         },
-
         // Array construction test
         TestFixture {
             name: "array_construction".to_string(),
@@ -257,11 +236,7 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                         2,
                     ),
                     Op::array(
-                        vec![
-                            Source::result(0),
-                            Source::result(1),
-                            Source::result(2),
-                        ],
+                        vec![Source::result(0), Source::result(1), Source::result(2)],
                         3,
                     ),
                 ],
@@ -330,7 +305,6 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 ],
             }],
         },
-
         // Error handling test
         TestFixture {
             name: "error_handling".to_string(),
@@ -341,10 +315,7 @@ pub fn load_fixtures() -> Vec<TestFixture> {
                 vec![Op::call(
                     Source::capture(0),
                     "divide".to_string(),
-                    vec![
-                        Source::by_value(json!(10)),
-                        Source::by_value(json!(0)),
-                    ],
+                    vec![Source::by_value(json!(10)), Source::by_value(json!(0))],
                     0,
                 )],
                 Source::result(0),
@@ -412,7 +383,9 @@ pub fn message_serialization_fixtures() -> Vec<(Message, serde_json::Value)> {
         (
             Message::result(
                 CallId::new(1),
-                Outcome::Success { value: json!("success") },
+                Outcome::Success {
+                    value: json!("success"),
+                },
             ),
             json!({
                 "result": {

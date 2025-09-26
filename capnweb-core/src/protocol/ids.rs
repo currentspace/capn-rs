@@ -101,13 +101,17 @@ impl IdAllocator {
 
     /// Allocate a new local import ID (positive)
     pub fn allocate_import(&self) -> ImportId {
-        let id = self.next_positive.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let id = self
+            .next_positive
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         ImportId(id)
     }
 
     /// Allocate a new local export ID (negative)
     pub fn allocate_export(&self) -> ExportId {
-        let id = self.next_negative.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+        let id = self
+            .next_negative
+            .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
         ExportId(id)
     }
 

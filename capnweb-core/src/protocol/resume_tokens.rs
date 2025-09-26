@@ -1,15 +1,15 @@
 // Resume Tokens for Cap'n Web Protocol Session Recovery
 // Enables session suspension and resumption with full state preservation
 
-use super::tables::{Value, ImportTable, ExportTable};
 use super::ids::IdAllocator;
+use super::tables::{ExportTable, ImportTable, Value};
 use super::variable_state::VariableStateManager;
+use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use base64::{Engine as _, engine::general_purpose};
-use sha2::{Sha256, Digest};
 
 /// Serializable session state for resume tokens
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,17 +84,13 @@ impl ResumeTokenManager {
     pub fn new(secret_key: Vec<u8>) -> Self {
         Self {
             secret_key,
-            default_ttl: 3600, // 1 hour default
+            default_ttl: 3600,      // 1 hour default
             max_session_age: 86400, // 24 hours max
         }
     }
 
     /// Create a resume token manager with custom settings
-    pub fn with_settings(
-        secret_key: Vec<u8>,
-        default_ttl: u64,
-        max_session_age: u64,
-    ) -> Self {
+    pub fn with_settings(secret_key: Vec<u8>, default_ttl: u64, max_session_age: u64) -> Self {
         Self {
             secret_key,
             default_ttl,
@@ -199,10 +195,7 @@ impl ResumeTokenManager {
     }
 
     /// Parse and validate a resume token
-    pub fn parse_token(
-        &self,
-        token: &ResumeToken,
-    ) -> Result<SessionSnapshot, ResumeTokenError> {
+    pub fn parse_token(&self, token: &ResumeToken) -> Result<SessionSnapshot, ResumeTokenError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("System time should be after UNIX epoch")
@@ -214,7 +207,8 @@ impl ResumeTokenManager {
         }
 
         // Decode the token
-        let token_bytes = general_purpose::STANDARD.decode(&token.token_data)
+        let token_bytes = general_purpose::STANDARD
+            .decode(&token.token_data)
             .map_err(|e| ResumeTokenError::InvalidToken(e.to_string()))?;
 
         let token_payload: TokenPayload = serde_json::from_slice(&token_bytes)
@@ -257,7 +251,9 @@ impl ResumeTokenManager {
 
         // Restore variable state
         if let Some(var_mgr) = variables {
-            var_mgr.import_variables(snapshot.variables).await
+            var_mgr
+                .import_variables(snapshot.variables)
+                .await
                 .map_err(|e| ResumeTokenError::RestoreError(e.to_string()))?;
         }
 
@@ -346,13 +342,16 @@ impl PersistentSessionManager {
         _exports: &Arc<ExportTable>,
         variables: Option<&VariableStateManager>,
     ) -> Result<ResumeToken, ResumeTokenError> {
-        let snapshot = self.token_manager.create_snapshot(
-            session_id.to_string(),
-            _allocator,
-            _imports,
-            _exports,
-            variables,
-        ).await?;
+        let snapshot = self
+            .token_manager
+            .create_snapshot(
+                session_id.to_string(),
+                _allocator,
+                _imports,
+                _exports,
+                variables,
+            )
+            .await?;
 
         self.token_manager.generate_token(snapshot)
     }
@@ -368,24 +367,23 @@ impl PersistentSessionManager {
     ) -> Result<String, ResumeTokenError> {
         let snapshot = self.token_manager.parse_token(token)?;
 
-        self.token_manager.restore_session(
-            snapshot.clone(),
-            _allocator,
-            _imports,
-            _exports,
-            variables,
-        ).await?;
+        self.token_manager
+            .restore_session(snapshot.clone(), _allocator, _imports, _exports, variables)
+            .await?;
 
         // Register the restored session
         let mut sessions = self.active_sessions.write().await;
-        sessions.insert(snapshot.session_id.clone(), SessionInfo {
-            _session_id: snapshot.session_id.clone(),
-            last_activity: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("System time should be after UNIX epoch")
-                .as_secs(),
-            _variable_manager: None, // Note: Variable manager integration would be handled separately
-        });
+        sessions.insert(
+            snapshot.session_id.clone(),
+            SessionInfo {
+                _session_id: snapshot.session_id.clone(),
+                last_activity: SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .expect("System time should be after UNIX epoch")
+                    .as_secs(),
+                _variable_manager: None, // Note: Variable manager integration would be handled separately
+            },
+        );
 
         Ok(snapshot.session_id)
     }
@@ -406,7 +404,10 @@ impl PersistentSessionManager {
 
         let cleaned_count = initial_count - sessions.len();
         if cleaned_count > 0 {
-            tracing::info!(cleaned_sessions = cleaned_count, "Cleaned up expired sessions");
+            tracing::info!(
+                cleaned_sessions = cleaned_count,
+                "Cleaned up expired sessions"
+            );
         }
 
         cleaned_count
@@ -429,8 +430,14 @@ mod tests {
 
         let snapshot = SessionSnapshot {
             session_id: "test-session".to_string(),
-            created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
-            last_activity: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
+            created_at: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            last_activity: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             version: 1,
             next_positive_id: 5,
             next_negative_id: -3,
@@ -464,8 +471,14 @@ mod tests {
 
         let snapshot = SessionSnapshot {
             session_id: "test-session".to_string(),
-            created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
-            last_activity: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
+            created_at: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            last_activity: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             version: 1,
             next_positive_id: 1,
             next_negative_id: -1,
@@ -495,8 +508,14 @@ mod tests {
 
         let snapshot = SessionSnapshot {
             session_id: "test-session".to_string(),
-            created_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
-            last_activity: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
+            created_at: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            last_activity: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             version: 1,
             next_positive_id: 1,
             next_negative_id: -1,

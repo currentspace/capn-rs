@@ -15,8 +15,7 @@ async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
 
@@ -37,7 +36,10 @@ async fn main() -> Result<()> {
     // Test 1: Authenticate with valid token
     info!("");
     info!("📝 Test 1: Authenticate with valid token");
-    match client.call(CapId::new(1), "authenticate", vec![json!("cookie-123")]).await {
+    match client
+        .call(CapId::new(1), "authenticate", vec![json!("cookie-123")])
+        .await
+    {
         Ok(result) => {
             info!("✅ Authentication successful!");
             info!("   User: {}", serde_json::to_string_pretty(&result)?);
@@ -46,7 +48,10 @@ async fn main() -> Result<()> {
             if let Some(user_id) = result.get("id") {
                 info!("");
                 info!("📝 Test 2: Get user profile");
-                match client.call(CapId::new(1), "getUserProfile", vec![user_id.clone()]).await {
+                match client
+                    .call(CapId::new(1), "getUserProfile", vec![user_id.clone()])
+                    .await
+                {
                     Ok(profile) => {
                         info!("✅ Profile retrieved!");
                         info!("   Profile: {}", serde_json::to_string_pretty(&profile)?);
@@ -58,10 +63,16 @@ async fn main() -> Result<()> {
 
                 info!("");
                 info!("📝 Test 3: Get notifications");
-                match client.call(CapId::new(1), "getNotifications", vec![user_id.clone()]).await {
+                match client
+                    .call(CapId::new(1), "getNotifications", vec![user_id.clone()])
+                    .await
+                {
                     Ok(notifications) => {
                         info!("✅ Notifications retrieved!");
-                        info!("   Notifications: {}", serde_json::to_string_pretty(&notifications)?);
+                        info!(
+                            "   Notifications: {}",
+                            serde_json::to_string_pretty(&notifications)?
+                        );
                     }
                     Err(e) => {
                         info!("❌ Failed to get notifications: {}", e);
@@ -77,9 +88,15 @@ async fn main() -> Result<()> {
     // Test 4: Try invalid authentication
     info!("");
     info!("📝 Test 4: Authenticate with invalid token");
-    match client.call(CapId::new(1), "authenticate", vec![json!("invalid-token")]).await {
+    match client
+        .call(CapId::new(1), "authenticate", vec![json!("invalid-token")])
+        .await
+    {
         Ok(result) => {
-            info!("⚠️  Unexpected success: {}", serde_json::to_string_pretty(&result)?);
+            info!(
+                "⚠️  Unexpected success: {}",
+                serde_json::to_string_pretty(&result)?
+            );
         }
         Err(e) => {
             info!("✅ Authentication correctly rejected: {}", e);
@@ -89,9 +106,15 @@ async fn main() -> Result<()> {
     // Test 5: Call non-existent method
     info!("");
     info!("📝 Test 5: Call non-existent method");
-    match client.call(CapId::new(1), "nonExistentMethod", vec![]).await {
+    match client
+        .call(CapId::new(1), "nonExistentMethod", vec![])
+        .await
+    {
         Ok(result) => {
-            info!("⚠️  Unexpected success: {}", serde_json::to_string_pretty(&result)?);
+            info!(
+                "⚠️  Unexpected success: {}",
+                serde_json::to_string_pretty(&result)?
+            );
         }
         Err(e) => {
             info!("✅ Method correctly not found: {}", e);

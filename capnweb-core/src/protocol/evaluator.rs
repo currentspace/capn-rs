@@ -2,12 +2,12 @@
 // This module evaluates expressions to produce values
 
 use super::expression::Expression;
-use super::tables::{Value, ImportTable, ExportTable};
-use super::ids::{ImportId, ExportId};
+use super::ids::{ExportId, ImportId};
 use super::remap_engine::{RemapEngine, RemapError};
-use std::sync::Arc;
+use super::tables::{ExportTable, ImportTable, Value};
 use std::future::Future;
 use std::pin::Pin;
+use std::sync::Arc;
 
 /// Expression evaluator context
 pub struct ExpressionEvaluator {
@@ -22,11 +22,18 @@ impl ExpressionEvaluator {
     /// Create a new expression evaluator
     pub fn new(imports: Arc<ImportTable>, exports: Arc<ExportTable>) -> Self {
         let remap_engine = RemapEngine::new(imports.clone(), exports.clone());
-        Self { imports, exports, remap_engine }
+        Self {
+            imports,
+            exports,
+            remap_engine,
+        }
     }
 
     /// Evaluate an expression to produce a value
-    pub fn evaluate(&self, expr: Expression) -> Pin<Box<dyn Future<Output = Result<Value, EvaluatorError>> + Send + '_>> {
+    pub fn evaluate(
+        &self,
+        expr: Expression,
+    ) -> Pin<Box<dyn Future<Output = Result<Value, EvaluatorError>> + Send + '_>> {
         Box::pin(async move {
             match expr {
                 Expression::Null => Ok(Value::Null),
@@ -50,15 +57,13 @@ impl ExpressionEvaluator {
                     Ok(Value::Object(result))
                 }
 
-            Expression::Date(millis) => Ok(Value::Date(millis)),
+                Expression::Date(millis) => Ok(Value::Date(millis)),
 
-                Expression::Error(err) => {
-                    Ok(Value::Error {
-                        error_type: err.error_type,
-                        message: err.message,
-                        stack: err.stack
-                    })
-                }
+                Expression::Error(err) => Ok(Value::Error {
+                    error_type: err.error_type,
+                    message: err.message,
+                    stack: err.stack,
+                }),
 
                 Expression::EscapedArray(elements) => {
                     // Escaped arrays are just regular arrays in evaluation
@@ -71,7 +76,9 @@ impl ExpressionEvaluator {
 
                 Expression::Remap(remap) => {
                     // Execute remap using the remap engine
-                    self.remap_engine.execute_remap(&remap, self).await
+                    self.remap_engine
+                        .execute_remap(&remap, self)
+                        .await
                         .map_err(EvaluatorError::RemapError)
                 }
 

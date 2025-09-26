@@ -1,12 +1,12 @@
 // RPC session management for Cap'n Web protocol
 // Handles message processing and session state
 
-use super::message::Message;
 use super::expression::Expression;
-use super::ids::{ImportId, IdAllocator};
+use super::ids::{IdAllocator, ImportId};
+use super::message::Message;
 // use super::ids::ExportId; // TODO: Remove when export handling is implemented
-use super::tables::{ImportTable, ExportTable, Value};
 use super::evaluator::ExpressionEvaluator;
+use super::tables::{ExportTable, ImportTable, Value};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -93,8 +93,6 @@ impl RpcSession {
 
     /// Send a push message
     pub async fn push(&self, _expr: Expression) -> ImportId {
-        
-
         // TODO: Send push message over transport
 
         self.imports.allocate_local()

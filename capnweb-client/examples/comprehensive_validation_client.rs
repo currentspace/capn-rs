@@ -1,22 +1,27 @@
 // Comprehensive Rust client for validating all Cap'n Web protocol features
 // Tests all aspects of the protocol against the server implementation
 
-use std::env;
-use serde_json::{json, Value};
-use reqwest;
-use colored::*;
 use capnweb_core::protocol::wire::{
-    WireMessage, WireExpression, PropertyKey,
-    serialize_wire_batch, parse_wire_batch
+    parse_wire_batch, serialize_wire_batch, PropertyKey, WireExpression, WireMessage,
 };
 use capnweb_core::CapId;
+use colored::*;
+use reqwest;
+use serde_json::{json, Value};
+use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let rpc_url = env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
+    let rpc_url =
+        env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
 
     println!("{}", "============================================".bold());
-    println!("{}", "Cap'n Web Protocol - Comprehensive Validation".bold().blue());
+    println!(
+        "{}",
+        "Cap'n Web Protocol - Comprehensive Validation"
+            .bold()
+            .blue()
+    );
     println!("{}", "============================================".bold());
     println!("Server: {}", rpc_url.cyan());
     println!();
@@ -139,32 +144,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     if tests_failed == 0 {
-        println!("{}", "🎉 ALL TESTS PASSED! Full protocol compliance verified!".green().bold());
+        println!(
+            "{}",
+            "🎉 ALL TESTS PASSED! Full protocol compliance verified!"
+                .green()
+                .bold()
+        );
         Ok(())
     } else {
-        println!("{}", "⚠️ Some tests failed. Please review the implementation.".yellow());
+        println!(
+            "{}",
+            "⚠️ Some tests failed. Please review the implementation.".yellow()
+        );
         std::process::exit(1);
     }
 }
 
 // Test 1: Basic Call Expression
-async fn test_basic_call(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_basic_call(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-123".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "cookie-123".to_string(),
+                )])),
+            },
         ),
         WireMessage::Pull(1),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -185,7 +202,10 @@ async fn test_basic_call(client: &reqwest::Client, url: &str) -> Result<bool, Bo
 }
 
 // Test 2: Pipeline Expression
-async fn test_pipeline_expression(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_pipeline_expression(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
@@ -193,9 +213,9 @@ async fn test_pipeline_expression(client: &reqwest::Client, url: &str) -> Result
                 import_id: 1,
                 property_path: Some(vec![PropertyKey::String("authenticate".to_string())]),
                 args: Some(Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-123".to_string())
+                    WireExpression::String("cookie-123".to_string()),
                 ]))),
-            }
+            },
         ),
         WireMessage::Push(
             2,
@@ -207,16 +227,17 @@ async fn test_pipeline_expression(client: &reqwest::Client, url: &str) -> Result
                         import_id: 1,
                         property_path: Some(vec![PropertyKey::String("id".to_string())]),
                         args: None,
-                    }
+                    },
                 ]))),
-            }
+            },
         ),
         WireMessage::Pull(1),
         WireMessage::Pull(2),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -238,45 +259,44 @@ async fn test_pipeline_expression(client: &reqwest::Client, url: &str) -> Result
 }
 
 // Test 3: Complex Pipelining
-async fn test_complex_pipelining(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_complex_pipelining(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-123".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "cookie-123".to_string(),
+                )])),
+            },
         ),
         WireMessage::Push(
             2,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getUserProfile".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::Pipeline {
-                        import_id: 1,
-                        property_path: Some(vec![PropertyKey::String("id".to_string())]),
-                        args: None,
-                    }
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::Pipeline {
+                    import_id: 1,
+                    property_path: Some(vec![PropertyKey::String("id".to_string())]),
+                    args: None,
+                }])),
+            },
         ),
         WireMessage::Push(
             3,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getNotifications".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::Pipeline {
-                        import_id: 1,
-                        property_path: Some(vec![PropertyKey::String("id".to_string())]),
-                        args: None,
-                    }
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::Pipeline {
+                    import_id: 1,
+                    property_path: Some(vec![PropertyKey::String("id".to_string())]),
+                    args: None,
+                }])),
+            },
         ),
         WireMessage::Pull(1),
         WireMessage::Pull(2),
@@ -284,7 +304,8 @@ async fn test_complex_pipelining(client: &reqwest::Client, url: &str) -> Result<
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -303,23 +324,27 @@ async fn test_complex_pipelining(client: &reqwest::Client, url: &str) -> Result<
 }
 
 // Test 4: Error Handling
-async fn test_error_handling(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_error_handling(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("invalid-token".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "invalid-token".to_string(),
+                )])),
+            },
         ),
         WireMessage::Pull(1),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -337,7 +362,10 @@ async fn test_error_handling(client: &reqwest::Client, url: &str) -> Result<bool
 }
 
 // Test 5: Mixed Expression Types
-async fn test_mixed_expressions(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_mixed_expressions(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         // Call expression
         WireMessage::Push(
@@ -345,10 +373,10 @@ async fn test_mixed_expressions(client: &reqwest::Client, url: &str) -> Result<b
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("cookie-456".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "cookie-456".to_string(),
+                )])),
+            },
         ),
         // Pipeline expression
         WireMessage::Push(
@@ -361,16 +389,17 @@ async fn test_mixed_expressions(client: &reqwest::Client, url: &str) -> Result<b
                         import_id: 1,
                         property_path: Some(vec![PropertyKey::String("id".to_string())]),
                         args: None,
-                    }
+                    },
                 ]))),
-            }
+            },
         ),
         WireMessage::Pull(1),
         WireMessage::Pull(2),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -403,23 +432,27 @@ async fn test_mixed_expressions(client: &reqwest::Client, url: &str) -> Result<b
 }
 
 // Test 6: Array Responses
-async fn test_array_responses(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_array_responses(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getNotifications".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("u_1".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "u_1".to_string(),
+                )])),
+            },
         ),
         WireMessage::Pull(1),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -432,9 +465,9 @@ async fn test_array_responses(client: &reqwest::Client, url: &str) -> Result<boo
         if let WireMessage::Resolve(1, expr) = msg {
             let value = wire_expr_to_value(&expr);
             if let Some(arr) = value.as_array() {
-                return Ok(arr.len() == 2 &&
-                         arr[0].as_str() == Some("Welcome to jsrpc!") &&
-                         arr[1].as_str() == Some("You have 2 new followers"));
+                return Ok(arr.len() == 2
+                    && arr[0].as_str() == Some("Welcome to jsrpc!")
+                    && arr[1].as_str() == Some("You have 2 new followers"));
             }
         }
     }
@@ -442,23 +475,27 @@ async fn test_array_responses(client: &reqwest::Client, url: &str) -> Result<boo
 }
 
 // Test 7: Object Nesting
-async fn test_object_nesting(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_object_nesting(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let messages = vec![
         WireMessage::Push(
             1,
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("getUserProfile".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String("u_2".to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    "u_2".to_string(),
+                )])),
+            },
         ),
         WireMessage::Pull(1),
     ];
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -480,7 +517,10 @@ async fn test_object_nesting(client: &reqwest::Client, url: &str) -> Result<bool
 }
 
 // Test 8: Batch Processing
-async fn test_batch_processing(client: &reqwest::Client, url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+async fn test_batch_processing(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<bool, Box<dyn std::error::Error>> {
     // Send multiple operations in a single batch
     let mut messages = vec![];
 
@@ -492,10 +532,10 @@ async fn test_batch_processing(client: &reqwest::Client, url: &str) -> Result<bo
             WireExpression::Call {
                 cap_id: 1,
                 property_path: vec![PropertyKey::String("authenticate".to_string())],
-                args: Box::new(WireExpression::Array(vec![
-                    WireExpression::String(token.to_string())
-                ])),
-            }
+                args: Box::new(WireExpression::Array(vec![WireExpression::String(
+                    token.to_string(),
+                )])),
+            },
         ));
     }
 
@@ -505,7 +545,8 @@ async fn test_batch_processing(client: &reqwest::Client, url: &str) -> Result<bo
     }
 
     let request_body = serialize_wire_batch(&messages)?;
-    let response = client.post(url)
+    let response = client
+        .post(url)
         .header("Content-Type", "text/plain")
         .body(request_body)
         .send()
@@ -515,7 +556,8 @@ async fn test_batch_processing(client: &reqwest::Client, url: &str) -> Result<bo
     let response_messages = parse_wire_batch(&response_text)?;
 
     // Should get 5 resolve messages
-    let resolve_count = response_messages.iter()
+    let resolve_count = response_messages
+        .iter()
         .filter(|msg| matches!(msg, WireMessage::Resolve(_, _)))
         .count();
 

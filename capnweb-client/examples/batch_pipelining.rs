@@ -5,16 +5,17 @@
 // Mirrors the functionality of TypeScript's batch-pipelining/client.mjs
 
 use anyhow::Result;
-use std::time::Instant;
-use tracing::{info, debug};
-use serde_json::{json, Value};
 use capnweb_client::{Client, ClientConfig};
 use capnweb_core::CapId;
+use serde_json::{json, Value};
+use std::time::Instant;
+use tracing::{debug, info};
 
 async fn run_pipelined() -> Result<(Value, Value, Value, u128, usize)> {
     let start = Instant::now();
 
-    let rpc_url = std::env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
+    let rpc_url =
+        std::env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
 
     // Create client with configuration
     let config = ClientConfig {
@@ -33,17 +34,17 @@ async fn run_pipelined() -> Result<(Value, Value, Value, u128, usize)> {
     // Second call: get profile using the user ID from authentication (pipelined)
     let profile_result = batch.pipeline(
         &user_result,
-        vec!["id"],  // Path to the user ID in the result
+        vec!["id"], // Path to the user ID in the result
         "getUserProfile",
-        vec![]  // The user ID will be extracted from the pipeline path
+        vec![], // The user ID will be extracted from the pipeline path
     );
 
     // Third call: get notifications using the user ID (pipelined)
     let notifications_result = batch.pipeline(
         &user_result,
-        vec!["id"],  // Path to the user ID in the result
+        vec!["id"], // Path to the user ID in the result
         "getNotifications",
-        vec![]
+        vec![],
     );
 
     // Execute the batch - single HTTP POST
@@ -64,7 +65,8 @@ async fn run_sequential() -> Result<(Value, Value, Value, u128, usize)> {
     let start = Instant::now();
     let mut request_count = 0;
 
-    let rpc_url = std::env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
+    let rpc_url =
+        std::env::var("RPC_URL").unwrap_or_else(|_| "http://localhost:3000/rpc/batch".to_string());
 
     // Create client
     let config = ClientConfig {
@@ -76,20 +78,27 @@ async fn run_sequential() -> Result<(Value, Value, Value, u128, usize)> {
 
     // 1) Authenticate (1 round trip)
     request_count += 1;
-    let user = client.call(CapId::new(1), "authenticate", vec![json!("cookie-123")]).await?;
+    let user = client
+        .call(CapId::new(1), "authenticate", vec![json!("cookie-123")])
+        .await?;
 
     // Extract user ID
-    let user_id = user.get("id")
+    let user_id = user
+        .get("id")
         .ok_or_else(|| anyhow::anyhow!("No user id in response"))?
         .clone();
 
     // 2) Fetch profile (2nd round trip)
     request_count += 1;
-    let profile = client.call(CapId::new(1), "getUserProfile", vec![user_id.clone()]).await?;
+    let profile = client
+        .call(CapId::new(1), "getUserProfile", vec![user_id.clone()])
+        .await?;
 
     // 3) Fetch notifications (3rd round trip)
     request_count += 1;
-    let notifications = client.call(CapId::new(1), "getNotifications", vec![user_id]).await?;
+    let notifications = client
+        .call(CapId::new(1), "getNotifications", vec![user_id])
+        .await?;
 
     let elapsed = start.elapsed().as_millis();
     Ok((user, profile, notifications, elapsed, request_count))
@@ -100,8 +109,7 @@ async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
 
@@ -118,8 +126,14 @@ async fn main() -> Result<()> {
             info!("  📬 HTTP POSTs: {}", posts_p);
             info!("  ⏱️  Time: {} ms", elapsed_p);
             info!("  👤 User: {}", serde_json::to_string_pretty(&user_p)?);
-            info!("  📝 Profile: {}", serde_json::to_string_pretty(&profile_p)?);
-            info!("  🔔 Notifications: {}", serde_json::to_string_pretty(&notifs_p)?);
+            info!(
+                "  📝 Profile: {}",
+                serde_json::to_string_pretty(&profile_p)?
+            );
+            info!(
+                "  🔔 Notifications: {}",
+                serde_json::to_string_pretty(&notifs_p)?
+            );
 
             // Run sequential version
             info!("");
@@ -131,8 +145,14 @@ async fn main() -> Result<()> {
                     info!("  📬 HTTP POSTs: {}", posts_s);
                     info!("  ⏱️  Time: {} ms", elapsed_s);
                     info!("  👤 User: {}", serde_json::to_string_pretty(&user_s)?);
-                    info!("  📝 Profile: {}", serde_json::to_string_pretty(&profile_s)?);
-                    info!("  🔔 Notifications: {}", serde_json::to_string_pretty(&notifs_s)?);
+                    info!(
+                        "  📝 Profile: {}",
+                        serde_json::to_string_pretty(&profile_s)?
+                    );
+                    info!(
+                        "  🔔 Notifications: {}",
+                        serde_json::to_string_pretty(&notifs_s)?
+                    );
 
                     // Summary and validation
                     info!("");
@@ -141,7 +161,10 @@ async fn main() -> Result<()> {
                     info!("  Sequential: {} POSTs, {} ms", posts_s, elapsed_s);
 
                     let speedup = elapsed_s as f64 / elapsed_p.max(1) as f64;
-                    info!("  🎯 Performance improvement: {:.1}x faster with pipelining", speedup);
+                    info!(
+                        "  🎯 Performance improvement: {:.1}x faster with pipelining",
+                        speedup
+                    );
 
                     // Validate results match
                     assert_eq!(user_p, user_s, "User results should match");

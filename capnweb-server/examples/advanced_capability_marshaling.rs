@@ -1,17 +1,15 @@
 // Advanced Capability Marshaling Example
 // Demonstrates 100% TypeScript parity with complex capability passing scenarios
 
-use std::{sync::Arc, collections::HashMap};
 use capnweb_core::{
-    RpcTarget, RpcError,
-    CapabilityRegistry, RegistrableCapability,
-    WireMessage, WireExpression, PropertyKey,
-    parse_wire_batch, serialize_wire_batch
+    parse_wire_batch, serialize_wire_batch, CapabilityRegistry, PropertyKey, RegistrableCapability,
+    RpcError, RpcTarget, WireExpression, WireMessage,
 };
 use capnweb_server::*;
 use serde_json::Value;
-use tracing::{info, debug, error};
+use std::{collections::HashMap, sync::Arc};
 use tokio;
+use tracing::{debug, error, info};
 
 /// Factory capability that creates and manages other capabilities
 #[derive(Debug)]
@@ -38,7 +36,9 @@ impl RpcTarget for CapabilityFactory {
 
         match member {
             "createCalculator" => {
-                let count = self.created_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                let count = self
+                    .created_count
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 let calc_name = format!("Calculator-{}", count);
 
                 // Create a new calculator capability
@@ -47,7 +47,10 @@ impl RpcTarget for CapabilityFactory {
                 // Export it through the registry
                 let cap_id = self.registry.export_capability(calculator);
 
-                info!("Created new calculator '{}' with capability ID: {}", calc_name, cap_id);
+                info!(
+                    "Created new calculator '{}' with capability ID: {}",
+                    calc_name, cap_id
+                );
 
                 // Return capability reference as JSON
                 Ok(serde_json::json!({
@@ -58,14 +61,21 @@ impl RpcTarget for CapabilityFactory {
             }
 
             "createWorkflow" => {
-                let workflow_id = format!("Workflow-{}",
+                let workflow_id = format!(
+                    "Workflow-{}",
                     self.created_count.load(std::sync::atomic::Ordering::SeqCst)
                 );
 
-                let workflow = Arc::new(StatefulWorkflow::new(workflow_id.clone(), self.registry.clone()));
+                let workflow = Arc::new(StatefulWorkflow::new(
+                    workflow_id.clone(),
+                    self.registry.clone(),
+                ));
                 let cap_id = self.registry.export_capability(workflow);
 
-                info!("Created new workflow '{}' with capability ID: {}", workflow_id, cap_id);
+                info!(
+                    "Created new workflow '{}' with capability ID: {}",
+                    workflow_id, cap_id
+                );
 
                 Ok(serde_json::json!({
                     "_type": "capability",
@@ -84,7 +94,10 @@ impl RpcTarget for CapabilityFactory {
                 }))
             }
 
-            _ => Err(RpcError::method_not_found(&format!("Method '{}' not found on CapabilityFactory", member)))
+            _ => Err(RpcError::method_not_found(&format!(
+                "Method '{}' not found on CapabilityFactory",
+                member
+            ))),
         }
     }
 }
@@ -120,8 +133,15 @@ impl AdvancedCalculator {
 #[capnweb_core::async_trait]
 impl RpcTarget for AdvancedCalculator {
     async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError> {
-        let op_count = self.operation_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        debug!("AdvancedCalculator::{} (op #{}) called with {} args", member, op_count, args.len());
+        let op_count = self
+            .operation_count
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        debug!(
+            "AdvancedCalculator::{} (op #{}) called with {} args",
+            member,
+            op_count,
+            args.len()
+        );
 
         match member {
             "add" => {
@@ -135,7 +155,9 @@ impl RpcTarget for AdvancedCalculator {
 
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::invalid_args("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::invalid_args(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
                 let a = extract_number(&args[0])?;
                 let b = extract_number(&args[1])?;
@@ -145,7 +167,9 @@ impl RpcTarget for AdvancedCalculator {
             "multiplyByCapability" => {
                 // This demonstrates accepting a capability as an argument
                 if args.len() != 2 {
-                    return Err(RpcError::invalid_args("multiplyByCapability requires exactly 2 arguments"));
+                    return Err(RpcError::invalid_args(
+                        "multiplyByCapability requires exactly 2 arguments",
+                    ));
                 }
 
                 let a = extract_number(&args[0])?;
@@ -160,22 +184,30 @@ impl RpcTarget for AdvancedCalculator {
 
                     Ok(Value::Number(serde_json::Number::from_f64(result).unwrap()))
                 } else {
-                    Err(RpcError::invalid_args("Second argument must be a capability reference"))
+                    Err(RpcError::invalid_args(
+                        "Second argument must be a capability reference",
+                    ))
                 }
             }
 
             "chainWithOtherCalculator" => {
                 // Demonstrates complex capability-to-capability interactions
                 if args.len() != 3 {
-                    return Err(RpcError::invalid_args("chainWithOtherCalculator requires 3 arguments"));
+                    return Err(RpcError::invalid_args(
+                        "chainWithOtherCalculator requires 3 arguments",
+                    ));
                 }
 
                 let value = extract_number(&args[0])?;
-                let operation = args[1].as_str()
+                let operation = args[1]
+                    .as_str()
                     .ok_or_else(|| RpcError::invalid_args("Operation must be a string"))?;
 
                 if let Some(other_calc_id) = extract_capability_ref(&args[2]) {
-                    info!("Chaining operation '{}' with calculator ID: {}", operation, other_calc_id);
+                    info!(
+                        "Chaining operation '{}' with calculator ID: {}",
+                        operation, other_calc_id
+                    );
 
                     // In a full implementation, we would:
                     // 1. Resolve the capability from the registry
@@ -186,7 +218,12 @@ impl RpcTarget for AdvancedCalculator {
                     let result = match operation {
                         "double" => value * 2.0,
                         "square" => value * value,
-                        _ => return Err(RpcError::invalid_args(&format!("Unknown operation: {}", operation)))
+                        _ => {
+                            return Err(RpcError::invalid_args(&format!(
+                                "Unknown operation: {}",
+                                operation
+                            )))
+                        }
                     };
 
                     Ok(serde_json::json!({
@@ -196,7 +233,9 @@ impl RpcTarget for AdvancedCalculator {
                         "calculator": self.name
                     }))
                 } else {
-                    Err(RpcError::invalid_args("Third argument must be a capability reference"))
+                    Err(RpcError::invalid_args(
+                        "Third argument must be a capability reference",
+                    ))
                 }
             }
 
@@ -209,7 +248,10 @@ impl RpcTarget for AdvancedCalculator {
                 }))
             }
 
-            _ => Err(RpcError::method_not_found(&format!("Method '{}' not found on AdvancedCalculator", member)))
+            _ => Err(RpcError::method_not_found(&format!(
+                "Method '{}' not found on AdvancedCalculator",
+                member
+            ))),
         }
     }
 }
@@ -258,21 +300,27 @@ impl RpcTarget for StatefulWorkflow {
         match member {
             "addStep" => {
                 if args.len() != 4 {
-                    return Err(RpcError::invalid_args("addStep requires 4 arguments: (step_id, capability_ref, method, args)"));
+                    return Err(RpcError::invalid_args(
+                        "addStep requires 4 arguments: (step_id, capability_ref, method, args)",
+                    ));
                 }
 
-                let step_id = args[0].as_str()
+                let step_id = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::invalid_args("Step ID must be a string"))?
                     .to_string();
 
-                let capability_id = extract_capability_ref(&args[1])
-                    .ok_or_else(|| RpcError::invalid_args("Second argument must be a capability reference"))?;
+                let capability_id = extract_capability_ref(&args[1]).ok_or_else(|| {
+                    RpcError::invalid_args("Second argument must be a capability reference")
+                })?;
 
-                let method = args[2].as_str()
+                let method = args[2]
+                    .as_str()
                     .ok_or_else(|| RpcError::invalid_args("Method must be a string"))?
                     .to_string();
 
-                let method_args = args[3].as_array()
+                let method_args = args[3]
+                    .as_array()
                     .ok_or_else(|| RpcError::invalid_args("Args must be an array"))?
                     .clone();
 
@@ -288,7 +336,10 @@ impl RpcTarget for StatefulWorkflow {
                 let mut steps = self.steps.lock().unwrap();
                 steps.push(step);
 
-                info!("Added workflow step '{}' targeting capability ID: {}", step_id, capability_id);
+                info!(
+                    "Added workflow step '{}' targeting capability ID: {}",
+                    step_id, capability_id
+                );
 
                 Ok(serde_json::json!({
                     "step_id": step_id,
@@ -318,7 +369,10 @@ impl RpcTarget for StatefulWorkflow {
 
                         results.push(step.result.clone().unwrap());
 
-                        info!("Executed workflow step '{}' on capability {}", step.id, step.capability_id);
+                        info!(
+                            "Executed workflow step '{}' on capability {}",
+                            step.id, step.capability_id
+                        );
                     }
                 }
 
@@ -333,15 +387,18 @@ impl RpcTarget for StatefulWorkflow {
                 let steps = self.steps.lock().unwrap();
                 let state = self.state.lock().unwrap();
 
-                let step_summaries: Vec<_> = steps.iter().map(|step| {
-                    serde_json::json!({
-                        "id": step.id,
-                        "capability_id": step.capability_id,
-                        "method": step.method,
-                        "completed": step.completed,
-                        "has_result": step.result.is_some()
+                let step_summaries: Vec<_> = steps
+                    .iter()
+                    .map(|step| {
+                        serde_json::json!({
+                            "id": step.id,
+                            "capability_id": step.capability_id,
+                            "method": step.method,
+                            "completed": step.completed,
+                            "has_result": step.result.is_some()
+                        })
                     })
-                }).collect();
+                    .collect();
 
                 Ok(serde_json::json!({
                     "workflow": self.name,
@@ -352,7 +409,10 @@ impl RpcTarget for StatefulWorkflow {
                 }))
             }
 
-            _ => Err(RpcError::method_not_found(&format!("Method '{}' not found on StatefulWorkflow", member)))
+            _ => Err(RpcError::method_not_found(&format!(
+                "Method '{}' not found on StatefulWorkflow",
+                member
+            ))),
         }
     }
 }
@@ -365,7 +425,8 @@ impl RegistrableCapability for StatefulWorkflow {
 
 // Helper functions
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
-    value.as_f64()
+    value
+        .as_f64()
         .or_else(|| value.as_i64().map(|i| i as f64))
         .or_else(|| value.as_u64().map(|u| u as f64))
         .ok_or_else(|| RpcError::invalid_args("Expected a number"))
@@ -393,7 +454,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let registry = Arc::new(CapabilityRegistry::new());
 
     // Create factory capability
-    let factory = Arc::new(CapabilityFactory::new("MainFactory".to_string(), registry.clone()));
+    let factory = Arc::new(CapabilityFactory::new(
+        "MainFactory".to_string(),
+        registry.clone(),
+    ));
     let factory_id = registry.export_capability(factory.clone());
 
     // Create a sample calculator

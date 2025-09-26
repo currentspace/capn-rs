@@ -3,13 +3,12 @@
 
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::{Message, encode_message, decode_message};
+use capnweb_core::{decode_message, encode_message, Message};
 use quinn::{Connection, Endpoint, RecvStream, SendStream};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex, RwLock};
-use bytes::Bytes;
-use serde::{Deserialize, Serialize};
 
 /// HTTP/3 transport configuration
 #[derive(Debug, Clone)]
@@ -87,25 +86,34 @@ impl Http3Stream {
     /// Send an HTTP/3 request with RPC payload
     async fn send_request(&mut self, message: &Message) -> Result<(), TransportError> {
         // Encode the message
-        let payload = encode_message(message)
-            .map_err(|e| TransportError::Codec(e.to_string()))?;
+        let payload = encode_message(message).map_err(|e| TransportError::Codec(e.to_string()))?;
 
         // Create HTTP/3 pseudo-headers (simplified version)
         let headers_frame = self.create_headers_frame(&payload)?;
 
         // Send headers frame
-        self.send_stream.write_all(&headers_frame).await
+        self.send_stream
+            .write_all(&headers_frame)
+            .await
             .map_err(|e| TransportError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
 
         // Send data frame
         let data_frame = self.create_data_frame(&payload)?;
-        self.send_stream.write_all(&data_frame).await
+        self.send_stream
+            .write_all(&data_frame)
+            .await
             .map_err(|e| TransportError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
 
-        self.send_stream.finish().await
+        self.send_stream
+            .finish()
+            .await
             .map_err(|e| TransportError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
 
-        tracing::trace!(stream_id = self.stream_id, payload_size = payload.len(), "HTTP/3 request sent");
+        tracing::trace!(
+            stream_id = self.stream_id,
+            payload_size = payload.len(),
+            "HTTP/3 request sent"
+        );
         Ok(())
     }
 
@@ -116,19 +124,26 @@ impl Http3Stream {
 
         // For now, we'll read a length-prefixed message similar to our other transports
         let mut len_bytes = [0u8; 4];
-        self.recv_stream.read_exact(&mut len_bytes).await
+        self.recv_stream
+            .read_exact(&mut len_bytes)
+            .await
             .map_err(|e| TransportError::Protocol(format!("Failed to read length: {}", e)))?;
 
         let len = u32::from_be_bytes(len_bytes) as usize;
 
         let mut payload = vec![0u8; len];
-        self.recv_stream.read_exact(&mut payload).await
+        self.recv_stream
+            .read_exact(&mut payload)
+            .await
             .map_err(|e| TransportError::Protocol(format!("Failed to read payload: {}", e)))?;
 
-        let message = decode_message(&payload)
-            .map_err(|e| TransportError::Codec(e.to_string()))?;
+        let message = decode_message(&payload).map_err(|e| TransportError::Codec(e.to_string()))?;
 
-        tracing::trace!(stream_id = self.stream_id, payload_size = payload.len(), "HTTP/3 response received");
+        tracing::trace!(
+            stream_id = self.stream_id,
+            payload_size = payload.len(),
+            "HTTP/3 response received"
+        );
         Ok(message)
     }
 
@@ -216,10 +231,9 @@ impl Http3Transport {
 
     /// Create a new stream for HTTP/3 communication
     async fn create_stream(&self) -> Result<u64, TransportError> {
-        let (send_stream, recv_stream) = self.connection
-            .open_bi()
-            .await
-            .map_err(|e| TransportError::Protocol(format!("Failed to open bidirectional stream: {}", e)))?;
+        let (send_stream, recv_stream) = self.connection.open_bi().await.map_err(|e| {
+            TransportError::Protocol(format!("Failed to open bidirectional stream: {}", e))
+        })?;
 
         let mut stream_id_guard = self.next_stream_id.lock().await;
         let stream_id = *stream_id_guard;
@@ -307,7 +321,8 @@ impl RpcTransport for Http3Transport {
         let stream_id = self.get_send_stream().await?;
 
         let mut streams = self.streams.write().await;
-        let stream = streams.get_mut(&stream_id)
+        let stream = streams
+            .get_mut(&stream_id)
             .ok_or_else(|| TransportError::Protocol("Stream not found".to_string()))?;
 
         stream.send_request(&message).await?;
@@ -326,9 +341,7 @@ impl RpcTransport for Http3Transport {
                 Ok(Some(message))
             }
             Err(mpsc::error::TryRecvError::Empty) => Ok(None),
-            Err(mpsc::error::TryRecvError::Disconnected) => {
-                Err(TransportError::ConnectionClosed)
-            }
+            Err(mpsc::error::TryRecvError::Disconnected) => Err(TransportError::ConnectionClosed),
         }
     }
 
@@ -363,10 +376,13 @@ impl Http3Client {
     pub async fn connect(&self, server_addr: &str) -> Result<Http3Transport, TransportError> {
         tracing::info!(server_addr = server_addr, "Connecting to HTTP/3 server");
 
-        let connection = self.endpoint
+        let connection = self
+            .endpoint
             .connect(
-                server_addr.parse().map_err(|e| TransportError::Protocol(format!("Invalid server address: {}", e)))?,
-                "localhost"
+                server_addr.parse().map_err(|e| {
+                    TransportError::Protocol(format!("Invalid server address: {}", e))
+                })?,
+                "localhost",
             )
             .map_err(|e| TransportError::Protocol(format!("Connection failed: {}", e)))?
             .await
@@ -408,7 +424,9 @@ fn configure_http3_client(config: Http3Config) -> quinn::ClientConfig {
     // Configure HTTP/3 specific settings
     transport_config.max_concurrent_bidi_streams(config.max_concurrent_streams.into());
     transport_config.max_idle_timeout(Some(
-        std::time::Duration::from_secs(config.connection_idle_timeout).try_into().unwrap()
+        std::time::Duration::from_secs(config.connection_idle_timeout)
+            .try_into()
+            .unwrap(),
     ));
 
     let crypto = rustls::ClientConfig::builder()
@@ -416,9 +434,9 @@ fn configure_http3_client(config: Http3Config) -> quinn::ClientConfig {
         .with_custom_certificate_verifier(SkipServerVerification::new())
         .with_no_client_auth();
 
-    let mut client_config = quinn::ClientConfig::new(
-        Arc::new(quinn::crypto::rustls::QuicClientConfig::try_from(crypto).unwrap())
-    );
+    let mut client_config = quinn::ClientConfig::new(Arc::new(
+        quinn::crypto::rustls::QuicClientConfig::try_from(crypto).unwrap(),
+    ));
     client_config.transport_config(Arc::new(transport_config));
 
     client_config
@@ -503,7 +521,10 @@ pub mod advanced {
         }
 
         /// Get or create a connection to the specified host
-        pub async fn get_connection(&self, host: &str) -> Result<Arc<Http3Transport>, TransportError> {
+        pub async fn get_connection(
+            &self,
+            host: &str,
+        ) -> Result<Arc<Http3Transport>, TransportError> {
             let connections = self.connections.read().await;
             if let Some(transport) = connections.get(host) {
                 return Ok(transport.clone());
@@ -558,7 +579,9 @@ pub mod advanced {
         /// Get the next server using round-robin
         pub async fn get_next_connection(&self) -> Result<Arc<Http3Transport>, TransportError> {
             if self.servers.is_empty() {
-                return Err(TransportError::Protocol("No servers configured".to_string()));
+                return Err(TransportError::Protocol(
+                    "No servers configured".to_string(),
+                ));
             }
 
             let mut index = self.current_index.lock().await;

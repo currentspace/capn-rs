@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod protocol_tests {
     use super::super::*;
     use serde_json::json;
 
@@ -52,11 +52,14 @@ mod tests {
                 error_type: "TypeError".to_string(),
                 message: "Something went wrong".to_string(),
                 stack: None,
-            })
+            }),
         );
         let json = msg.to_json();
 
-        assert_eq!(json, json!(["reject", -2, ["error", "TypeError", "Something went wrong"]]));
+        assert_eq!(
+            json,
+            json!(["reject", -2, ["error", "TypeError", "Something went wrong"]])
+        );
     }
 
     #[test]
@@ -101,7 +104,10 @@ mod tests {
         });
         let json = expr.to_json();
 
-        assert_eq!(json, json!(["error", "ReferenceError", "x is not defined", "at line 10"]));
+        assert_eq!(
+            json,
+            json!(["error", "ReferenceError", "x is not defined", "at line 10"])
+        );
 
         let parsed = Expression::from_json(&json).unwrap();
         assert_eq!(expr, parsed);
@@ -213,7 +219,9 @@ mod tests {
         assert_eq!(id, ImportId(1));
 
         // Insert a value
-        table.insert(id, ImportValue::Value(Value::String("test".to_string()))).unwrap();
+        table
+            .insert(id, ImportValue::Value(Value::String("test".to_string())))
+            .unwrap();
 
         // Get the value
         match table.get(id).unwrap() {
@@ -224,7 +232,7 @@ mod tests {
         // Test refcounting
         table.add_ref(id).unwrap();
         assert!(!table.release(id, 1).unwrap()); // Should not remove
-        assert!(table.release(id, 1).unwrap());  // Should remove
+        assert!(table.release(id, 1).unwrap()); // Should remove
         assert!(table.get(id).is_none());
     }
 
@@ -239,7 +247,10 @@ mod tests {
         assert_eq!(id, ExportId(-1));
 
         // Resolve the promise
-        table.resolve(id, Value::Number(serde_json::Number::from(42))).await.unwrap();
+        table
+            .resolve(id, Value::Number(serde_json::Number::from(42)))
+            .await
+            .unwrap();
 
         // Check the receiver
         rx.changed().await.unwrap();
@@ -257,12 +268,18 @@ mod tests {
         // Test a complex nested message
         let complex_expr = Expression::Object({
             let mut map = std::collections::HashMap::new();
-            map.insert("method".to_string(), Box::new(Expression::String("getData".to_string())));
-            map.insert("args".to_string(), Box::new(Expression::Array(vec![
-                Expression::Number(serde_json::Number::from(1)),
-                Expression::Bool(true),
-                Expression::Null,
-            ])));
+            map.insert(
+                "method".to_string(),
+                Box::new(Expression::String("getData".to_string())),
+            );
+            map.insert(
+                "args".to_string(),
+                Box::new(Expression::Array(vec![
+                    Expression::Number(serde_json::Number::from(1)),
+                    Expression::Bool(true),
+                    Expression::Null,
+                ])),
+            );
             map
         });
 

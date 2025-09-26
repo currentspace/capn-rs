@@ -2,15 +2,15 @@
 // Tests all transport implementations for protocol compliance
 // Covers HTTP Batch, WebSocket, message framing, and bidirectional communication
 
-use capnweb_transport::{
-    RpcTransport, TransportError, HttpBatchTransport,
-    CapnWebCodec, NewlineDelimitedCodec, CodecError,
-};
-use capnweb_core::{Message, Expression, ImportId, ExportId};
-use serde_json::Number;
 use bytes::BytesMut;
-use tokio_util::codec::{Encoder, Decoder};
+use capnweb_core::{ExportId, Expression, ImportId, Message};
+use capnweb_transport::{
+    CapnWebCodec, CodecError, HttpBatchTransport, NewlineDelimitedCodec, RpcTransport,
+    TransportError,
+};
+use serde_json::Number;
 use std::collections::VecDeque;
+use tokio_util::codec::{Decoder, Encoder};
 
 #[cfg(test)]
 mod transport_protocol_tests {
@@ -28,12 +28,17 @@ mod transport_protocol_tests {
             Message::Push(Expression::String("test_request".to_string())),
             Message::Pull(ImportId(1)),
             Message::Resolve(ExportId(-1), Expression::Number(Number::from(42))),
-            Message::Release { release: vec![ImportId(2), ImportId(3)] },
+            Message::Release {
+                release: vec![ImportId(2), ImportId(3)],
+            },
         ];
 
         // Queue messages for batch processing
         for msg in messages {
-            transport.send_message(msg).await.expect("Should queue message");
+            transport
+                .send_message(msg)
+                .await
+                .expect("Should queue message");
         }
 
         // Verify batch contains all messages
@@ -50,18 +55,28 @@ mod transport_protocol_tests {
         // Test bidirectional capability
         let response_messages = vec![
             Message::Push(Expression::String("server_notification".to_string())),
-            Message::Reject(ExportId(-2), Expression::Error {
-                error_type: "server_error".to_string(),
-                message: "Operation failed".to_string(),
-                stack: None
-            }),
+            Message::Reject(
+                ExportId(-2),
+                Expression::Error {
+                    error_type: "server_error".to_string(),
+                    message: "Operation failed".to_string(),
+                    stack: None,
+                },
+            ),
         ];
 
         for msg in response_messages {
-            transport.send_message(msg).await.expect("Should queue response");
+            transport
+                .send_message(msg)
+                .await
+                .expect("Should queue response");
         }
 
-        assert_eq!(transport.get_outgoing_batch().len(), 2, "Should queue responses");
+        assert_eq!(
+            transport.get_outgoing_batch().len(),
+            2,
+            "Should queue responses"
+        );
         println!("✅ HTTP Batch bidirectional communication verified");
     }
 
@@ -76,29 +91,51 @@ mod transport_protocol_tests {
 
         let test_message = Message::Push(Expression::Object({
             let mut map = std::collections::HashMap::new();
-            map.insert("method".to_string(), Box::new(Expression::String("testMethod".to_string())));
-            map.insert("args".to_string(), Box::new(Expression::Array(vec![
-                Expression::Number(Number::from(1)),
-                Expression::Bool(true),
-                Expression::Null
-            ])));
+            map.insert(
+                "method".to_string(),
+                Box::new(Expression::String("testMethod".to_string())),
+            );
+            map.insert(
+                "args".to_string(),
+                Box::new(Expression::Array(vec![
+                    Expression::Number(Number::from(1)),
+                    Expression::Bool(true),
+                    Expression::Null,
+                ])),
+            );
             map
         }));
 
         // Test encoding with length prefix
-        length_codec.encode(test_message.clone(), &mut buffer).expect("Should encode");
+        length_codec
+            .encode(test_message.clone(), &mut buffer)
+            .expect("Should encode");
         assert!(buffer.len() >= 4, "Should have length prefix");
 
         // Verify length prefix is correct
         let length_bytes = &buffer[0..4];
         let expected_length = (buffer.len() - 4) as u32;
-        let actual_length = u32::from_be_bytes([length_bytes[0], length_bytes[1], length_bytes[2], length_bytes[3]]);
-        assert_eq!(actual_length, expected_length, "Length prefix should match payload size");
+        let actual_length = u32::from_be_bytes([
+            length_bytes[0],
+            length_bytes[1],
+            length_bytes[2],
+            length_bytes[3],
+        ]);
+        assert_eq!(
+            actual_length, expected_length,
+            "Length prefix should match payload size"
+        );
         println!("✅ Length-prefixed framing verified");
 
         // Test decoding
-        let decoded = length_codec.decode(&mut buffer).expect("Should decode").expect("Should have message");
-        assert_eq!(decoded, test_message, "Decoded message should match original");
+        let decoded = length_codec
+            .decode(&mut buffer)
+            .expect("Should decode")
+            .expect("Should have message");
+        assert_eq!(
+            decoded, test_message,
+            "Decoded message should match original"
+        );
         println!("✅ Length-prefixed decoding verified");
 
         // Test newline-delimited framing
@@ -113,22 +150,35 @@ mod transport_protocol_tests {
 
         // Encode multiple messages with newline framing
         for msg in &simple_messages {
-            newline_codec.encode(msg.clone(), &mut newline_buffer).expect("Should encode");
+            newline_codec
+                .encode(msg.clone(), &mut newline_buffer)
+                .expect("Should encode");
         }
 
         // Verify newlines are present
         let buffer_str = String::from_utf8_lossy(&newline_buffer);
         let line_count = buffer_str.matches('\n').count();
-        assert_eq!(line_count, simple_messages.len(), "Should have newline for each message");
+        assert_eq!(
+            line_count,
+            simple_messages.len(),
+            "Should have newline for each message"
+        );
         println!("✅ Newline-delimited framing verified");
 
         // Test decoding all messages
         let mut decoded_messages = Vec::new();
-        while let Some(msg) = newline_codec.decode(&mut newline_buffer).expect("Should decode") {
+        while let Some(msg) = newline_codec
+            .decode(&mut newline_buffer)
+            .expect("Should decode")
+        {
             decoded_messages.push(msg);
         }
 
-        assert_eq!(decoded_messages.len(), simple_messages.len(), "Should decode all messages");
+        assert_eq!(
+            decoded_messages.len(),
+            simple_messages.len(),
+            "Should decode all messages"
+        );
         for (original, decoded) in simple_messages.iter().zip(decoded_messages.iter()) {
             assert_eq!(original, decoded, "Messages should match after round trip");
         }
@@ -176,8 +226,13 @@ mod transport_protocol_tests {
         let mut partial_codec = CapnWebCodec::new();
         let mut partial_buffer = BytesMut::from(&b"\x00\x00\x00\x10partial"[..]);
 
-        let partial_result = partial_codec.decode(&mut partial_buffer).expect("Should not error");
-        assert!(partial_result.is_none(), "Should return None for partial frame");
+        let partial_result = partial_codec
+            .decode(&mut partial_buffer)
+            .expect("Should not error");
+        assert!(
+            partial_result.is_none(),
+            "Should return None for partial frame"
+        );
         println!("✅ Partial frame handling verified");
     }
 
@@ -191,56 +246,99 @@ mod transport_protocol_tests {
             // Core protocol messages
             Message::Push(Expression::Import(ImportId(123))),
             Message::Pull(ImportId(456)),
-            Message::Resolve(ExportId(-789), Expression::Pipeline {
-                pipeline: ImportId(111),
-                property: vec!["getData".to_string()],
-                args: None,
-            }),
-            Message::Reject(ExportId(-222), Expression::Error {
-                error_type: "timeout".to_string(),
-                message: "Operation timed out".to_string(),
-                stack: Some("at transport layer".to_string())
-            }),
-            Message::Release { release: vec![ImportId(333), ImportId(444)] },
-            Message::Abort { abort: Expression::Error {
-                error_type: "transport_error".to_string(),
-                message: "Connection lost".to_string(),
-                stack: None
-            }},
+            Message::Resolve(
+                ExportId(-789),
+                Expression::Pipeline {
+                    pipeline: ImportId(111),
+                    property: vec!["getData".to_string()],
+                    args: None,
+                },
+            ),
+            Message::Reject(
+                ExportId(-222),
+                Expression::Error {
+                    error_type: "timeout".to_string(),
+                    message: "Operation timed out".to_string(),
+                    stack: Some("at transport layer".to_string()),
+                },
+            ),
+            Message::Release {
+                release: vec![ImportId(333), ImportId(444)],
+            },
+            Message::Abort {
+                abort: Expression::Error {
+                    error_type: "transport_error".to_string(),
+                    message: "Connection lost".to_string(),
+                    stack: None,
+                },
+            },
         ];
 
         // Test HTTP Batch transport
         let mut http_transport = HttpBatchTransport::new("/rpc/batch".to_string());
         for msg in &protocol_messages {
-            http_transport.send_message(msg.clone()).await.expect("HTTP transport should accept message");
+            http_transport
+                .send_message(msg.clone())
+                .await
+                .expect("HTTP transport should accept message");
         }
-        assert_eq!(http_transport.get_outgoing_batch().len(), protocol_messages.len(), "HTTP batch should contain all messages");
+        assert_eq!(
+            http_transport.get_outgoing_batch().len(),
+            protocol_messages.len(),
+            "HTTP batch should contain all messages"
+        );
         println!("✅ HTTP Batch transport protocol compliance verified");
 
         // Test both codec types with same messages
         for (codec_name, mut codec) in [
-            ("length-prefixed", Box::new(CapnWebCodec::new()) as Box<dyn Encoder<Message, Error = CodecError> + Decoder<Item = Message, Error = CodecError>>),
-            ("newline-delimited", Box::new(NewlineDelimitedCodec::new()) as Box<dyn Encoder<Message, Error = CodecError> + Decoder<Item = Message, Error = CodecError>>),
+            (
+                "length-prefixed",
+                Box::new(CapnWebCodec::new())
+                    as Box<
+                        dyn Encoder<Message, Error = CodecError>
+                            + Decoder<Item = Message, Error = CodecError>,
+                    >,
+            ),
+            (
+                "newline-delimited",
+                Box::new(NewlineDelimitedCodec::new())
+                    as Box<
+                        dyn Encoder<Message, Error = CodecError>
+                            + Decoder<Item = Message, Error = CodecError>,
+                    >,
+            ),
         ] {
             let mut buffer = BytesMut::new();
             let mut round_trip_messages = Vec::new();
 
             // Encode all messages
             for msg in &protocol_messages {
-                codec.encode(msg.clone(), &mut buffer).expect(&format!("{} codec should encode", codec_name));
+                codec
+                    .encode(msg.clone(), &mut buffer)
+                    .expect(&format!("{} codec should encode", codec_name));
             }
 
             // Decode all messages
-            while let Some(msg) = codec.decode(&mut buffer).expect(&format!("{} codec should decode", codec_name)) {
+            while let Some(msg) = codec
+                .decode(&mut buffer)
+                .expect(&format!("{} codec should decode", codec_name))
+            {
                 round_trip_messages.push(msg);
             }
 
-            assert_eq!(round_trip_messages.len(), protocol_messages.len(),
-                "{} codec should round-trip all messages", codec_name);
+            assert_eq!(
+                round_trip_messages.len(),
+                protocol_messages.len(),
+                "{} codec should round-trip all messages",
+                codec_name
+            );
 
             for (original, decoded) in protocol_messages.iter().zip(round_trip_messages.iter()) {
-                assert_eq!(original, decoded,
-                    "{} codec should preserve message content", codec_name);
+                assert_eq!(
+                    original, decoded,
+                    "{} codec should preserve message content",
+                    codec_name
+                );
             }
 
             println!("✅ {} codec protocol compliance verified", codec_name);
@@ -270,18 +368,33 @@ mod transport_protocol_tests {
             // Server responds to hello
             Message::Resolve(ExportId(-1), Expression::String("server_hello".to_string())),
             // Server provides user data
-            Message::Resolve(ExportId(-2), Expression::Object({
-                let mut user_data = std::collections::HashMap::new();
-                user_data.insert("id".to_string(), Box::new(Expression::String("user123".to_string())));
-                user_data.insert("name".to_string(), Box::new(Expression::String("Alice".to_string())));
-                user_data.insert("active".to_string(), Box::new(Expression::Bool(true)));
-                user_data
-            })),
+            Message::Resolve(
+                ExportId(-2),
+                Expression::Object({
+                    let mut user_data = std::collections::HashMap::new();
+                    user_data.insert(
+                        "id".to_string(),
+                        Box::new(Expression::String("user123".to_string())),
+                    );
+                    user_data.insert(
+                        "name".to_string(),
+                        Box::new(Expression::String("Alice".to_string())),
+                    );
+                    user_data.insert("active".to_string(), Box::new(Expression::Bool(true)));
+                    user_data
+                }),
+            ),
             // Server sends notification
             Message::Push(Expression::Object({
                 let mut notification = std::collections::HashMap::new();
-                notification.insert("type".to_string(), Box::new(Expression::String("user_login".to_string())));
-                notification.insert("timestamp".to_string(), Box::new(Expression::Number(Number::from(1640995200))));
+                notification.insert(
+                    "type".to_string(),
+                    Box::new(Expression::String("user_login".to_string())),
+                );
+                notification.insert(
+                    "timestamp".to_string(),
+                    Box::new(Expression::Number(Number::from(1640995200))),
+                );
                 notification
             })),
         ];
@@ -293,10 +406,17 @@ mod transport_protocol_tests {
 
         let mut transport = HttpBatchTransport::new("/rpc/batch".to_string());
         for msg in all_messages {
-            transport.send_message(msg).await.expect("Should queue all messages");
+            transport
+                .send_message(msg)
+                .await
+                .expect("Should queue all messages");
         }
 
-        assert_eq!(transport.get_outgoing_batch().len(), 6, "Should have all 6 messages");
+        assert_eq!(
+            transport.get_outgoing_batch().len(),
+            6,
+            "Should have all 6 messages"
+        );
         println!("✅ Bidirectional conversation serialization verified");
 
         // Test message ordering preservation
@@ -325,12 +445,19 @@ mod transport_protocol_tests {
         let max_batch_size = 1000;
         for i in 0..max_batch_size + 1 {
             let msg = Message::Push(Expression::String(format!("message_{}", i)));
-            http_transport.send_message(msg).await.expect("Should queue message");
+            http_transport
+                .send_message(msg)
+                .await
+                .expect("Should queue message");
         }
 
         // HTTP batch should handle large batches
         let batch_size = http_transport.get_outgoing_batch().len();
-        assert_eq!(batch_size, max_batch_size + 1, "HTTP batch should handle all messages");
+        assert_eq!(
+            batch_size,
+            max_batch_size + 1,
+            "HTTP batch should handle all messages"
+        );
         println!("✅ HTTP Batch size handling verified");
 
         // Test endpoint configuration
@@ -377,7 +504,9 @@ mod websocket_protocol_tests {
             Message::Push(Expression::String("websocket_test".to_string())),
             Message::Pull(ImportId(1)),
             Message::Resolve(ExportId(-1), Expression::Bool(true)),
-            Message::Release { release: vec![ImportId(2)] },
+            Message::Release {
+                release: vec![ImportId(2)],
+            },
         ];
 
         // Note: Actual WebSocket testing would require a running server
@@ -385,7 +514,10 @@ mod websocket_protocol_tests {
         for msg in &ws_messages {
             let json = msg.to_json();
             let parsed = Message::from_json(&json).expect("WebSocket messages should parse");
-            assert_eq!(*msg, parsed, "WebSocket message should round-trip correctly");
+            assert_eq!(
+                *msg, parsed,
+                "WebSocket message should round-trip correctly"
+            );
         }
 
         println!("✅ WebSocket protocol message compatibility verified");
@@ -396,7 +528,9 @@ mod websocket_protocol_tests {
 
         // WebSocket typically uses newline framing for text frames
         for msg in ws_messages {
-            codec.encode(msg, &mut buffer).expect("Should encode for WebSocket");
+            codec
+                .encode(msg, &mut buffer)
+                .expect("Should encode for WebSocket");
         }
 
         // Verify each message ends with newline (WebSocket text frame requirement)
@@ -407,7 +541,8 @@ mod websocket_protocol_tests {
         for line in lines {
             assert!(!line.is_empty(), "No line should be empty");
             // Each line should be valid JSON
-            let parsed: serde_json::Value = serde_json::from_str(line).expect("Line should be valid JSON");
+            let parsed: serde_json::Value =
+                serde_json::from_str(line).expect("Line should be valid JSON");
             assert!(parsed.is_array(), "Each message should be JSON array");
         }
 
@@ -438,8 +573,10 @@ mod protocol_edge_cases {
         let max_import_json = max_import.to_json();
         let max_export_json = max_export.to_json();
 
-        let max_import_parsed = Message::from_json(&max_import_json).expect("Max import should parse");
-        let max_export_parsed = Message::from_json(&max_export_json).expect("Max export should parse");
+        let max_import_parsed =
+            Message::from_json(&max_import_json).expect("Max import should parse");
+        let max_export_parsed =
+            Message::from_json(&max_export_json).expect("Max export should parse");
 
         assert_eq!(max_import, max_import_parsed);
         assert_eq!(max_export, max_export_parsed);
@@ -472,10 +609,16 @@ mod protocol_edge_cases {
 
         for i in 0..large_batch_size {
             let msg = Message::Push(Expression::Number(Number::from(i)));
-            large_batch_transport.send_message(msg).await.expect("Should handle large batch");
+            large_batch_transport
+                .send_message(msg)
+                .await
+                .expect("Should handle large batch");
         }
 
-        assert_eq!(large_batch_transport.get_outgoing_batch().len(), large_batch_size);
+        assert_eq!(
+            large_batch_transport.get_outgoing_batch().len(),
+            large_batch_size
+        );
         println!("✅ Large batch processing verified");
     }
 }

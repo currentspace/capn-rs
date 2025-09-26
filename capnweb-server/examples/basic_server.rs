@@ -2,10 +2,10 @@ use async_trait::async_trait;
 use capnweb_core::{CapId, RpcError};
 use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 /// A stateful calculator capability with variable storage
 struct Calculator {
@@ -31,7 +31,9 @@ impl RpcTarget for Calculator {
             }
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()
@@ -43,7 +45,9 @@ impl RpcTarget for Calculator {
             }
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()
@@ -70,7 +74,9 @@ impl RpcTarget for Calculator {
             }
             "setVariable" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("setVariable requires exactly 2 arguments: name and value"));
+                    return Err(RpcError::bad_request(
+                        "setVariable requires exactly 2 arguments: name and value",
+                    ));
                 }
                 let name = args[0]
                     .as_str()
@@ -85,7 +91,9 @@ impl RpcTarget for Calculator {
             }
             "getVariable" => {
                 if args.len() != 1 {
-                    return Err(RpcError::bad_request("getVariable requires exactly 1 argument: name"));
+                    return Err(RpcError::bad_request(
+                        "getVariable requires exactly 1 argument: name",
+                    ));
                 }
                 let name = args[0]
                     .as_str()
@@ -94,12 +102,17 @@ impl RpcTarget for Calculator {
                 let variables = self.variables.read().await;
                 match variables.get(name) {
                     Some(&value) => Ok(json!(value)),
-                    None => Err(RpcError::not_found(format!("Variable '{}' not found", name))),
+                    None => Err(RpcError::not_found(format!(
+                        "Variable '{}' not found",
+                        name
+                    ))),
                 }
             }
             "clearAllVariables" => {
                 if !args.is_empty() {
-                    return Err(RpcError::bad_request("clearAllVariables requires no arguments"));
+                    return Err(RpcError::bad_request(
+                        "clearAllVariables requires no arguments",
+                    ));
                 }
 
                 let mut variables = self.variables.write().await;
@@ -112,7 +125,9 @@ impl RpcTarget for Calculator {
             }
             "getAsyncProcessor" => {
                 if !args.is_empty() {
-                    return Err(RpcError::bad_request("getAsyncProcessor requires no arguments"));
+                    return Err(RpcError::bad_request(
+                        "getAsyncProcessor requires no arguments",
+                    ));
                 }
 
                 // Return a mock async processor capability reference
@@ -128,10 +143,7 @@ impl RpcTarget for Calculator {
                 let operation_id = if args.is_empty() {
                     "default_operation".to_string()
                 } else {
-                    args[0]
-                        .as_str()
-                        .unwrap_or("default_operation")
-                        .to_string()
+                    args[0].as_str().unwrap_or("default_operation").to_string()
                 };
 
                 // Return a mock nested capability reference

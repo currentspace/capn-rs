@@ -1,7 +1,7 @@
-use capnweb_core::{Plan, Source, Op, CapId, RpcError};
-use serde_json::{Value, Map};
-use std::collections::HashMap;
 use crate::{RpcTarget, ServerConfig};
+use capnweb_core::{CapId, Op, Plan, RpcError, Source};
+use serde_json::{Map, Value};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -34,7 +34,9 @@ impl PlanRunner {
 
         // Execute operations in order
         for op in &plan.ops {
-            let result = self.execute_op(op, params.as_ref(), captures, &results).await?;
+            let result = self
+                .execute_op(op, params.as_ref(), captures, &results)
+                .await?;
 
             match op {
                 Op::Call { call } => {
@@ -68,9 +70,10 @@ impl PlanRunner {
                 // Get the capability ID from the target value
                 let cap_id = if let Value::Object(obj) = &target_value {
                     if let Some(Value::Number(n)) = obj.get("cap") {
-                        CapId::new(n.as_u64().ok_or_else(||
-                            RpcError::bad_request("Invalid capability ID")
-                        )?)
+                        CapId::new(
+                            n.as_u64()
+                                .ok_or_else(|| RpcError::bad_request("Invalid capability ID"))?,
+                        )
                     } else {
                         return Err(RpcError::bad_request("Target is not a capability"));
                     }
@@ -79,9 +82,9 @@ impl PlanRunner {
                 };
 
                 // Get the capability from captures
-                let capability = captures
-                    .get(&(cap_id.as_u64() as u32))
-                    .ok_or_else(|| RpcError::not_found(format!("Capability not found: {:?}", cap_id)))?;
+                let capability = captures.get(&(cap_id.as_u64() as u32)).ok_or_else(|| {
+                    RpcError::not_found(format!("Capability not found: {:?}", cap_id))
+                })?;
 
                 // Resolve arguments
                 let mut resolved_args = Vec::new();
@@ -130,29 +133,29 @@ impl PlanRunner {
                         // Return a capability reference
                         serde_json::json!({ "cap": capture.index })
                     })
-                    .ok_or_else(|| RpcError::not_found(format!("Capture {} not found", capture.index)))
+                    .ok_or_else(|| {
+                        RpcError::not_found(format!("Capture {} not found", capture.index))
+                    })
             }
 
-            Source::Result { result } => {
-                results
-                    .get(&result.index)
-                    .cloned()
-                    .ok_or_else(|| RpcError::not_found(format!("Result {} not found", result.index)))
-            }
+            Source::Result { result } => results
+                .get(&result.index)
+                .cloned()
+                .ok_or_else(|| RpcError::not_found(format!("Result {} not found", result.index))),
 
             Source::Param { param } => {
-                let params = params.ok_or_else(||
-                    RpcError::bad_request("No parameters provided")
-                )?;
+                let params =
+                    params.ok_or_else(|| RpcError::bad_request("No parameters provided"))?;
 
                 // Navigate the path through the params
                 let mut current = params;
                 for segment in &param.path {
-                    current = current
-                        .get(segment)
-                        .ok_or_else(|| RpcError::bad_request(
-                            format!("Parameter path not found: {}", param.path.join("."))
-                        ))?;
+                    current = current.get(segment).ok_or_else(|| {
+                        RpcError::bad_request(format!(
+                            "Parameter path not found: {}",
+                            param.path.join(".")
+                        ))
+                    })?;
                 }
                 Ok(current.clone())
             }
@@ -165,8 +168,8 @@ impl PlanRunner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use capnweb_core::{Plan, Source, Op};
     use async_trait::async_trait;
+    use capnweb_core::{Op, Plan, Source};
 
     /// Test implementation of RpcTarget
     struct TestTarget {
@@ -182,17 +185,15 @@ mod tests {
                     if args.len() != 2 {
                         return Err(RpcError::bad_request("add requires 2 arguments"));
                     }
-                    let a = args[0].as_f64().ok_or_else(||
-                        RpcError::bad_request("First argument must be a number")
-                    )?;
-                    let b = args[1].as_f64().ok_or_else(||
-                        RpcError::bad_request("Second argument must be a number")
-                    )?;
+                    let a = args[0]
+                        .as_f64()
+                        .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
+                    let b = args[1]
+                        .as_f64()
+                        .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
                     Ok(serde_json::json!(a + b))
                 }
-                "echo" => {
-                    Ok(args.first().cloned().unwrap_or(Value::Null))
-                }
+                "echo" => Ok(args.first().cloned().unwrap_or(Value::Null)),
                 _ => Err(RpcError::not_found(format!("Method not found: {}", method))),
             }
         }
@@ -214,9 +215,12 @@ mod tests {
         );
 
         let mut captures = HashMap::new();
-        captures.insert(0, Arc::new(RwLock::new(TestTarget {
-            name: "test".to_string(),
-        })) as Arc<RwLock<dyn RpcTarget>>);
+        captures.insert(
+            0,
+            Arc::new(RwLock::new(TestTarget {
+                name: "test".to_string(),
+            })) as Arc<RwLock<dyn RpcTarget>>,
+        );
 
         let result = runner.execute(&plan, None, &captures).await.unwrap();
         assert_eq!(result, Value::String("test".to_string()));
@@ -241,16 +245,22 @@ mod tests {
         );
 
         let mut captures = HashMap::new();
-        captures.insert(0, Arc::new(RwLock::new(TestTarget {
-            name: "calculator".to_string(),
-        })) as Arc<RwLock<dyn RpcTarget>>);
+        captures.insert(
+            0,
+            Arc::new(RwLock::new(TestTarget {
+                name: "calculator".to_string(),
+            })) as Arc<RwLock<dyn RpcTarget>>,
+        );
 
         let params = serde_json::json!({
             "a": 5,
             "b": 3
         });
 
-        let result = runner.execute(&plan, Some(params), &captures).await.unwrap();
+        let result = runner
+            .execute(&plan, Some(params), &captures)
+            .await
+            .unwrap();
         assert_eq!(result, serde_json::json!(8.0));
     }
 
@@ -262,9 +272,14 @@ mod tests {
             vec![],
             vec![Op::object(
                 vec![
-                    ("name".to_string(), Source::by_value(Value::String("test".to_string()))),
+                    (
+                        "name".to_string(),
+                        Source::by_value(Value::String("test".to_string())),
+                    ),
                     ("value".to_string(), Source::by_value(serde_json::json!(42))),
-                ].into_iter().collect(),
+                ]
+                .into_iter()
+                .collect(),
                 0,
             )],
             Source::result(0),
@@ -273,10 +288,13 @@ mod tests {
         let captures = HashMap::new();
         let result = runner.execute(&plan, None, &captures).await.unwrap();
 
-        assert_eq!(result, serde_json::json!({
-            "name": "test",
-            "value": 42
-        }));
+        assert_eq!(
+            result,
+            serde_json::json!({
+                "name": "test",
+                "value": 42
+            })
+        );
     }
 
     #[tokio::test]
@@ -318,25 +336,36 @@ mod tests {
                 Op::object(
                     vec![
                         ("message".to_string(), Source::result(0)),
-                        ("timestamp".to_string(), Source::by_value(serde_json::json!(12345))),
-                    ].into_iter().collect(),
+                        (
+                            "timestamp".to_string(),
+                            Source::by_value(serde_json::json!(12345)),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
                     1,
-                )
+                ),
             ],
             Source::result(1),
         );
 
         let mut captures = HashMap::new();
-        captures.insert(0, Arc::new(RwLock::new(TestTarget {
-            name: "echo".to_string(),
-        })) as Arc<RwLock<dyn RpcTarget>>);
+        captures.insert(
+            0,
+            Arc::new(RwLock::new(TestTarget {
+                name: "echo".to_string(),
+            })) as Arc<RwLock<dyn RpcTarget>>,
+        );
 
         let result = runner.execute(&plan, None, &captures).await.unwrap();
 
-        assert_eq!(result, serde_json::json!({
-            "message": "hello",
-            "timestamp": 12345
-        }));
+        assert_eq!(
+            result,
+            serde_json::json!({
+                "message": "hello",
+                "timestamp": 12345
+            })
+        );
     }
 
     #[tokio::test]

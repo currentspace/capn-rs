@@ -1,6 +1,6 @@
 use axum::{
-    extract::{State, Json},
-    http::{StatusCode, HeaderMap},
+    extract::{Json, State},
+    http::{HeaderMap, StatusCode},
     response::IntoResponse,
     routing::{get, post},
     Router,
@@ -86,7 +86,10 @@ async fn handle_batch(
 
     // Try to parse as JSON
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(&body) {
-        println!("  JSON: {}", serde_json::to_string_pretty(&json).unwrap_or("parse error".to_string()));
+        println!(
+            "  JSON: {}",
+            serde_json::to_string_pretty(&json).unwrap_or("parse error".to_string())
+        );
     } else {
         println!("  JSON: Failed to parse");
     }
@@ -97,7 +100,10 @@ async fn handle_batch(
         if !line.trim().is_empty() {
             println!("    {}: {}", i, line);
             if let Ok(line_json) = serde_json::from_str::<serde_json::Value>(line) {
-                println!("      -> JSON: {}", serde_json::to_string(&line_json).unwrap_or("parse error".to_string()));
+                println!(
+                    "      -> JSON: {}",
+                    serde_json::to_string(&line_json).unwrap_or("parse error".to_string())
+                );
             }
         }
     }

@@ -1,23 +1,23 @@
 use axum::{
-    extract::{State, Json, ws::{WebSocket, WebSocketUpgrade, Message as WsMessage}},
-    http::{StatusCode, HeaderMap, header},
+    extract::{
+        ws::{Message as WsMessage, WebSocket, WebSocketUpgrade},
+        Json, State,
+    },
+    http::{header, HeaderMap, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
     Router,
 };
 use capnweb_core::{
-    protocol::{
-        Message, Expression, ImportId, ExportId,
-        RpcSession, Value, ImportValue,
-    },
+    protocol::{ExportId, Expression, ImportId, ImportValue, Message, RpcSession, Value},
     RpcTarget,
 };
+use futures::{SinkExt, StreamExt};
 use serde_json;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
-use futures::{SinkExt, StreamExt};
 use tracing::{debug, error, info, warn};
 
 /// Cap'n Web server configuration
@@ -174,7 +174,8 @@ async fn handle_batch(
     let mut responses = Vec::new();
 
     // Check content type to determine format
-    let content_type = headers.get("content-type")
+    let content_type = headers
+        .get("content-type")
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 
@@ -190,10 +191,7 @@ async fn handle_batch(
         match serde_json::from_str::<Vec<serde_json::Value>>(&body) {
             Ok(msgs) => msgs,
             Err(e) => {
-                return (
-                    StatusCode::BAD_REQUEST,
-                    format!("Invalid JSON: {}", e)
-                ).into_response();
+                return (StatusCode::BAD_REQUEST, format!("Invalid JSON: {}", e)).into_response();
             }
         }
     } else {
@@ -208,8 +206,9 @@ async fn handle_batch(
                 Err(e) => {
                     return (
                         StatusCode::BAD_REQUEST,
-                        format!("Invalid message on line: {}", e)
-                    ).into_response();
+                        format!("Invalid message on line: {}", e),
+                    )
+                        .into_response();
                 }
             }
         }
@@ -277,16 +276,14 @@ async fn handle_batch(
         (
             StatusCode::OK,
             [(header::CONTENT_TYPE, "text/plain")],
-            response_body
-        ).into_response()
+            response_body,
+        )
+            .into_response()
     }
 }
 
 /// WebSocket endpoint handler
-async fn handle_websocket(
-    ws: WebSocketUpgrade,
-    State(state): State<ServerState>,
-) -> Response {
+async fn handle_websocket(ws: WebSocketUpgrade, State(state): State<ServerState>) -> Response {
     ws.on_upgrade(move |socket| handle_websocket_connection(socket, state))
 }
 
@@ -337,7 +334,12 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                                 let start_time = std::time::Instant::now();
 
                                 // Process the message using the session
-                                let response_opt = process_websocket_message(message, &session_state, &server_state).await;
+                                let response_opt = process_websocket_message(
+                                    message,
+                                    &session_state,
+                                    &server_state,
+                                )
+                                .await;
 
                                 let processing_duration = start_time.elapsed();
 
@@ -354,7 +356,8 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                                             Ok(response_json) => {
                                                 // Only create preview string if debug logging is enabled
                                                 if tracing::enabled!(tracing::Level::DEBUG) {
-                                                    let preview: String = response_json.chars().take(100).collect();
+                                                    let preview: String =
+                                                        response_json.chars().take(100).collect();
                                                     debug!(
                                                         session_id = %session_id,
                                                         response_length = response_json.len(),
@@ -369,7 +372,10 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                                                     );
                                                 }
 
-                                                if let Err(e) = sender.send(WsMessage::Text(response_json)).await {
+                                                if let Err(e) = sender
+                                                    .send(WsMessage::Text(response_json))
+                                                    .await
+                                                {
                                                     error!(
                                                         session_id = %session_id,
                                                         error = %e,
@@ -475,10 +481,7 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
 }
 
 /// Create a WebSocket session (persistent, unlike HTTP batch sessions)
-async fn create_websocket_session(
-    server_state: &ServerState,
-    session_id: String,
-) -> SessionState {
+async fn create_websocket_session(server_state: &ServerState, session_id: String) -> SessionState {
     info!(
         session_id = %session_id,
         "Creating persistent WebSocket session"
@@ -491,10 +494,9 @@ async fn create_websocket_session(
     if let Some(main_cap) = &server_state.main_capability {
         use capnweb_core::protocol::tables::StubReference;
         let stub_ref = StubReference::new(main_cap.clone());
-        let _insert_result = session.imports.insert(
-            ImportId(0),
-            ImportValue::Stub(stub_ref),
-        );
+        let _insert_result = session
+            .imports
+            .insert(ImportId(0), ImportValue::Stub(stub_ref));
 
         info!(
             session_id = %session_id,
@@ -609,9 +611,7 @@ async fn process_websocket_message(
 
 /// Create a fresh session for HTTP batch requests
 /// Each HTTP request is completely independent with its own import/export space
-async fn create_batch_session(
-    state: &ServerState,
-) -> SessionState {
+async fn create_batch_session(state: &ServerState) -> SessionState {
     // Create fresh session with import ID 0 pre-allocated to main capability
     let session = Arc::new(RpcSession::new());
 
@@ -620,10 +620,9 @@ async fn create_batch_session(
         use capnweb_core::protocol::tables::StubReference;
 
         let stub_ref = StubReference::new(main_cap.clone());
-        let _ = session.imports.insert(
-            ImportId(0),
-            ImportValue::Stub(stub_ref),
-        );
+        let _ = session
+            .imports
+            .insert(ImportId(0), ImportValue::Stub(stub_ref));
     }
 
     SessionState {
@@ -660,10 +659,9 @@ async fn process_message(
                 match evaluate_expression(&state_clone, &session, expr_clone).await {
                     Ok(value) => {
                         // Store the value in the import table
-                        let _ = session.imports.insert(
-                            import_id,
-                            ImportValue::Value(value.clone()),
-                        );
+                        let _ = session
+                            .imports
+                            .insert(import_id, ImportValue::Value(value.clone()));
 
                         // Check if there's a pending pull waiting for this import
                         let mut pulls = pending_pulls.write().await;
@@ -677,13 +675,12 @@ async fn process_message(
                     }
                     Err(e) => {
                         // Store error in import table
-                        let error_expr = Expression::Error(
-                            capnweb_core::protocol::ErrorExpression {
+                        let error_expr =
+                            Expression::Error(capnweb_core::protocol::ErrorExpression {
                                 error_type: "EvalError".to_string(),
                                 message: e.to_string(),
                                 stack: None,
-                            },
-                        );
+                            });
 
                         let _ = session.imports.insert(
                             import_id,
@@ -697,10 +694,7 @@ async fn process_message(
                         // Notify any waiting pulls
                         let mut pulls = pending_pulls.write().await;
                         if let Some(sender) = pulls.remove(&import_id) {
-                            let _ = sender.send(Message::Reject(
-                                ExportId(import_id.0),
-                                error_expr,
-                            ));
+                            let _ = sender.send(Message::Reject(ExportId(import_id.0), error_expr));
                         }
                     }
                 }
@@ -717,7 +711,12 @@ async fn process_message(
                 match import_value {
                     ImportValue::Value(value) => {
                         // Check if it's an error value
-                        if let Value::Error { error_type, message, stack } = value {
+                        if let Value::Error {
+                            error_type,
+                            message,
+                            stack,
+                        } = value
+                        {
                             Ok(Some(Message::Reject(
                                 ExportId(import_id.0),
                                 Expression::Error(capnweb_core::protocol::ErrorExpression {
@@ -745,13 +744,14 @@ async fn process_message(
                 // Import doesn't exist yet (push might still be processing)
                 // Create a channel to wait for resolution
                 let (tx, rx) = tokio::sync::oneshot::channel();
-                session_state.pending_pulls.write().await.insert(import_id, tx);
+                session_state
+                    .pending_pulls
+                    .write()
+                    .await
+                    .insert(import_id, tx);
 
                 // Wait for resolution with timeout
-                match tokio::time::timeout(
-                    std::time::Duration::from_secs(30),
-                    rx,
-                ).await {
+                match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
                     Ok(Ok(message)) => Ok(Some(message)),
                     Ok(Err(_)) => {
                         // Channel closed without sending
@@ -782,25 +782,37 @@ async fn process_message(
 
         Message::Resolve(export_id, expr) => {
             // Client is resolving an export - handle through session
-            let _ = session_state.session.handle_message(Message::Resolve(export_id, expr)).await;
+            let _ = session_state
+                .session
+                .handle_message(Message::Resolve(export_id, expr))
+                .await;
             Ok(None)
         }
 
         Message::Reject(export_id, expr) => {
             // Client is rejecting an export - handle through session
-            let _ = session_state.session.handle_message(Message::Reject(export_id, expr)).await;
+            let _ = session_state
+                .session
+                .handle_message(Message::Reject(export_id, expr))
+                .await;
             Ok(None)
         }
 
         Message::Release(import_id, refcount) => {
             // Client is releasing an import - handle through session
-            let _ = session_state.session.handle_message(Message::Release(import_id, refcount)).await;
+            let _ = session_state
+                .session
+                .handle_message(Message::Release(import_id, refcount))
+                .await;
             Ok(None)
         }
 
         Message::Abort(expr) => {
             // Session is being aborted - handle through session
-            let _ = session_state.session.handle_message(Message::Abort(expr.clone())).await;
+            let _ = session_state
+                .session
+                .handle_message(Message::Abort(expr.clone()))
+                .await;
 
             // Clean up any pending pulls
             let mut pulls = session_state.pending_pulls.write().await;
@@ -832,7 +844,9 @@ async fn evaluate_expression(
                 if let Some(main) = &state.main_capability {
                     // Extract method name from property path
                     if let Some(path) = &import.property_path {
-                        if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) = path.first() {
+                        if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) =
+                            path.first()
+                        {
                             // Extract call arguments
                             let args = if let Some(args_expr) = &import.call_arguments {
                                 extract_args(&**args_expr)?
@@ -841,7 +855,9 @@ async fn evaluate_expression(
                             };
 
                             // Call the method
-                            return main.call(method, args).await
+                            return main
+                                .call(method, args)
+                                .await
                                 .map_err(|e| e.to_string().into());
                         }
                     }
@@ -858,7 +874,9 @@ async fn evaluate_expression(
                     ImportValue::Stub(stub_ref) => {
                         // Extract method name from property path
                         if let Some(path) = &pipeline.property_path {
-                            if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) = path.first() {
+                            if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) =
+                                path.first()
+                            {
                                 // Extract call arguments
                                 let args = if let Some(args_expr) = &pipeline.call_arguments {
                                     extract_args(&**args_expr)?
@@ -868,14 +886,20 @@ async fn evaluate_expression(
 
                                 // Call the method on the capability
                                 let cap = stub_ref.get();
-                                return cap.call(method, args).await
+                                return cap
+                                    .call(method, args)
+                                    .await
                                     .map_err(|e| e.to_string().into());
                             }
                         }
                         return Err("Invalid pipeline path".into());
                     }
                     _ => {
-                        return Err(format!("Import {} is not a capability stub", pipeline.import_id.0).into());
+                        return Err(format!(
+                            "Import {} is not a capability stub",
+                            pipeline.import_id.0
+                        )
+                        .into());
                     }
                 }
             } else {
@@ -939,13 +963,15 @@ fn value_to_expression(value: Value) -> Expression {
             Expression::Object(map)
         }
         Value::Date(timestamp) => Expression::Date(timestamp),
-        Value::Error { error_type, message, stack } => {
-            Expression::Error(capnweb_core::protocol::ErrorExpression {
-                error_type: error_type.clone(),
-                message: message.clone(),
-                stack: stack.clone(),
-            })
-        }
+        Value::Error {
+            error_type,
+            message,
+            stack,
+        } => Expression::Error(capnweb_core::protocol::ErrorExpression {
+            error_type: error_type.clone(),
+            message: message.clone(),
+            stack: stack.clone(),
+        }),
         Value::Stub(_) | Value::Promise(_) => {
             // For now, return a placeholder
             Expression::String("[Stub/Promise not yet supported]".to_string())

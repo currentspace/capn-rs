@@ -4,7 +4,7 @@ use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use tracing::{info, debug, error};
+use tracing::{debug, error, info};
 
 /// A calculator capability for basic arithmetic
 struct Calculator;
@@ -29,7 +29,9 @@ impl RpcTarget for Calculator {
             }
             "subtract" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("subtract requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "subtract requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()
@@ -41,7 +43,9 @@ impl RpcTarget for Calculator {
             }
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
                 let a = args[0]
                     .as_f64()
@@ -82,7 +86,10 @@ impl RpcTarget for Calculator {
                 }
                 Ok(json!(result))
             }
-            _ => Err(RpcError::not_found(format!("Method '{}' not found", member))),
+            _ => Err(RpcError::not_found(format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -150,7 +157,10 @@ impl RpcTarget for StatefulCalculator {
                 self.history.lock().unwrap().clear();
                 Ok(json!("History cleared"))
             }
-            _ => Err(RpcError::not_found(format!("Method '{}' not found", member))),
+            _ => Err(RpcError::not_found(format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -202,7 +212,10 @@ impl RpcTarget for GlobalCounter {
                 *self.count.lock().unwrap() = 0;
                 Ok(json!(0))
             }
-            _ => Err(RpcError::not_found(format!("Method '{}' not found", member))),
+            _ => Err(RpcError::not_found(format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -234,7 +247,10 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("First argument must be a string"))?;
                 let value = args[1].clone();
-                self.store.lock().unwrap().insert(key.to_string(), value.clone());
+                self.store
+                    .lock()
+                    .unwrap()
+                    .insert(key.to_string(), value.clone());
                 Ok(value)
             }
             "get" => {
@@ -275,7 +291,10 @@ impl RpcTarget for KeyValueStore {
                 let store = self.store.lock().unwrap();
                 Ok(json!(store.len()))
             }
-            _ => Err(RpcError::not_found(format!("Method '{}' not found", member))),
+            _ => Err(RpcError::not_found(format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -289,23 +308,18 @@ impl RpcTarget for ErrorTest {
         debug!("ErrorTest.{} called", member);
 
         match member {
-            "throwError" => {
-                Err(RpcError::internal("Intentional test error"))
-            }
-            "throwBadRequest" => {
-                Err(RpcError::bad_request("Intentional bad request"))
-            }
-            "throwNotFound" => {
-                Err(RpcError::not_found("Intentional not found"))
-            }
+            "throwError" => Err(RpcError::internal("Intentional test error")),
+            "throwBadRequest" => Err(RpcError::bad_request("Intentional bad request")),
+            "throwNotFound" => Err(RpcError::not_found("Intentional not found")),
             "throwCustom" => {
                 // Use internal error with custom message for custom errors
                 Err(RpcError::internal("Custom error for testing"))
             }
-            "success" => {
-                Ok(json!("Success"))
-            }
-            _ => Err(RpcError::not_found(format!("Method '{}' not found", member))),
+            "success" => Ok(json!("Success")),
+            _ => Err(RpcError::not_found(format!(
+                "Method '{}' not found",
+                member
+            ))),
         }
     }
 }
@@ -315,8 +329,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info,capnweb_server=debug,capnweb_core=debug,unified_test_server=debug".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "info,capnweb_server=debug,capnweb_core=debug,unified_test_server=debug".into()
+            }),
         )
         .init();
 
@@ -326,8 +341,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parse::<u16>()
         .expect("Invalid port number");
 
-    let host = std::env::var("HOST")
-        .unwrap_or_else(|_| "127.0.0.1".to_string());
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
 
     // Create server configuration
     let config = ServerConfig {

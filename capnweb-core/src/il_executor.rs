@@ -1,12 +1,13 @@
-use crate::il_extended::{ILExpression, ILContext, ILError, ILPlan, ILOperation};
+use crate::il_extended::{ILContext, ILError, ILExpression, ILOperation, ILPlan};
 use crate::RpcTarget;
 use serde_json::Value;
-use std::sync::Arc;
-use std::pin::Pin;
 use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 
 /// Executor for IL expressions with async support
 pub struct ILExecutor {
+    #[allow(dead_code)] // Will be used when capability operations are implemented
     capabilities: Vec<Arc<dyn RpcTarget>>,
 }
 
@@ -39,15 +40,12 @@ impl ILExecutor {
         match expr {
             ILExpression::Literal(value) => Ok(value.clone()),
 
-            ILExpression::Variable { var_ref } => {
-                context.get_variable(*var_ref)
-                    .cloned()
-                    .ok_or(ILError::VariableNotFound(*var_ref))
-            }
+            ILExpression::Variable { var_ref } => context
+                .get_variable(*var_ref)
+                .cloned()
+                .ok_or(ILError::VariableNotFound(*var_ref)),
 
-            ILExpression::Plan { plan } => {
-                self.execute_plan(plan, context).await
-            }
+            ILExpression::Plan { plan } => self.execute_plan(plan, context).await,
 
             ILExpression::Bind { bind } => {
                 let value = self.execute(&bind.value, context).await?;
@@ -93,17 +91,14 @@ impl ILExecutor {
             ILExpression::ReduceOp { reduce } => {
                 let array = self.execute(&reduce.array, context).await?;
                 let initial = self.execute(&reduce.initial, context).await?;
-                self.execute_reduce(array, &reduce.function, initial, context).await
+                self.execute_reduce(array, &reduce.function, initial, context)
+                    .await
             }
         }
     }
 
     /// Execute an IL plan
-    async fn execute_plan(
-        &self,
-        plan: &ILPlan,
-        context: &mut ILContext,
-    ) -> Result<Value, ILError> {
+    async fn execute_plan(&self, plan: &ILPlan, context: &mut ILContext) -> Result<Value, ILError> {
         // Execute all operations in sequence
         for operation in &plan.operations {
             match operation {
@@ -142,10 +137,8 @@ impl ILExecutor {
                         self.execute(function, context).await?
                     } else {
                         // Otherwise wrap it in a bind with the current item
-                        let bind_expr = ILExpression::bind(
-                            ILExpression::var(var_index),
-                            function.clone(),
-                        );
+                        let bind_expr =
+                            ILExpression::bind(ILExpression::var(var_index), function.clone());
                         self.execute(&bind_expr, context).await?
                     };
 
@@ -176,10 +169,8 @@ impl ILExecutor {
                     let condition = if let ILExpression::Bind { .. } = predicate {
                         self.execute(predicate, context).await?
                     } else {
-                        let bind_expr = ILExpression::bind(
-                            ILExpression::var(var_index),
-                            predicate.clone(),
-                        );
+                        let bind_expr =
+                            ILExpression::bind(ILExpression::var(var_index), predicate.clone());
                         self.execute(&bind_expr, context).await?
                     };
 
@@ -214,10 +205,7 @@ impl ILExecutor {
                     // Create a nested bind for both parameters
                     let bind_expr = ILExpression::bind(
                         ILExpression::var(acc_index),
-                        ILExpression::bind(
-                            ILExpression::var(item_index),
-                            function.clone(),
-                        ),
+                        ILExpression::bind(ILExpression::var(item_index), function.clone()),
                     );
 
                     accumulator = self.execute(&bind_expr, context).await?;
@@ -234,13 +222,9 @@ impl ILExecutor {
     /// Get a property from a value
     fn get_property(&self, object: &Value, property: &str) -> Result<Value, ILError> {
         match object {
-            Value::Object(map) => {
-                map.get(property)
-                    .cloned()
-                    .ok_or_else(|| ILError::ExecutionFailed(
-                        format!("Property '{}' not found", property)
-                    ))
-            }
+            Value::Object(map) => map.get(property).cloned().ok_or_else(|| {
+                ILError::ExecutionFailed(format!("Property '{}' not found", property))
+            }),
             _ => Err(ILError::TypeError {
                 expected: "object".to_string(),
                 actual: self.value_type_name(object),
@@ -258,7 +242,7 @@ impl ILExecutor {
         // This would need to resolve the target to a capability
         // For now, return a placeholder
         Err(ILError::ExecutionFailed(
-            "Method calls require capability resolution (not yet implemented)".to_string()
+            "Method calls require capability resolution (not yet implemented)".to_string(),
         ))
     }
 
@@ -296,7 +280,6 @@ impl Default for ILExecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::CapId;
     use crate::il_extended::FilterExpression;
     use serde_json::json;
 
@@ -405,7 +388,7 @@ mod tests {
             filter: FilterExpression {
                 array: Box::new(ILExpression::literal(json!([true, false, true]))),
                 predicate: Box::new(ILExpression::var(0)), // Use the item itself as the predicate
-            }
+            },
         };
 
         let result = executor.execute_impl(&expr, &mut context).await.unwrap();

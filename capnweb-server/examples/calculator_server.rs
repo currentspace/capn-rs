@@ -1,8 +1,8 @@
-use capnweb_server::{Server, ServerConfig, RpcTarget};
-use capnweb_core::{RpcError, CapId};
+use async_trait::async_trait;
+use capnweb_core::{CapId, RpcError};
+use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::Value;
 use std::sync::Arc;
-use async_trait::async_trait;
 
 /// Calculator capability for testing WebSocket and HTTP batch transport
 #[derive(Debug)]
@@ -54,7 +54,9 @@ impl RpcTarget for Calculator {
 
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
+        Value::Number(n) => n
+            .as_f64()
+            .ok_or_else(|| RpcError::bad_request("Invalid number")),
         _ => Err(RpcError::bad_request("Expected number")),
     }
 }
@@ -96,7 +98,10 @@ async fn main() -> Result<(), std::io::Error> {
     println!("");
     println!("Test with:");
     println!("  cd typescript-interop && pnpm test:tier2 {}", port);
-    println!("  cd typescript-interop && pnpm test:tier2-websocket {}", port);
+    println!(
+        "  cd typescript-interop && pnpm test:tier2-websocket {}",
+        port
+    );
     println!("");
 
     // Run server

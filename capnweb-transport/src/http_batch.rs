@@ -1,6 +1,6 @@
+use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
 use capnweb_core::Message;
-use crate::{RpcTransport, TransportError};
 use std::collections::VecDeque;
 
 /// HTTP Batch transport collects messages and sends them as a single HTTP request
@@ -36,8 +36,8 @@ impl HttpBatchTransport {
 
         // TODO: Implement actual HTTP request using a client library
         // For now, we'll just encode the messages to verify the structure
-        let _body = serde_json::to_vec(&messages)
-            .map_err(|e| TransportError::Codec(e.to_string()))?;
+        let _body =
+            serde_json::to_vec(&messages).map_err(|e| TransportError::Codec(e.to_string()))?;
 
         // Placeholder: In a real implementation, we would:
         // 1. Send HTTP POST to self.endpoint

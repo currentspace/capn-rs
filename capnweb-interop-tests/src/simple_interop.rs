@@ -1,6 +1,6 @@
 //! Simplified interop tests focusing on JSON serialization compatibility
 
-use capnweb_core::{Plan, Op, Source, CapId, Message, CallId, Target, Outcome};
+use capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
 use serde_json::json;
 
 /// Test that Rust plans can be serialized to JSON in a JavaScript-compatible format
@@ -11,10 +11,7 @@ pub fn test_plan_serialization() -> Result<(), Box<dyn std::error::Error>> {
         vec![Op::call(
             Source::capture(0),
             "add".to_string(),
-            vec![
-                Source::by_value(json!(5)),
-                Source::by_value(json!(3)),
-            ],
+            vec![Source::by_value(json!(5)), Source::by_value(json!(3))],
             0,
         )],
         Source::result(0),
@@ -104,7 +101,9 @@ pub fn test_message_serialization() -> Result<(), Box<dyn std::error::Error>> {
     // Test Result message
     let result_msg = Message::result(
         CallId::new(123),
-        Outcome::Success { value: json!("result") },
+        Outcome::Success {
+            value: json!("result"),
+        },
     );
 
     let serialized = serde_json::to_value(&result_msg)?;
@@ -121,11 +120,7 @@ pub fn test_complex_structures() -> Result<(), Box<dyn std::error::Error>> {
     fields.insert("name".to_string(), Source::by_value(json!("Alice")));
     fields.insert("age".to_string(), Source::by_value(json!(30)));
 
-    let plan = Plan::new(
-        vec![],
-        vec![Op::object(fields, 0)],
-        Source::result(0),
-    );
+    let plan = Plan::new(vec![], vec![Op::object(fields, 0)], Source::result(0));
 
     let serialized = serde_json::to_value(&plan)?;
 
@@ -199,7 +194,10 @@ mod tests {
         let deserialized_plan: Plan = serde_json::from_value(json_value).unwrap();
 
         // Verify they match
-        assert_eq!(original_plan.captures.len(), deserialized_plan.captures.len());
+        assert_eq!(
+            original_plan.captures.len(),
+            deserialized_plan.captures.len()
+        );
         assert_eq!(original_plan.ops.len(), deserialized_plan.ops.len());
     }
 

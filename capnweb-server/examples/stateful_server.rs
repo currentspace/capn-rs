@@ -1,8 +1,8 @@
-use capnweb_core::{RpcTarget, RpcError};
-use capnweb_core::protocol::tables::Value;
-use capnweb_server::{NewCapnWebServer as CapnWebServer, CapnWebServerConfig, init_logging};
-use std::sync::Arc;
 use async_trait::async_trait;
+use capnweb_core::protocol::tables::Value;
+use capnweb_core::{RpcError, RpcTarget};
+use capnweb_server::{init_logging, CapnWebServerConfig, NewCapnWebServer as CapnWebServer};
+use std::sync::Arc;
 
 /// Calculator capability for testing
 #[derive(Debug)]
@@ -61,14 +61,19 @@ impl RpcTarget for Calculator {
                 Value::String("multiply".to_string()),
                 Value::String("divide".to_string()),
             ])),
-            _ => Err(RpcError::not_found(format!("Property not found: {}", property))),
+            _ => Err(RpcError::not_found(format!(
+                "Property not found: {}",
+                property
+            ))),
         }
     }
 }
 
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
+        Value::Number(n) => n
+            .as_f64()
+            .ok_or_else(|| RpcError::bad_request("Invalid number")),
         _ => Err(RpcError::bad_request("Expected number")),
     }
 }

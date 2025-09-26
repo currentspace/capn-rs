@@ -1,12 +1,12 @@
-use capnweb_core::{RpcTarget, RpcError};
-use capnweb_core::protocol::tables::Value;
-use capnweb_server::{NewCapnWebServer as CapnWebServer, CapnWebServerConfig};
-use std::sync::Arc;
-use std::collections::HashMap;
-use tokio::sync::{RwLock, Mutex};
-use tokio::time::{sleep, Duration};
 use async_trait::async_trait;
+use capnweb_core::protocol::tables::Value;
+use capnweb_core::{RpcError, RpcTarget};
+use capnweb_server::{CapnWebServerConfig, NewCapnWebServer as CapnWebServer};
 use serde_json::Number;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::{Mutex, RwLock};
+use tokio::time::{sleep, Duration};
 
 /// Stateful counter service with session management
 #[derive(Debug)]
@@ -67,7 +67,8 @@ impl CounterService {
 
     async fn get_or_create_session(&self, session_id: &str) -> SessionData {
         let mut sessions = self.session_storage.write().await;
-        let session = sessions.entry(session_id.to_string())
+        let session = sessions
+            .entry(session_id.to_string())
             .or_insert_with(|| SessionData::new(session_id.to_string()));
         session.touch();
         session.clone()
@@ -94,21 +95,31 @@ impl RpcTarget for CounterService {
         match method {
             "increment_global" => {
                 if args.is_empty() {
-                    return Err(RpcError::bad_request("increment_global requires counter name"));
+                    return Err(RpcError::bad_request(
+                        "increment_global requires counter name",
+                    ));
                 }
                 let counter_name = extract_string(&args[0])?;
                 let mut counters = self.global_counters.write().await;
-                let new_value = *counters.entry(counter_name.clone()).and_modify(|v| *v += 1).or_insert(1);
+                let new_value = *counters
+                    .entry(counter_name.clone())
+                    .and_modify(|v| *v += 1)
+                    .or_insert(1);
                 Ok(Value::Number(Number::from(new_value)))
             }
 
             "decrement_global" => {
                 if args.is_empty() {
-                    return Err(RpcError::bad_request("decrement_global requires counter name"));
+                    return Err(RpcError::bad_request(
+                        "decrement_global requires counter name",
+                    ));
                 }
                 let counter_name = extract_string(&args[0])?;
                 let mut counters = self.global_counters.write().await;
-                let new_value = *counters.entry(counter_name.clone()).and_modify(|v| *v -= 1).or_insert(-1);
+                let new_value = *counters
+                    .entry(counter_name.clone())
+                    .and_modify(|v| *v -= 1)
+                    .or_insert(-1);
                 Ok(Value::Number(Number::from(new_value)))
             }
 
@@ -124,13 +135,19 @@ impl RpcTarget for CounterService {
 
             "increment_session" => {
                 if args.len() < 2 {
-                    return Err(RpcError::bad_request("increment_session requires session_id and counter name"));
+                    return Err(RpcError::bad_request(
+                        "increment_session requires session_id and counter name",
+                    ));
                 }
                 let session_id = extract_string(&args[0])?;
                 let counter_name = extract_string(&args[1])?;
 
                 let mut session_data = self.get_or_create_session(&session_id).await;
-                let new_value = *session_data.counters.entry(counter_name).and_modify(|v| *v += 1).or_insert(1);
+                let new_value = *session_data
+                    .counters
+                    .entry(counter_name)
+                    .and_modify(|v| *v += 1)
+                    .or_insert(1);
                 self.update_session(session_data).await;
 
                 Ok(Value::Number(Number::from(new_value)))
@@ -138,20 +155,28 @@ impl RpcTarget for CounterService {
 
             "get_session" => {
                 if args.len() < 2 {
-                    return Err(RpcError::bad_request("get_session requires session_id and counter name"));
+                    return Err(RpcError::bad_request(
+                        "get_session requires session_id and counter name",
+                    ));
                 }
                 let session_id = extract_string(&args[0])?;
                 let counter_name = extract_string(&args[1])?;
 
                 let session_data = self.get_or_create_session(&session_id).await;
-                let value = session_data.counters.get(&counter_name).copied().unwrap_or(0);
+                let value = session_data
+                    .counters
+                    .get(&counter_name)
+                    .copied()
+                    .unwrap_or(0);
 
                 Ok(Value::Number(Number::from(value)))
             }
 
             "set_session_property" => {
                 if args.len() < 3 {
-                    return Err(RpcError::bad_request("set_session_property requires session_id, property name, and value"));
+                    return Err(RpcError::bad_request(
+                        "set_session_property requires session_id, property name, and value",
+                    ));
                 }
                 let session_id = extract_string(&args[0])?;
                 let property_name = extract_string(&args[1])?;
@@ -166,7 +191,9 @@ impl RpcTarget for CounterService {
 
             "get_session_property" => {
                 if args.len() < 2 {
-                    return Err(RpcError::bad_request("get_session_property requires session_id and property name"));
+                    return Err(RpcError::bad_request(
+                        "get_session_property requires session_id and property name",
+                    ));
                 }
                 let session_id = extract_string(&args[0])?;
                 let property_name = extract_string(&args[1])?;
@@ -174,17 +201,24 @@ impl RpcTarget for CounterService {
                 let session_data = self.get_or_create_session(&session_id).await;
                 match session_data.properties.get(&property_name) {
                     Some(value) => Ok(value.clone()),
-                    None => Err(RpcError::not_found(format!("Property '{}' not found in session", property_name))),
+                    None => Err(RpcError::not_found(format!(
+                        "Property '{}' not found in session",
+                        property_name
+                    ))),
                 }
             }
 
             "list_global_counters" => {
                 let counters = self.global_counters.read().await;
-                let result: Vec<Value> = counters.iter()
+                let result: Vec<Value> = counters
+                    .iter()
                     .map(|(name, value)| {
                         let mut obj = HashMap::new();
                         obj.insert("name".to_string(), Box::new(Value::String(name.clone())));
-                        obj.insert("value".to_string(), Box::new(Value::Number(Number::from(*value))));
+                        obj.insert(
+                            "value".to_string(),
+                            Box::new(Value::Number(Number::from(*value))),
+                        );
                         Value::Object(obj)
                     })
                     .collect();
@@ -193,12 +227,22 @@ impl RpcTarget for CounterService {
 
             "list_sessions" => {
                 let sessions = self.session_storage.read().await;
-                let result: Vec<Value> = sessions.iter()
+                let result: Vec<Value> = sessions
+                    .iter()
                     .map(|(session_id, session_data)| {
                         let mut obj = HashMap::new();
-                        obj.insert("session_id".to_string(), Box::new(Value::String(session_id.clone())));
-                        obj.insert("counter_count".to_string(), Box::new(Value::Number(Number::from(session_data.counters.len()))));
-                        obj.insert("property_count".to_string(), Box::new(Value::Number(Number::from(session_data.properties.len()))));
+                        obj.insert(
+                            "session_id".to_string(),
+                            Box::new(Value::String(session_id.clone())),
+                        );
+                        obj.insert(
+                            "counter_count".to_string(),
+                            Box::new(Value::Number(Number::from(session_data.counters.len()))),
+                        );
+                        obj.insert(
+                            "property_count".to_string(),
+                            Box::new(Value::Number(Number::from(session_data.properties.len()))),
+                        );
                         Value::Object(obj)
                     })
                     .collect();
@@ -225,12 +269,16 @@ impl RpcTarget for CounterService {
                     operation_count: Arc::new(Mutex::new(0)),
                 };
                 // In a real implementation, we would export this as a capability
-                Ok(Value::String("AsyncProcessor capability created".to_string()))
+                Ok(Value::String(
+                    "AsyncProcessor capability created".to_string(),
+                ))
             }
 
             "get_nested_capability" => {
                 if args.is_empty() {
-                    return Err(RpcError::bad_request("get_nested_capability requires operation_id"));
+                    return Err(RpcError::bad_request(
+                        "get_nested_capability requires operation_id",
+                    ));
                 }
                 let operation_id = extract_string(&args[0])?;
                 let nested = NestedCapability {
@@ -264,7 +312,10 @@ impl RpcTarget for CounterService {
                 let sessions = self.session_storage.read().await;
                 Ok(Value::Number(Number::from(sessions.len())))
             }
-            _ => Err(RpcError::not_found(format!("Property not found: {}", property))),
+            _ => Err(RpcError::not_found(format!(
+                "Property not found: {}",
+                property
+            ))),
         }
     }
 }
@@ -276,11 +327,17 @@ impl AsyncProcessor {
         let operation_id = *count;
         drop(count);
 
-        println!("Starting async operation {} (duration: {}ms)", operation_id, duration_ms);
+        println!(
+            "Starting async operation {} (duration: {}ms)",
+            operation_id, duration_ms
+        );
         sleep(Duration::from_millis(duration_ms)).await;
         println!("Completed async operation {}", operation_id);
 
-        Ok(format!("Operation {} completed after {}ms", operation_id, duration_ms))
+        Ok(format!(
+            "Operation {} completed after {}ms",
+            operation_id, duration_ms
+        ))
     }
 }
 
@@ -309,7 +366,10 @@ impl RpcTarget for AsyncProcessor {
         match property {
             "name" => Ok(Value::String("AsyncProcessor".to_string())),
             "version" => Ok(Value::String("1.0.0".to_string())),
-            _ => Err(RpcError::not_found(format!("Property not found: {}", property))),
+            _ => Err(RpcError::not_found(format!(
+                "Property not found: {}",
+                property
+            ))),
         }
     }
 }
@@ -320,7 +380,9 @@ impl RpcTarget for NestedCapability {
         match method {
             "multiply_counter" => {
                 if args.len() < 2 {
-                    return Err(RpcError::bad_request("multiply_counter requires counter name and multiplier"));
+                    return Err(RpcError::bad_request(
+                        "multiply_counter requires counter name and multiplier",
+                    ));
                 }
                 let counter_name = extract_string(&args[0])?;
                 let multiplier = extract_number(&args[1])? as i64;
@@ -332,9 +394,7 @@ impl RpcTarget for NestedCapability {
 
                 Ok(Value::Number(Number::from(new_value)))
             }
-            "get_operation_id" => {
-                Ok(Value::String(self.operation_id.clone()))
-            }
+            "get_operation_id" => Ok(Value::String(self.operation_id.clone())),
             _ => Err(RpcError::not_found(format!("Method not found: {}", method))),
         }
     }
@@ -343,7 +403,10 @@ impl RpcTarget for NestedCapability {
         match property {
             "name" => Ok(Value::String("NestedCapability".to_string())),
             "operation_id" => Ok(Value::String(self.operation_id.clone())),
-            _ => Err(RpcError::not_found(format!("Property not found: {}", property))),
+            _ => Err(RpcError::not_found(format!(
+                "Property not found: {}",
+                property
+            ))),
         }
     }
 }
@@ -357,7 +420,9 @@ fn extract_string(value: &Value) -> Result<String, RpcError> {
 
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
+        Value::Number(n) => n
+            .as_f64()
+            .ok_or_else(|| RpcError::bad_request("Invalid number")),
         _ => Err(RpcError::bad_request("Expected number")),
     }
 }

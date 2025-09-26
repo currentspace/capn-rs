@@ -1,6 +1,6 @@
+use crate::CapId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::CapId;
 
 /// Extended IL expressions for complete Cap'n Web protocol support
 /// Includes variable references, bindings, conditionals, and plans
@@ -18,14 +18,10 @@ pub enum ILExpression {
     },
 
     /// Plan execution: ["plan", ...operations]
-    Plan {
-        plan: ILPlan,
-    },
+    Plan { plan: ILPlan },
 
     /// Variable binding: ["bind", value, body]
-    Bind {
-        bind: BindExpression,
-    },
+    Bind { bind: BindExpression },
 
     /// Conditional: ["if", condition, then_expr, else_expr]
     If {
@@ -34,29 +30,19 @@ pub enum ILExpression {
     },
 
     /// Property access: ["get", object, property]
-    Get {
-        get: GetExpression,
-    },
+    Get { get: GetExpression },
 
     /// Function call: ["call", target, method, ...args]
-    Call {
-        call: CallExpression,
-    },
+    Call { call: CallExpression },
 
     /// Array map operation: ["map", array, function]
-    MapOp {
-        map: MapExpression,
-    },
+    MapOp { map: MapExpression },
 
     /// Filter operation: ["filter", array, predicate]
-    FilterOp {
-        filter: FilterExpression,
-    },
+    FilterOp { filter: FilterExpression },
 
     /// Reduce operation: ["reduce", array, function, initial]
-    ReduceOp {
-        reduce: ReduceExpression,
-    },
+    ReduceOp { reduce: ReduceExpression },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -116,14 +102,10 @@ pub struct ReduceExpression {
 #[serde(untagged)]
 pub enum ILOperation {
     /// Store a value in a variable slot
-    Store {
-        store: StoreOperation,
-    },
+    Store { store: StoreOperation },
 
     /// Execute an expression
-    Execute {
-        execute: Box<ILExpression>,
-    },
+    Execute { execute: Box<ILExpression> },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -186,10 +168,7 @@ pub enum ILError {
     CaptureNotFound(u32),
 
     #[error("Type error: expected {expected}, got {actual}")]
-    TypeError {
-        expected: String,
-        actual: String,
-    },
+    TypeError { expected: String, actual: String },
 
     #[error("Execution failed: {0}")]
     ExecutionFailed(String),
@@ -215,18 +194,22 @@ impl ILExpression {
             bind: BindExpression {
                 value: Box::new(value),
                 body: Box::new(body),
-            }
+            },
         }
     }
 
     /// Create an if expression
-    pub fn if_expr(condition: ILExpression, then_branch: ILExpression, else_branch: ILExpression) -> Self {
+    pub fn if_expr(
+        condition: ILExpression,
+        then_branch: ILExpression,
+        else_branch: ILExpression,
+    ) -> Self {
         ILExpression::If {
             if_expr: Box::new(IfExpression {
                 condition: Box::new(condition),
                 then_branch: Box::new(then_branch),
                 else_branch: Box::new(else_branch),
-            })
+            }),
         }
     }
 
@@ -236,7 +219,7 @@ impl ILExpression {
             get: GetExpression {
                 object: Box::new(object),
                 property,
-            }
+            },
         }
     }
 
@@ -247,7 +230,7 @@ impl ILExpression {
                 target: Box::new(target),
                 method,
                 args,
-            }
+            },
         }
     }
 
@@ -257,7 +240,7 @@ impl ILExpression {
             map: MapExpression {
                 array: Box::new(array),
                 function: Box::new(function),
-            }
+            },
         }
     }
 }
@@ -279,10 +262,7 @@ mod tests {
 
     #[test]
     fn test_bind_expression() {
-        let expr = ILExpression::bind(
-            ILExpression::literal(json!(42)),
-            ILExpression::var(0)
-        );
+        let expr = ILExpression::bind(ILExpression::literal(json!(42)), ILExpression::var(0));
 
         let json = serde_json::to_value(&expr).unwrap();
         let deserialized: ILExpression = serde_json::from_value(json).unwrap();
@@ -294,7 +274,7 @@ mod tests {
         let expr = ILExpression::if_expr(
             ILExpression::var(0),
             ILExpression::literal(json!("true branch")),
-            ILExpression::literal(json!("false branch"))
+            ILExpression::literal(json!("false branch")),
         );
 
         let json = serde_json::to_value(&expr).unwrap();
@@ -308,12 +288,8 @@ mod tests {
             ILExpression::var(0),
             ILExpression::bind(
                 ILExpression::var(1),
-                ILExpression::call(
-                    ILExpression::var(1),
-                    "toString".to_string(),
-                    vec![]
-                )
-            )
+                ILExpression::call(ILExpression::var(1), "toString".to_string(), vec![]),
+            ),
         );
 
         let json = serde_json::to_value(&expr).unwrap();

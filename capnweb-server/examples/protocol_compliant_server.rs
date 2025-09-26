@@ -1,21 +1,21 @@
-use capnweb_core::{RpcTarget, RpcError};
-use capnweb_core::protocol::{
-    Message, Expression, PipelineExpression, ImportId, ExportId,
-    tables::{Value, ImportValue},
-    session::RpcSession,
-};
-use capnweb_server::{NewCapnWebServer as CapnWebServer, CapnWebServerConfig};
+use async_trait::async_trait;
 use axum::{
     extract::State,
-    http::{StatusCode, HeaderMap},
+    http::{HeaderMap, StatusCode},
     response::IntoResponse,
     routing::{get, post},
     Router,
 };
+use capnweb_core::protocol::{
+    session::RpcSession,
+    tables::{ImportValue, Value},
+    ExportId, Expression, ImportId, Message, PipelineExpression,
+};
+use capnweb_core::{RpcError, RpcTarget};
+use capnweb_server::{CapnWebServerConfig, NewCapnWebServer as CapnWebServer};
+use serde_json;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use async_trait::async_trait;
-use serde_json;
 use tower_http::cors::CorsLayer;
 
 /// Calculator capability for testing protocol compliance
@@ -69,14 +69,19 @@ impl RpcTarget for Calculator {
         match property {
             "name" => Ok(Value::String("Calculator".to_string())),
             "version" => Ok(Value::String("1.0.0".to_string())),
-            _ => Err(RpcError::not_found(format!("Property not found: {}", property))),
+            _ => Err(RpcError::not_found(format!(
+                "Property not found: {}",
+                property
+            ))),
         }
     }
 }
 
 fn extract_number(value: &Value) -> Result<f64, RpcError> {
     match value {
-        Value::Number(n) => n.as_f64().ok_or_else(|| RpcError::bad_request("Invalid number")),
+        Value::Number(n) => n
+            .as_f64()
+            .ok_or_else(|| RpcError::bad_request("Invalid number")),
         _ => Err(RpcError::bad_request("Expected number")),
     }
 }
@@ -86,7 +91,8 @@ fn extract_number(value: &Value) -> Result<f64, RpcError> {
 struct ProtocolSessionState {
     session: Arc<RpcSession>,
     next_import_id: Arc<RwLock<i64>>,
-    pending_pulls: Arc<RwLock<HashMap<ImportId, tokio::sync::oneshot::Sender<Vec<serde_json::Value>>>>>,
+    pending_pulls:
+        Arc<RwLock<HashMap<ImportId, tokio::sync::oneshot::Sender<Vec<serde_json::Value>>>>>,
     main_capability: Option<Arc<dyn RpcTarget>>,
 }
 
@@ -112,7 +118,9 @@ fn value_to_json(value: Value) -> serde_json::Value {
             }
             serde_json::Value::Object(map)
         }
-        Value::Date(timestamp) => serde_json::Value::Number(serde_json::Number::from_f64(timestamp).unwrap()),
+        Value::Date(timestamp) => {
+            serde_json::Value::Number(serde_json::Number::from_f64(timestamp).unwrap())
+        }
         Value::Error(error_type, message, _stack) => {
             serde_json::json!(["error", error_type, message])
         }
@@ -200,8 +208,10 @@ async fn process_capnweb_message(
             // Process the expression
             match expr {
                 Expression::Pipeline(pipeline) => {
-                    println!("   Pipeline: import={}, path={:?}",
-                            pipeline.import_id.0, pipeline.property_path);
+                    println!(
+                        "   Pipeline: import={}, path={:?}",
+                        pipeline.import_id.0, pipeline.property_path
+                    );
 
                     // If import_id is 0, this is calling the main capability
                     if pipeline.import_id.0 == 0 {
@@ -209,14 +219,21 @@ async fn process_capnweb_message(
                             // Extract method name and arguments
                             if let Some(property_path) = &pipeline.property_path {
                                 if let Some(first_prop) = property_path.first() {
-                                    if let capnweb_core::protocol::PropertyKey::String(method) = first_prop {
-                                        let args = if let Some(call_args) = &pipeline.call_arguments {
+                                    if let capnweb_core::protocol::PropertyKey::String(method) =
+                                        first_prop
+                                    {
+                                        let args = if let Some(call_args) = &pipeline.call_arguments
+                                        {
                                             expression_to_values(call_args).unwrap_or_default()
                                         } else {
                                             Vec::new()
                                         };
 
-                                        println!("   Calling method: {} with {} args", method, args.len());
+                                        println!(
+                                            "   Calling method: {} with {} args",
+                                            method,
+                                            args.len()
+                                        );
 
                                         // Make the actual RPC call
                                         match main_cap.call(method, args).await {
@@ -228,11 +245,14 @@ async fn process_capnweb_message(
                                                 );
 
                                                 // Check if there's a pending pull for this import
-                                                let mut pulls = session_state.pending_pulls.write().unwrap();
+                                                let mut pulls =
+                                                    session_state.pending_pulls.write().unwrap();
                                                 if let Some(sender) = pulls.remove(&import_id) {
-                                                    let response = vec![
-                                                        serde_json::json!(["resolve", -(import_id.0), value_to_json(result)])
-                                                    ];
+                                                    let response = vec![serde_json::json!([
+                                                        "resolve",
+                                                        -(import_id.0),
+                                                        value_to_json(result)
+                                                    ])];
                                                     let _ = sender.send(response);
                                                 }
 
@@ -251,11 +271,14 @@ async fn process_capnweb_message(
                                                 );
 
                                                 // Notify any waiting pulls
-                                                let mut pulls = session_state.pending_pulls.write().unwrap();
+                                                let mut pulls =
+                                                    session_state.pending_pulls.write().unwrap();
                                                 if let Some(sender) = pulls.remove(&import_id) {
-                                                    let response = vec![
-                                                        serde_json::json!(["reject", -(import_id.0), value_to_json(error_value)])
-                                                    ];
+                                                    let response = vec![serde_json::json!([
+                                                        "reject",
+                                                        -(import_id.0),
+                                                        value_to_json(error_value)
+                                                    ])];
                                                     let _ = sender.send(response);
                                                 }
 
@@ -296,38 +319,57 @@ async fn process_capnweb_message(
                     ImportValue::Value(value) => {
                         let export_id = -(import_id.0); // Convert to negative export ID
                         match value {
-                            Value::Error(error_type, message, _) => {
-                                Ok(vec![serde_json::json!(["reject", export_id, ["error", error_type, message]])])
-                            }
-                            _ => {
-                                Ok(vec![serde_json::json!(["resolve", export_id, value_to_json(value)])])
-                            }
+                            Value::Error(error_type, message, _) => Ok(vec![serde_json::json!([
+                                "reject",
+                                export_id,
+                                ["error", error_type, message]
+                            ])]),
+                            _ => Ok(vec![serde_json::json!([
+                                "resolve",
+                                export_id,
+                                value_to_json(value)
+                            ])]),
                         }
                     }
-                    _ => {
-                        Ok(vec![serde_json::json!(["resolve", -(import_id.0), "Not implemented"])])
-                    }
+                    _ => Ok(vec![serde_json::json!([
+                        "resolve",
+                        -(import_id.0),
+                        "Not implemented"
+                    ])]),
                 }
             } else {
                 println!("   Import not yet resolved, will wait");
                 // Import doesn't exist yet - set up a pull waiter
                 let (tx, rx) = tokio::sync::oneshot::channel();
-                session_state.pending_pulls.write().unwrap().insert(import_id, tx);
+                session_state
+                    .pending_pulls
+                    .write()
+                    .unwrap()
+                    .insert(import_id, tx);
 
                 // Wait for resolution with timeout
-                match tokio::time::timeout(
-                    std::time::Duration::from_secs(30),
-                    rx,
-                ).await {
+                match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
                     Ok(Ok(response)) => Ok(response),
                     Ok(Err(_)) => {
                         // Channel closed
-                        Ok(vec![serde_json::json!(["reject", -(import_id.0), ["error", "ChannelError", "Resolution channel closed"]])])
+                        Ok(vec![serde_json::json!([
+                            "reject",
+                            -(import_id.0),
+                            ["error", "ChannelError", "Resolution channel closed"]
+                        ])])
                     }
                     Err(_) => {
                         // Timeout
-                        session_state.pending_pulls.write().unwrap().remove(&import_id);
-                        Ok(vec![serde_json::json!(["reject", -(import_id.0), ["error", "Timeout", "Pull request timed out"]])])
+                        session_state
+                            .pending_pulls
+                            .write()
+                            .unwrap()
+                            .remove(&import_id);
+                        Ok(vec![serde_json::json!([
+                            "reject",
+                            -(import_id.0),
+                            ["error", "Timeout", "Pull request timed out"]
+                        ])])
                     }
                 }
             }
@@ -369,36 +411,45 @@ async fn handle_batch(
 
         // Parse each line as a separate message
         match serde_json::from_str::<serde_json::Value>(line) {
-            Ok(msg_json) => {
-                match Message::from_json(&msg_json) {
-                    Ok(message) => {
-                        println!("   Parsed message: {:?}", message);
-                        match process_capnweb_message(&session_state, message).await {
-                            Ok(responses) => {
-                                all_responses.extend(responses);
-                            }
-                            Err(e) => {
-                                println!("   Error processing message: {}", e);
-                                all_responses.push(serde_json::json!(["abort", ["error", "ProcessError", e]]));
-                            }
+            Ok(msg_json) => match Message::from_json(&msg_json) {
+                Ok(message) => {
+                    println!("   Parsed message: {:?}", message);
+                    match process_capnweb_message(&session_state, message).await {
+                        Ok(responses) => {
+                            all_responses.extend(responses);
+                        }
+                        Err(e) => {
+                            println!("   Error processing message: {}", e);
+                            all_responses
+                                .push(serde_json::json!(["abort", ["error", "ProcessError", e]]));
                         }
                     }
-                    Err(e) => {
-                        println!("   Error parsing message: {:?}", e);
-                        all_responses.push(serde_json::json!(["abort", ["error", "ParseError", e.to_string()]]));
-                    }
                 }
-            }
+                Err(e) => {
+                    println!("   Error parsing message: {:?}", e);
+                    all_responses.push(serde_json::json!([
+                        "abort",
+                        ["error", "ParseError", e.to_string()]
+                    ]));
+                }
+            },
             Err(e) => {
                 println!("   Error parsing JSON: {}", e);
-                all_responses.push(serde_json::json!(["abort", ["error", "JSONError", e.to_string()]]));
+                all_responses.push(serde_json::json!([
+                    "abort",
+                    ["error", "JSONError", e.to_string()]
+                ]));
             }
         }
     }
 
     println!("📤 Sending {} responses", all_responses.len());
     for (i, resp) in all_responses.iter().enumerate() {
-        println!("   Response {}: {}", i, serde_json::to_string(resp).unwrap_or_default());
+        println!(
+            "   Response {}: {}",
+            i,
+            serde_json::to_string(resp).unwrap_or_default()
+        );
     }
 
     // Return responses in newline-delimited format
@@ -411,8 +462,9 @@ async fn handle_batch(
     (
         StatusCode::OK,
         [(axum::http::header::CONTENT_TYPE, "text/plain")],
-        response_body
-    ).into_response()
+        response_body,
+    )
+        .into_response()
 }
 
 /// Health check endpoint
