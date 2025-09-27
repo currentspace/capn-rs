@@ -6,7 +6,12 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Server implementation for Cap'n Web protocol"
+homepage.workspace = true
+documentation = "https://docs.rs/capnweb-server"
+description = "Production-ready server for Cap'n Web RPC protocol with capability management"
+readme = "../README.md"
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 capnweb-core.workspace = true

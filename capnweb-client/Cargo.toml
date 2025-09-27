@@ -6,7 +6,12 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Client implementation for Cap'n Web protocol"
+homepage.workspace = true
+documentation = "https://docs.rs/capnweb-client"
+description = "High-performance Rust client for Cap'n Web RPC protocol with batching and pipelining"
+readme = "../README.md"
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 capnweb-core.workspace = true

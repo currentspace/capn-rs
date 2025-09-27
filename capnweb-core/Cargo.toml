@@ -6,7 +6,12 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Core types and protocol definitions for Cap'n Web"
+homepage.workspace = true
+documentation = "https://docs.rs/capnweb-core"
+description = "Core protocol implementation for Cap'n Web RPC - capability-based security with promise pipelining"
+readme = "../README.md"
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 serde.workspace = true
