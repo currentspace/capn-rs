@@ -1,10 +1,13 @@
 # Cap'n Web Rust Implementation
 
-A complete, production-ready implementation of the [Cap'n Web](https://capnproto.org/capnweb) protocol in Rust, providing capability-based RPC with promise pipelining and multi-transport support.
+A complete, production-ready implementation of the [Cap'n Web](https://github.com/cloudflare/capnweb) protocol in Rust, providing capability-based RPC with promise pipelining and multi-transport support.
 
-[![Rust](https://github.com/currentspace/capn-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/rust.yml)
+[![CI](https://github.com/currentspace/capn-rs/workflows/CI/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/ci.yml)
+[![TypeScript Interop](https://github.com/currentspace/capn-rs/workflows/TypeScript%20Interop%20Tests/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/interop.yml)
 [![Documentation](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
 [![Crates.io](https://img.shields.io/crates/v/capnweb-core.svg)](https://crates.io/crates/capnweb-core)
+[![License](https://img.shields.io/crates/l/capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
+[![Rust 1.75+](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
 
 ## Features
 
