@@ -223,7 +223,9 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                     },
                                 );
                                 let response_text = serialize_wire_batch(&[error_response]);
-                                if let Err(e) = sender.send(WsMessage::Text(response_text.into())).await {
+                                if let Err(e) =
+                                    sender.send(WsMessage::Text(response_text.into())).await
+                                {
                                     tracing::error!("Failed to send error response: {}", e);
                                     break;
                                 }

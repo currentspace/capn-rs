@@ -186,11 +186,7 @@ impl PromiseMapExecutor {
         if let Some((_, calls)) = self.pipelined_calls.remove(&promise_id) {
             for call in calls {
                 // Convert serde_json::Value args to tables::Value
-                let converted_args = call
-                    .args
-                    .into_iter()
-                    .map(json_to_tables_value)
-                    .collect();
+                let converted_args = call.args.into_iter().map(json_to_tables_value).collect();
 
                 let result = capability.call(&call.method, converted_args).await;
 

@@ -60,13 +60,22 @@ impl Serialize for ILExpression {
                 json!(["bind", bind.value, bind.body])
             }
             ILExpression::If { if_expr } => {
-                json!(["if", if_expr.condition, if_expr.then_branch, if_expr.else_branch])
+                json!([
+                    "if",
+                    if_expr.condition,
+                    if_expr.then_branch,
+                    if_expr.else_branch
+                ])
             }
             ILExpression::Get { get } => {
                 json!(["get", get.object, get.property])
             }
             ILExpression::Call { call } => {
-                let mut arr = vec![json!("call"), serde_json::to_value(&*call.target).unwrap(), json!(call.method)];
+                let mut arr = vec![
+                    json!("call"),
+                    serde_json::to_value(&*call.target).unwrap(),
+                    json!(call.method),
+                ];
                 for arg in &call.args {
                     arr.push(serde_json::to_value(arg).unwrap());
                 }
@@ -102,127 +111,194 @@ impl<'de> Deserialize<'de> for ILExpression {
                     return match type_str.as_str() {
                         "var" => {
                             if arr.len() != 2 {
-                                return Err(serde::de::Error::custom("var requires exactly 2 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "var requires exactly 2 elements",
+                                ));
                             }
-                            let index = arr[1].as_u64()
-                                .ok_or_else(|| serde::de::Error::custom("var index must be a number"))?
-                                as u32;
+                            let index = arr[1].as_u64().ok_or_else(|| {
+                                serde::de::Error::custom("var index must be a number")
+                            })? as u32;
                             Ok(ILExpression::Variable { var_ref: index })
                         }
                         "bind" => {
                             if arr.len() != 3 {
-                                return Err(serde::de::Error::custom("bind requires exactly 3 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "bind requires exactly 3 elements",
+                                ));
                             }
-                            let value = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let body = Box::new(serde_json::from_value(arr[2].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let value = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let body = Box::new(
+                                serde_json::from_value(arr[2].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::Bind {
-                                bind: BindExpression { value, body }
+                                bind: BindExpression { value, body },
                             })
                         }
                         "if" => {
                             if arr.len() != 4 {
-                                return Err(serde::de::Error::custom("if requires exactly 4 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "if requires exactly 4 elements",
+                                ));
                             }
-                            let condition = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let then_branch = Box::new(serde_json::from_value(arr[2].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let else_branch = Box::new(serde_json::from_value(arr[3].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let condition = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let then_branch = Box::new(
+                                serde_json::from_value(arr[2].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let else_branch = Box::new(
+                                serde_json::from_value(arr[3].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::If {
                                 if_expr: Box::new(IfExpression {
                                     condition,
                                     then_branch,
                                     else_branch,
-                                })
+                                }),
                             })
                         }
                         "get" => {
                             if arr.len() != 3 {
-                                return Err(serde::de::Error::custom("get requires exactly 3 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "get requires exactly 3 elements",
+                                ));
                             }
-                            let object = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let property = arr[2].as_str()
-                                .ok_or_else(|| serde::de::Error::custom("get property must be a string"))?
+                            let object = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let property = arr[2]
+                                .as_str()
+                                .ok_or_else(|| {
+                                    serde::de::Error::custom("get property must be a string")
+                                })?
                                 .to_string();
                             Ok(ILExpression::Get {
-                                get: GetExpression { object, property }
+                                get: GetExpression { object, property },
                             })
                         }
                         "call" => {
                             if arr.len() < 3 {
-                                return Err(serde::de::Error::custom("call requires at least 3 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "call requires at least 3 elements",
+                                ));
                             }
-                            let target = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let method = arr[2].as_str()
-                                .ok_or_else(|| serde::de::Error::custom("call method must be a string"))?
+                            let target = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let method = arr[2]
+                                .as_str()
+                                .ok_or_else(|| {
+                                    serde::de::Error::custom("call method must be a string")
+                                })?
                                 .to_string();
-                            let args = arr[3..].iter()
+                            let args = arr[3..]
+                                .iter()
                                 .map(|v| serde_json::from_value(v.clone()))
                                 .collect::<Result<Vec<_>, _>>()
                                 .map_err(serde::de::Error::custom)?;
                             Ok(ILExpression::Call {
-                                call: CallExpression { target, method, args }
+                                call: CallExpression {
+                                    target,
+                                    method,
+                                    args,
+                                },
                             })
                         }
                         "map" => {
                             if arr.len() != 3 {
-                                return Err(serde::de::Error::custom("map requires exactly 3 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "map requires exactly 3 elements",
+                                ));
                             }
-                            let array = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let function = Box::new(serde_json::from_value(arr[2].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let array = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let function = Box::new(
+                                serde_json::from_value(arr[2].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::MapOp {
-                                map: MapExpression { array, function }
+                                map: MapExpression { array, function },
                             })
                         }
                         "filter" => {
                             if arr.len() != 3 {
-                                return Err(serde::de::Error::custom("filter requires exactly 3 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "filter requires exactly 3 elements",
+                                ));
                             }
-                            let array = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let predicate = Box::new(serde_json::from_value(arr[2].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let array = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let predicate = Box::new(
+                                serde_json::from_value(arr[2].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::FilterOp {
-                                filter: FilterExpression { array, predicate }
+                                filter: FilterExpression { array, predicate },
                             })
                         }
                         "reduce" => {
                             if arr.len() != 4 {
-                                return Err(serde::de::Error::custom("reduce requires exactly 4 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "reduce requires exactly 4 elements",
+                                ));
                             }
-                            let array = Box::new(serde_json::from_value(arr[1].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let function = Box::new(serde_json::from_value(arr[2].clone())
-                                .map_err(serde::de::Error::custom)?);
-                            let initial = Box::new(serde_json::from_value(arr[3].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let array = Box::new(
+                                serde_json::from_value(arr[1].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let function = Box::new(
+                                serde_json::from_value(arr[2].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
+                            let initial = Box::new(
+                                serde_json::from_value(arr[3].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::ReduceOp {
-                                reduce: ReduceExpression { array, function, initial }
+                                reduce: ReduceExpression {
+                                    array,
+                                    function,
+                                    initial,
+                                },
                             })
                         }
                         "plan" => {
                             if arr.len() != 4 {
-                                return Err(serde::de::Error::custom("plan requires exactly 4 elements"));
+                                return Err(serde::de::Error::custom(
+                                    "plan requires exactly 4 elements",
+                                ));
                             }
                             let captures = serde_json::from_value(arr[1].clone())
                                 .map_err(serde::de::Error::custom)?;
                             let operations = serde_json::from_value(arr[2].clone())
                                 .map_err(serde::de::Error::custom)?;
-                            let result = Box::new(serde_json::from_value(arr[3].clone())
-                                .map_err(serde::de::Error::custom)?);
+                            let result = Box::new(
+                                serde_json::from_value(arr[3].clone())
+                                    .map_err(serde::de::Error::custom)?,
+                            );
                             Ok(ILExpression::Plan {
-                                plan: ILPlan { captures, operations, result }
+                                plan: ILPlan {
+                                    captures,
+                                    operations,
+                                    result,
+                                },
                             })
                         }
-                        _ => Ok(ILExpression::Literal(value))
-                    }
+                        _ => Ok(ILExpression::Literal(value)),
+                    };
                 }
             }
         }

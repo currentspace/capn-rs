@@ -466,6 +466,14 @@ mod protocol_error_tests {
                 args.len()
             )))
         }
+
+        async fn get_property(&self, property: &str) -> Result<Value, RpcError> {
+            Ok(Value::String(format!(
+                "{}::{} property",
+                self.name,
+                property
+            )))
+        }
     }
 
     /// Test error handling per protocol specification

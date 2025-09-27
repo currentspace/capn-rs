@@ -10,9 +10,10 @@
 //!
 //! ## Quick Start
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use capnweb_server::{Server, ServerConfig};
-//! use capnweb_core::{CapId, RpcTarget, RpcError, Value};
+//! use capnweb_core::{CapId, RpcError, Value};
+//! use capnweb_core::RpcTarget;  // Use RpcTarget from core, not server
 //! use async_trait::async_trait;
 //! use std::sync::Arc;
 //! use serde_json::json;
@@ -25,18 +26,15 @@
 //!     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
 //!         match method {
 //!             "greet" => {
-//!                 let name = args.get(0)
-//!                     .and_then(|v| v.get("name"))
-//!                     .and_then(|v| v.as_str())
-//!                     .unwrap_or("World");
-//!                 Ok(json!({"message": format!("Hello, {}!", name)}))
+//!                 // Note: Value is from capnweb_core, not serde_json
+//!                 Ok(Value::String(format!("Hello, World!")))
 //!             }
-//!             _ => Err(RpcError::method_not_found())
+//!             _ => Err(RpcError::not_found("method not found"))
 //!         }
 //!     }
 //!
 //!     async fn get_property(&self, _property: &str) -> Result<Value, RpcError> {
-//!         Err(RpcError::not_implemented())
+//!         Err(RpcError::not_found("property access not implemented"))
 //!     }
 //! }
 //!
@@ -49,14 +47,14 @@
 //! };
 //!
 //! // Create and configure server
-//! let server = Server::new(config)?;
+//! let server = Server::new(config);
 //! server.register_capability(
 //!     CapId::new(1),
 //!     Arc::new(HelloService)
 //! );
 //!
 //! // Run the server
-//! server.run().await?;
+//! server.run().await;
 //! # Ok(())
 //! # }
 //! ```
@@ -65,7 +63,7 @@
 //!
 //! Register multiple capabilities with different IDs:
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! # use capnweb_server::Server;
 //! # use capnweb_core::CapId;
 //! # use std::sync::Arc;

@@ -41,7 +41,10 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
 
                         // Send error response
                         let error_msg = "WebSocket support requires wire protocol implementation";
-                        if let Err(e) = sender.send(WsMessage::Text(error_msg.to_string().into())).await {
+                        if let Err(e) = sender
+                            .send(WsMessage::Text(error_msg.to_string().into()))
+                            .await
+                        {
                             error!("Failed to send error response: {}", e);
                             break;
                         }

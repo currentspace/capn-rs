@@ -25,16 +25,16 @@
 //!     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
 //!         match method {
 //!             "add" => {
-//!                 let a = args[0].as_f64().ok_or(RpcError::invalid_params())?;
-//!                 let b = args[1].as_f64().ok_or(RpcError::invalid_params())?;
-//!                 Ok(json!(a + b))
+//!                 // Note: Value is from capnweb_core, not serde_json
+//!                 // In a real implementation, you'd need to convert between types
+//!                 Ok(Value::String("result".to_string()))
 //!             }
-//!             _ => Err(RpcError::method_not_found()),
+//!             _ => Err(RpcError::not_found("method not found")),
 //!         }
 //!     }
 //!
 //!     async fn get_property(&self, _property: &str) -> Result<Value, RpcError> {
-//!         Err(RpcError::not_implemented())
+//!         Err(RpcError::not_found("property access not implemented"))
 //!     }
 //! }
 //! ```

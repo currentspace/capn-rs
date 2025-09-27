@@ -509,8 +509,7 @@ impl WireExpression {
 
             WireExpression::Date(timestamp) => JsonValue::Array(vec![
                 JsonValue::String("date".into()),
-                JsonValue::Number(Number::from_f64(*timestamp)
-                    .unwrap_or_else(|| Number::from(0))), // Use 0 for invalid timestamps
+                JsonValue::Number(Number::from_f64(*timestamp).unwrap_or_else(|| Number::from(0))), // Use 0 for invalid timestamps
             ]),
 
             WireExpression::Remap(plan) => {
