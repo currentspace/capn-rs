@@ -1,0 +1,51 @@
+name: TypeScript Interop Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  typescript-interop:
+    name: TypeScript Interoperability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: typescript-interop/package-lock.json
+
+      - name: Build Rust server
+        run: cargo build --release --bin capnweb-server
+
+      - name: Install TypeScript dependencies
+        working-directory: ./typescript-interop
+        run: npm ci
+
+      - name: Build TypeScript tests
+        working-directory: ./typescript-interop
+        run: npm run build
+
+      - name: Run interop tests
+        working-directory: ./typescript-interop
+        run: |
+          # Start the server in the background
+          ../target/release/capnweb-server &
+          SERVER_PID=$!
+
+          # Wait for server to start
+          sleep 3
+
+          # Run the tests
+          npm test
+
+          # Kill the server
+          kill $SERVER_PID || true
