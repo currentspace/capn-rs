@@ -1,9 +1,9 @@
 // Advanced Capability Implementation
 // Exposes Resume Tokens, Nested Capabilities, and IL Plan Runner via RPC
 
-#![allow(clippy::needless_borrow)]  // Legacy code, will be removed
-#![allow(clippy::unnecessary_cast)]  // Legacy code, will be removed
-#![allow(clippy::new_without_default)]  // Legacy code, will be removed
+#![allow(clippy::needless_borrow)] // Legacy code, will be removed
+#![allow(clippy::unnecessary_cast)] // Legacy code, will be removed
+#![allow(clippy::new_without_default)] // Legacy code, will be removed
 
 use async_trait::async_trait;
 use capnweb_core::{

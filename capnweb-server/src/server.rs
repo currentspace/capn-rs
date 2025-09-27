@@ -18,9 +18,7 @@ use std::sync::Arc;
 use tokio::net::TcpListener;
 
 // Using wire protocol helper functions from the server_wire_handler module
-use crate::server_wire_handler::{
-    value_to_wire_expr, wire_expr_to_values_with_evaluation,
-};
+use crate::server_wire_handler::{value_to_wire_expr, wire_expr_to_values_with_evaluation};
 
 #[async_trait]
 pub trait RpcTarget: Send + Sync {
