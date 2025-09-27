@@ -1,3 +1,69 @@
+//! # Cap'n Web Core Protocol
+//!
+//! Core implementation of the [Cap'n Web protocol](https://github.com/cloudflare/capnweb),
+//! providing capability-based RPC with promise pipelining.
+//!
+//! ## Features
+//!
+//! - **Capability-based security**: Unforgeable object references with fine-grained access control
+//! - **Promise pipelining**: Chain dependent calls without waiting for intermediate results
+//! - **IL expression evaluation**: Execute complex operations with the Intermediate Language
+//! - **Wire protocol compliance**: Full compatibility with the official TypeScript implementation
+//!
+//! ## Quick Start
+//!
+//! ```rust,no_run
+//! use capnweb_core::{CapId, RpcTarget, RpcError, Value};
+//! use async_trait::async_trait;
+//! use serde_json::json;
+//!
+//! #[derive(Debug)]
+//! struct Calculator;
+//!
+//! #[async_trait]
+//! impl RpcTarget for Calculator {
+//!     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+//!         match method {
+//!             "add" => {
+//!                 let a = args[0].as_f64().ok_or(RpcError::invalid_params())?;
+//!                 let b = args[1].as_f64().ok_or(RpcError::invalid_params())?;
+//!                 Ok(json!(a + b))
+//!             }
+//!             _ => Err(RpcError::method_not_found()),
+//!         }
+//!     }
+//!
+//!     async fn get_property(&self, _property: &str) -> Result<Value, RpcError> {
+//!         Err(RpcError::not_implemented())
+//!     }
+//! }
+//! ```
+//!
+//! ## Protocol Concepts
+//!
+//! ### Capabilities
+//! Capabilities are unforgeable references to remote objects. They provide secure,
+//! fine-grained access control without ambient authority.
+//!
+//! ### Promise Pipelining
+//! Calls can be chained on promises before they resolve, reducing round-trips:
+//!
+//! ```ignore
+//! let user = client.call(cap, "getUser", vec![user_id]);
+//! let profile = client.pipeline(&user, vec!["profile"], "load", vec![]);
+//! ```
+//!
+//! ### IL (Intermediate Language)
+//! The IL allows expressing complex operations that execute on the server:
+//!
+//! ```ignore
+//! let expr = ILExpression::if_expr(
+//!     ILExpression::var(0),
+//!     ILExpression::literal(json!("authenticated")),
+//!     ILExpression::literal(json!("anonymous"))
+//! );
+//! ```
+
 // Legacy modules (to be deprecated)
 pub mod codec;
 pub mod error;
