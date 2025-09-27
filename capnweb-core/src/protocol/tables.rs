@@ -33,7 +33,7 @@ pub enum Value {
     Promise(PromiseReference),
 }
 
-/// Reference to a stub (since Arc<dyn RpcTarget> can't implement Clone/Debug directly)
+/// Reference to a stub (since `Arc<dyn RpcTarget>` can't implement Clone/Debug directly)
 #[derive(Debug, Clone)]
 pub struct StubReference {
     pub id: String,
