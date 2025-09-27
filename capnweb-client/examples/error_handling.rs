@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
 
     // Create a working client for remaining tests
     let config = ClientConfig {
-        url: base_url,
+        url: base_url.clone(),
         max_batch_size: 100,
         timeout_ms: 10000,
     };

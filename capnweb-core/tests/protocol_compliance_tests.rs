@@ -3,9 +3,14 @@
 // Based on: https://github.com/cloudflare/capnweb/blob/main/protocol.md
 
 use capnweb_core::{
-    protocol::{ResumeTokenManager, SessionSnapshot, Value},
-    CallId, ExportId, ExportTable, Expression, IdAllocator, ImportId, ImportTable, Message,
-    RpcError, RpcTarget,
+    protocol::{
+        expression::{ErrorExpression, Expression},
+        ids::{ExportId, IdAllocator, ImportId},
+        message::Message,
+        tables::{ExportTable, ImportTable},
+        ResumeTokenManager, SessionSnapshot, Value,
+    },
+    CallId, RpcError, RpcTarget,
 };
 use serde_json::{json, Number, Value as JsonValue};
 use std::collections::HashMap;
@@ -45,11 +50,11 @@ mod protocol_message_tests {
         // Test REJECT message
         let reject_msg = Message::Reject(
             ExportId(-2),
-            Expression::Error {
+            Expression::Error(ErrorExpression {
                 error_type: "test_error".to_string(),
                 message: "Test error message".to_string(),
                 stack: None,
-            },
+            }),
         );
         let reject_json = reject_msg.to_json();
         let reject_deserialized = Message::from_json(&reject_json).unwrap();
@@ -57,22 +62,18 @@ mod protocol_message_tests {
         println!("✅ REJECT message serialization verified");
 
         // Test RELEASE message
-        let release_msg = Message::Release {
-            release: vec![ImportId(1), ImportId(2), ImportId(3)],
-        };
+        let release_msg = Message::Release(ImportId(1), 1);
         let release_json = release_msg.to_json();
         let release_deserialized = Message::from_json(&release_json).unwrap();
         assert_eq!(release_msg, release_deserialized);
         println!("✅ RELEASE message serialization verified");
 
         // Test ABORT message
-        let abort_msg = Message::Abort {
-            abort: Expression::Error {
-                error_type: "protocol_error".to_string(),
-                message: "Session terminated".to_string(),
-                stack: None,
-            },
-        };
+        let abort_msg = Message::Abort(Expression::Error(ErrorExpression {
+            error_type: "protocol_error".to_string(),
+            message: "Session terminated".to_string(),
+            stack: None,
+        }));
         let abort_json = abort_msg.to_json();
         let abort_deserialized = Message::from_json(&abort_json).unwrap();
         assert_eq!(abort_msg, abort_deserialized);
@@ -320,12 +321,10 @@ mod protocol_table_tests {
             })
             .collect();
 
-        let import_ids: Vec<ImportId> = futures::future::join_all(
-            targets
-                .iter()
-                .map(|target| import_table.add_import(target.clone())),
-        )
-        .await;
+        let mut import_ids = Vec::new();
+        for target in &targets {
+            import_ids.push(import_table.add_import(target.clone()).await);
+        }
 
         // Verify all imports exist
         for (i, id) in import_ids.iter().enumerate() {
@@ -415,9 +414,7 @@ mod protocol_session_tests {
         let client_to_server_messages = vec![
             Message::Push(Expression::String("client_request".to_string())),
             Message::Pull(ImportId(1)),
-            Message::Release {
-                release: vec![ImportId(2)],
-            },
+            Message::Release(ImportId(2), 1),
         ];
 
         let server_to_client_messages = vec![
@@ -454,17 +451,34 @@ mod protocol_session_tests {
 mod protocol_error_tests {
     use super::*;
 
+    #[derive(Debug)]
+    struct TestRpcTarget {
+        name: String,
+    }
+
+    #[async_trait::async_trait]
+    impl RpcTarget for TestRpcTarget {
+        async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+            Ok(Value::String(format!(
+                "{}::{} called with {} args",
+                self.name,
+                method,
+                args.len()
+            )))
+        }
+    }
+
     /// Test error handling per protocol specification
     #[tokio::test]
     async fn test_protocol_error_handling() {
         println!("🧪 Testing Protocol Error Handling");
 
         // Test structured error format
-        let structured_error = Expression::Error {
+        let structured_error = Expression::Error(ErrorExpression {
             error_type: "validation_error".to_string(),
             message: "Required field missing: 'name'".to_string(),
             stack: Some("ValidationError\n    at validate_user_input (user.rs:42:5)".to_string()),
-        };
+        });
 
         let error_json = serde_json::to_string(&structured_error).unwrap();
         let parsed: JsonValue = serde_json::from_str(&error_json).unwrap();
@@ -483,9 +497,7 @@ mod protocol_error_tests {
         println!("✅ Error in REJECT message verified");
 
         // Test error in ABORT message
-        let abort_msg = Message::Abort {
-            abort: structured_error,
-        };
+        let abort_msg = Message::Abort(structured_error);
         let abort_json = abort_msg.to_json();
         let abort_deserialized = Message::from_json(&abort_json).unwrap();
         assert_eq!(abort_msg, abort_deserialized);

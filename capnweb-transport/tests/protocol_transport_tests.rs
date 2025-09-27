@@ -3,7 +3,11 @@
 // Covers HTTP Batch, WebSocket, message framing, and bidirectional communication
 
 use bytes::BytesMut;
-use capnweb_core::{ExportId, Expression, ImportId, Message};
+use capnweb_core::protocol::{
+    expression::Expression,
+    ids::{ExportId, ImportId},
+    message::Message,
+};
 use capnweb_transport::{
     CapnWebCodec, CodecError, HttpBatchTransport, NewlineDelimitedCodec, RpcTransport,
     TransportError,
