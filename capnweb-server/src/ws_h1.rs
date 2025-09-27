@@ -41,7 +41,7 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
 
                         // Send error response
                         let error_msg = "WebSocket support requires wire protocol implementation";
-                        if let Err(e) = sender.send(WsMessage::Text(error_msg.to_string())).await {
+                        if let Err(e) = sender.send(WsMessage::Text(error_msg.to_string().into())).await {
                             error!("Failed to send error response: {}", e);
                             break;
                         }
@@ -51,7 +51,7 @@ async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
                             "Received binary message, Cap'n Web over WebSocket expects text/JSON"
                         );
                         // Try to decode as UTF-8 and process as text
-                        if let Ok(text) = String::from_utf8(data) {
+                        if let Ok(text) = String::from_utf8(data.to_vec()) {
                             debug!("Converted binary to text: {}", text);
                             // Recursively handle as text message
                             continue;

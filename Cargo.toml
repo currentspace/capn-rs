@@ -64,7 +64,7 @@ futures = "0.3"
 async-trait = "0.1"
 
 # HTTP stack
-axum = { version = "0.7", features = ["ws"] }
+axum = { version = "0.8", features = ["ws"] }
 hyper = { version = "1.5", features = ["http1", "http2", "server", "client"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors"] }
@@ -79,13 +79,13 @@ rustls-pemfile = "2.0"
 rcgen = "0.14"
 
 # WebSocket
-tokio-tungstenite = "0.26"
-tungstenite = "0.26"
+tokio-tungstenite = "0.27"
+tungstenite = "0.27"
 
 # Utilities
 dashmap = "6.1"
 indexmap = "2.6"
-governor = "0.7"
+governor = "0.10"
 nonzero_ext = "0.3"
 bytes = "1.8"
 uuid = { version = "1.11", features = ["v4"] }
@@ -95,8 +95,8 @@ sha2 = "0.10"
 rand = "0.9"
 
 # Validation
-jsonschema = "0.26"
-schemars = "0.8"
+jsonschema = "0.33"
+schemars = "1.0"
 
 # Observability
 tracing = "0.1"
@@ -104,10 +104,10 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "chron
 tracing-appender = "0.2"
 
 # Testing
-criterion = "0.5"
+criterion = "0.7"
 proptest = "1.6"
 mockito = "1.6"
-insta = "1.0"
+insta = "1.41"
 
 # Examples
 chrono = { version = "0.4", features = ["serde"] }

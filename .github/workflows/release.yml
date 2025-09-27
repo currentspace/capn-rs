@@ -1,0 +1,267 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.1.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (skip actual publishing)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    name: Verify Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify version in Cargo.toml
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          for crate in capnweb-core capnweb-transport capnweb-server capnweb-client; do
+            CARGO_VERSION=$(grep "^version" $crate/Cargo.toml | head -1 | cut -d'"' -f2)
+            if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
+              echo "Version mismatch in $crate: expected $VERSION, found $CARGO_VERSION"
+              exit 1
+            fi
+          done
+
+      - name: Run tests
+        run: cargo test --workspace --all-features
+
+      - name: Check documentation
+        run: cargo doc --workspace --no-deps --all-features
+
+  build-artifacts:
+    name: Build Release Artifacts
+    needs: verify
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package artifacts
+        shell: bash
+        run: |
+          VERSION=${{ needs.verify.outputs.version }}
+          TARGET=${{ matrix.target }}
+
+          # Create archive name
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            ARCHIVE="capnweb-$VERSION-$TARGET.zip"
+          else
+            ARCHIVE="capnweb-$VERSION-$TARGET.tar.gz"
+          fi
+
+          # Create staging directory
+          mkdir -p staging
+
+          # Copy binaries and docs
+          cp README.md LICENSE LICENSE-MIT LICENSE-APACHE staging/
+
+          # Create archive
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            7z a -tzip "$ARCHIVE" ./staging/*
+          else
+            tar czf "$ARCHIVE" -C staging .
+          fi
+
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: ${{ env.ARCHIVE }}
+          retention-days: 7
+
+  publish-crates:
+    name: Publish to crates.io
+    needs: [verify, build-artifacts]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Login to crates.io
+        run: |
+          cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish capnweb-core
+        run: |
+          cd capnweb-core
+          cargo publish --no-verify
+          sleep 10  # Wait for crates.io to index
+
+      - name: Publish capnweb-transport
+        run: |
+          cd capnweb-transport
+          cargo publish --no-verify
+          sleep 10
+
+      - name: Publish capnweb-server
+        run: |
+          cd capnweb-server
+          cargo publish --no-verify
+          sleep 10
+
+      - name: Publish capnweb-client
+        run: |
+          cd capnweb-client
+          cargo publish --no-verify
+
+  create-release:
+    name: Create GitHub Release
+    needs: [verify, build-artifacts, publish-crates]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION=${{ needs.verify.outputs.version }}
+          echo "# Release v$VERSION" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## What's Changed" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [[ -n "$LAST_TAG" ]]; then
+            git log --pretty=format:"- %s (%an)" $LAST_TAG..HEAD >> RELEASE_NOTES.md
+          else
+            git log --pretty=format:"- %s (%an)" --max-count=20 >> RELEASE_NOTES.md
+          fi
+
+          echo "" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Installation" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo '```toml' >> RELEASE_NOTES.md
+          echo "[dependencies]" >> RELEASE_NOTES.md
+          echo "capnweb-server = \"$VERSION\"" >> RELEASE_NOTES.md
+          echo "capnweb-client = \"$VERSION\"" >> RELEASE_NOTES.md
+          echo '```' >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Documentation" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "- [API Documentation](https://docs.rs/capnweb-core/$VERSION)" >> RELEASE_NOTES.md
+          echo "- [Examples](https://github.com/currentspace/capn-rs/tree/v$VERSION/examples)" >> RELEASE_NOTES.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Cap'n Web Rust v${{ needs.verify.outputs.version }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            capnweb-*.tar.gz
+            capnweb-*.zip
+          draft: false
+          prerelease: ${{ contains(needs.verify.outputs.version, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-docs:
+    name: Publish Documentation
+    needs: [verify, publish-crates]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Build documentation
+        run: |
+          cargo +nightly doc --workspace --no-deps --all-features
+          echo '<meta http-equiv="refresh" content="0; url=capnweb_core/index.html">' > target/doc/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc
+          cname: capnweb-rust.dev
+
+  notify:
+    name: Notify Release
+    needs: [verify, create-release]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Send notification
+        run: |
+          VERSION=${{ needs.verify.outputs.version }}
+          echo "🎉 Cap'n Web Rust v$VERSION has been released!"
+          echo "View the release: https://github.com/currentspace/capn-rs/releases/tag/v$VERSION"
+          echo "Crates.io: https://crates.io/crates/capnweb-core"

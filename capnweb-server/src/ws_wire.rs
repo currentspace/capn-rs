@@ -205,7 +205,7 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                     tracing::debug!("WS sending: {}", response_text);
 
                                     if let Err(e) =
-                                        sender.send(WsMessage::Text(response_text)).await
+                                        sender.send(WsMessage::Text(response_text.into())).await
                                     {
                                         tracing::error!("Failed to send WS response: {}", e);
                                         break;
@@ -223,7 +223,7 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                                     },
                                 );
                                 let response_text = serialize_wire_batch(&[error_response]);
-                                if let Err(e) = sender.send(WsMessage::Text(response_text)).await {
+                                if let Err(e) = sender.send(WsMessage::Text(response_text.into())).await {
                                     tracing::error!("Failed to send error response: {}", e);
                                     break;
                                 }
@@ -232,7 +232,7 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                     }
                     WsMessage::Binary(data) => {
                         tracing::warn!("Received binary WS message, trying as UTF-8");
-                        if let Ok(text) = String::from_utf8(data) {
+                        if let Ok(text) = String::from_utf8(data.to_vec()) {
                             // Process as text
                             continue;
                         }

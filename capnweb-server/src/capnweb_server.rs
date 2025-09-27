@@ -373,7 +373,7 @@ async fn handle_websocket_connection(socket: WebSocket, server_state: ServerStat
                                                 }
 
                                                 if let Err(e) = sender
-                                                    .send(WsMessage::Text(response_json))
+                                                    .send(WsMessage::Text(response_json.into()))
                                                     .await
                                                 {
                                                     error!(
