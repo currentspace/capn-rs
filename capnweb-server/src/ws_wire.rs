@@ -17,12 +17,15 @@ use tokio::sync::RwLock;
 
 /// WebSocket session state that persists across messages
 struct WsSession {
+    #[allow(dead_code)]
     session_id: String,
     next_import_id: i64,
+    #[allow(dead_code)]
     next_export_id: i64,
     // Map import IDs to their expressions
     imports: HashMap<i64, WireExpression>,
     // Map export IDs to their values
+    #[allow(dead_code)]
     exports: HashMap<i64, WireExpression>,
 }
 
@@ -234,7 +237,7 @@ async fn handle_wire_socket(socket: WebSocket, server: Arc<Server>) {
                     }
                     WsMessage::Binary(data) => {
                         tracing::warn!("Received binary WS message, trying as UTF-8");
-                        if let Ok(text) = String::from_utf8(data.to_vec()) {
+                        if let Ok(_text) = String::from_utf8(data.to_vec()) {
                             // Process as text
                             continue;
                         }

@@ -6,6 +6,7 @@ use tracing::info;
 
 /// HTTP/3 server for Cap'n Web protocol
 pub struct H3Server {
+    #[allow(dead_code)]
     server: Arc<Server>,
     endpoint: Option<Endpoint>,
 }
@@ -49,9 +50,10 @@ impl H3Server {
 
 /// Configure server with self-signed certificate for testing
 fn configure_server() -> Result<QuinnServerConfig, Box<dyn std::error::Error>> {
-    let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()])?;
-    let cert_der = rustls::pki_types::CertificateDer::from(cert.cert.der().to_vec());
-    let priv_key = rustls::pki_types::PrivateKeyDer::try_from(cert.key_pair.serialize_der())?;
+    let rcgen::CertifiedKey { cert, signing_key } =
+        rcgen::generate_simple_self_signed(vec!["localhost".into()])?;
+    let cert_der = rustls::pki_types::CertificateDer::from(cert.der().to_vec());
+    let priv_key = rustls::pki_types::PrivateKeyDer::try_from(signing_key.serialize_der())?;
 
     let cert_chain = vec![cert_der];
 

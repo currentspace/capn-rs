@@ -16,11 +16,10 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::net::TcpListener;
-use tracing::{error, info, warn};
 
 // Using wire protocol helper functions from the server_wire_handler module
 use crate::server_wire_handler::{
-    value_to_wire_expr, wire_expr_to_values, wire_expr_to_values_with_evaluation,
+    value_to_wire_expr, wire_expr_to_values_with_evaluation,
 };
 
 #[async_trait]

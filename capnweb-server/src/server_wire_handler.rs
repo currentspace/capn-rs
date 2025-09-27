@@ -2,11 +2,11 @@
 // This module adds wire protocol support to the existing server
 
 use capnweb_core::{
-    parse_wire_batch, serialize_wire_batch, CapId, PropertyKey, WireExpression, WireMessage,
+    PropertyKey, WireExpression,
 };
 use serde_json::Value;
 use std::collections::HashMap;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, warn};
 
 /// Convert WireExpression arguments to JSON Values for RPC calls
 pub fn wire_expr_to_values(expr: &WireExpression) -> Vec<Value> {

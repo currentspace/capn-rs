@@ -6,7 +6,6 @@ use axum::{
     },
     response::Response,
 };
-use capnweb_core::Message;
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tracing::{debug, error, info, warn};
@@ -19,7 +18,7 @@ pub async fn websocket_handler(
     ws.on_upgrade(move |socket| handle_socket(socket, server))
 }
 
-async fn handle_socket(socket: WebSocket, server: Arc<Server>) {
+async fn handle_socket(socket: WebSocket, _server: Arc<Server>) {
     let session_id = uuid::Uuid::new_v4().to_string();
     info!("WebSocket connection established: {}", session_id);
 

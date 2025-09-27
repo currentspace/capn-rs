@@ -1,6 +1,10 @@
 // Advanced Capability Implementation
 // Exposes Resume Tokens, Nested Capabilities, and IL Plan Runner via RPC
 
+#![allow(clippy::needless_borrow)]  // Legacy code, will be removed
+#![allow(clippy::unnecessary_cast)]  // Legacy code, will be removed
+#![allow(clippy::new_without_default)]  // Legacy code, will be removed
+
 use async_trait::async_trait;
 use capnweb_core::{
     il::{ArrayOp, CallOp, CaptureRef, ObjectOp, ParamRef, ResultRef, ValueRef},
@@ -613,6 +617,7 @@ impl AdvancedCapability {
     }
 
     /// Convert JSON value to protocol Value
+    #[allow(clippy::only_used_in_recursion)]
     fn json_to_value(&self, json: &JsonValue) -> Result<Value, RpcError> {
         match json {
             JsonValue::Null => Ok(Value::Null),
@@ -637,6 +642,7 @@ impl AdvancedCapability {
     }
 
     /// Convert protocol Value to JSON
+    #[allow(clippy::only_used_in_recursion)]
     fn value_to_json(&self, value: &Value) -> JsonValue {
         match value {
             Value::Null => JsonValue::Null,

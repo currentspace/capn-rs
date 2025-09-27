@@ -241,6 +241,7 @@ impl WireServer {
         }
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn wire_expression_to_json_value(&self, expr: WireExpression) -> Value {
         match expr {
             WireExpression::Null => Value::Null,
@@ -262,6 +263,7 @@ impl WireServer {
         }
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn json_to_wire_expression(&self, value: Value) -> WireExpression {
         match value {
             Value::Null => WireExpression::Null,

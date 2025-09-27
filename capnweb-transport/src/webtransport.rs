@@ -1,4 +1,4 @@
-#![allow(clippy::io_other_error)]  // std::io::Error::other requires Rust 1.81+, we support 1.75+
+//! WebTransport implementation using QUIC
 
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
@@ -38,6 +38,7 @@ impl WebTransportTransport {
 }
 
 #[async_trait]
+#[allow(clippy::io_other_error)] // std::io::Error::other requires Rust 1.81+, we support 1.75+
 impl RpcTransport for WebTransportTransport {
     async fn send(&mut self, message: Message) -> Result<(), TransportError> {
         let encoded = encode_message(&message).map_err(|e| TransportError::Codec(e.to_string()))?;
