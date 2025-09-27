@@ -1,3 +1,5 @@
+#![allow(clippy::io_other_error)]  // std::io::Error::other requires Rust 1.81+, we support 1.75+
+
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
 use capnweb_core::{decode_message, encode_message, Message};

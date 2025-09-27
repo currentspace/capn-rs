@@ -1,6 +1,6 @@
 pub mod capnweb_codec;
-#[cfg(feature = "http3")]
-pub mod http3;
+// #[cfg(feature = "http3")]  // Disabled: experimental
+// pub mod http3;
 #[cfg(feature = "http-batch")]
 pub mod http_batch;
 pub mod negotiate;
@@ -11,8 +11,8 @@ pub mod websocket;
 pub mod webtransport;
 
 pub use capnweb_codec::{CapnWebCodec, CodecError, NewlineDelimitedCodec};
-#[cfg(feature = "http3")]
-pub use http3::{make_http3_client_endpoint, Http3Client, Http3Config, Http3Stats, Http3Transport};
+// #[cfg(feature = "http3")]  // Disabled: experimental
+// pub use http3::{make_http3_client_endpoint, Http3Client, Http3Config, Http3Stats, Http3Transport};
 #[cfg(feature = "http-batch")]
 pub use http_batch::HttpBatchTransport;
 pub use transport::{RpcTransport, TransportError, TransportEvent};
