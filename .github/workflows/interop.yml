@@ -20,19 +20,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: typescript-interop/package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Build Rust server
         run: cargo build --release --bin capnweb-server
 
+      - name: Setup Cap'n Web client
+        working-directory: ./typescript-interop
+        run: |
+          # Clone and build the official Cap'n Web client
+          ./setup-capnweb.sh
+
       - name: Install TypeScript dependencies
         working-directory: ./typescript-interop
-        run: npm ci
+        run: pnpm install
 
       - name: Build TypeScript tests
         working-directory: ./typescript-interop
-        run: npm run build
+        run: pnpm run build
 
       - name: Run interop tests
         working-directory: ./typescript-interop
@@ -45,7 +54,7 @@ jobs:
           sleep 3
 
           # Run the tests
-          npm test
+          pnpm test
 
           # Kill the server
           kill $SERVER_PID || true
