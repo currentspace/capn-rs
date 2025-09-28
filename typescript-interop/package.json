@@ -9,7 +9,7 @@
     "build:capnweb": "cd node_modules/.pnpm/*/node_modules/capnweb && pnpm install && pnpm run build",
     "build": "tsup",
     "build:tsc": "tsc",
-    "test": "pnpm build && node dist/test-runner.js",
+    "test": "pnpm tsx test-rust-server-basic.ts",
     "test:watch": "tsup --watch & nodemon dist/test-runner.js",
     "test:official": "pnpm build && node dist/official-client-test.js",
     "test:advanced": "pnpm build && node dist/advanced-server-test.js",
