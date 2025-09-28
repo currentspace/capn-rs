@@ -7,14 +7,14 @@ A complete, production-ready implementation of the [Cap'n Web](https://github.co
 [![Documentation](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
 [![Crates.io](https://img.shields.io/crates/v/capnweb-core.svg)](https://crates.io/crates/capnweb-core)
 [![License](https://img.shields.io/crates/l/capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
-[![Rust 1.75+](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust 1.85+](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
 ## Features
 
 ✅ **Full Protocol Compliance** - Implements the complete Cap'n Web wire protocol
 🔒 **Capability-Based Security** - Unforgeable capability references with automatic lifecycle management
 🚀 **Promise Pipelining** - Reduced round-trips through dependency resolution
-🌐 **Multi-Transport** - HTTP batch, WebSocket (planned), and WebTransport (planned) support
+🌐 **Multi-Transport** - HTTP batch, WebSocket, and WebTransport support
 🛡️ **Production-Ready** - Zero-panic code, comprehensive error handling with context
 ✅ **IL Expression Evaluation** - Complete intermediate language support with array notation
 🌍 **JavaScript Interop** - Validated against official TypeScript implementation
@@ -25,8 +25,8 @@ A complete, production-ready implementation of the [Cap'n Web](https://github.co
 
 ```toml
 [dependencies]
-capnweb-server = "0.1.0"
-capnweb-client = "0.1.0"
+capnweb-server = { git = "https://github.com/currentspace/capn-rs" }
+capnweb-client = { git = "https://github.com/currentspace/capn-rs" }
 ```
 
 ### Server Example
@@ -56,13 +56,13 @@ impl RpcTarget for Calculator {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = ServerConfig::default();
-    let server = Arc::new(Server::new(config));
+    let server = Server::new(config);
 
     // Register capabilities
-    server.register_capability(CapId::new(1), Arc::new(Calculator))?;
+    server.register_capability(CapId::new(1), Arc::new(Calculator));
 
-    // Start server with WebSocket and HTTP endpoints
-    server.start().await?;
+    // Run server with HTTP batch endpoint
+    server.run().await?;
     Ok(())
 }
 ```
@@ -70,33 +70,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Client Example
 
 ```rust
-use capnweb_client::{Client, Recorder, params, record_object};
-use capnweb_transport::WebSocketTransport;
+use capnweb_client::{Client, ClientConfig};
 use capnweb_core::CapId;
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Connect via WebSocket
-    let transport = WebSocketTransport::connect("ws://localhost:8080/ws").await?;
-    let client = Client::new(transport, Default::default());
+    // Create client configuration
+    let config = ClientConfig {
+        url: "http://localhost:8080/rpc/batch".to_string(),
+        ..Default::default()
+    };
+    let client = Client::new(config)?;
 
-    // Build a plan using the ergonomic recorder API
-    let recorder = Recorder::new();
-    let calc = recorder.capture("calculator", CapId::new(1));
-
-    let sum = calc.call("add", params![15.5, 24.3]);
-    let product = calc.call("multiply", params![7, 8]);
-
-    let result = record_object!(recorder; {
-        "sum" => sum,
-        "product" => product,
-    });
-
-    let plan = recorder.build(result.as_source());
-
-    // Execute with promise pipelining
-    let response = client.execute_plan(&plan, None).await?;
-    println!("Results: {}", response);
+    // Make RPC calls
+    let result = client.call(CapId::new(1), "add", vec![json!(10), json!(20)]).await?;
+    println!("Result: {}", result);
 
     Ok(())
 }
@@ -116,18 +105,24 @@ The implementation is organized into focused crates:
 
 ### HTTP Batch Transport
 ```rust
-use capnweb_transport::HttpBatchTransport;
+use capnweb_client::{Client, ClientConfig};
 
-let transport = HttpBatchTransport::new("http://localhost:8080/batch".to_string());
-let client = Client::new(transport, Default::default());
+let config = ClientConfig {
+    url: "http://localhost:8080/rpc/batch".to_string(),
+    ..Default::default()
+};
+let client = Client::new(config)?;
 ```
 
 ### WebSocket Transport
 ```rust
+// WebSocket transport is implemented and available
+// Usage requires creating a WebSocketTransport from an established WebSocket connection
 use capnweb_transport::WebSocketTransport;
+use tokio_tungstenite::connect_async;
 
-let transport = WebSocketTransport::connect("ws://localhost:8080/ws").await?;
-let client = Client::new(transport, Default::default());
+let (ws_stream, _) = connect_async("ws://localhost:8080/ws").await?;
+let transport = WebSocketTransport::new(ws_stream);
 ```
 
 ### WebTransport/HTTP3
@@ -142,42 +137,43 @@ h3_server.listen("0.0.0.0:8443".parse()?).await?;
 
 ### Promise Pipelining
 ```rust
-let recorder = Recorder::new();
-let api = recorder.capture("api", CapId::new(1));
-
-// These calls are automatically pipelined
-let user = api.call("getUser", params![123]);
-let profile = user.call("getProfile", vec![]);  // Depends on user result
-let preferences = profile.call("getPreferences", vec![]);  // Depends on profile
-
-let plan = recorder.build(preferences.as_source());
+// Promise pipelining is handled internally by the protocol
+// Multiple calls in a batch are automatically optimized
+let batch = vec![
+    Message::Call { /* ... */ },
+    Message::Call { /* ... */ },
+];
+// The server processes these with dependency resolution
 ```
 
 ### Complex Data Structures
 ```rust
-use capnweb_client::{record_object, record_array};
+use serde_json::json;
 
-let summary = record_object!(recorder; {
-    "users" => record_array!(recorder; [user1, user2, user3]),
-    "statistics" => record_object!(recorder; {
-        "total_count" => total,
-        "active_count" => active,
-    }),
-    "metadata" => record_object!(recorder; {
-        "generated_at" => timestamp,
-        "version" => version_info,
-    }),
+// Build complex JSON structures for RPC calls
+let request_data = json!({
+    "users": [user1, user2, user3],
+    "statistics": {
+        "total_count": total,
+        "active_count": active,
+    },
+    "metadata": {
+        "generated_at": timestamp,
+        "version": version_info,
+    },
 });
 ```
 
 ### Error Handling
 ```rust
-match client.execute_plan(&plan, None).await {
+match client.call(cap_id, "method", args).await {
     Ok(result) => println!("Success: {}", result),
-    Err(RpcError::Network(e)) => println!("Network error: {}", e),
-    Err(RpcError::Protocol(e)) => println!("Protocol error: {}", e),
-    Err(RpcError::User { code, message, .. }) => {
-        println!("Application error {}: {}", code, message);
+    Err(e) => {
+        // RpcError contains code, message, and optional data
+        println!("Error {}: {}", e.code, e.message);
+        if let Some(data) = &e.data {
+            println!("Additional data: {}", data);
+        }
     }
 }
 ```
@@ -187,14 +183,14 @@ match client.execute_plan(&plan, None).await {
 Run the included examples to see the implementation in action:
 
 ```bash
-# Start the calculator server
-cargo run --example calculator_server
-
-# In another terminal, run the client
+# Run client examples
+cargo run --example basic_client
 cargo run --example calculator_client
+cargo run --example error_handling
+cargo run --example batch_pipelining
 
-# WebTransport/HTTP3 server
-cargo run --example webtransport_server
+# Start the server (using bin/capnweb-server)
+cargo run --bin capnweb-server
 ```
 
 ## Performance
@@ -202,7 +198,7 @@ cargo run --example webtransport_server
 Run benchmarks to measure performance:
 
 ```bash
-cargo bench
+cargo bench --bench protocol_benchmarks
 ```
 
 The implementation includes optimizations for:
@@ -213,7 +209,7 @@ The implementation includes optimizations for:
 
 ## Testing
 
-Comprehensive test suite with **174 tests passing (100% success rate)**:
+Comprehensive test suite with tests across all core modules:
 
 ```bash
 # Run all tests
@@ -249,12 +245,9 @@ cargo test --package capnweb-interop-tests
 use capnweb_server::ServerConfig;
 
 let config = ServerConfig {
-    http_bind_addr: "0.0.0.0:8080".to_string(),
-    max_connections: 10000,
-    rate_limit_requests_per_second: Some(1000),
-    enable_cors: true,
-    request_timeout_ms: 30000,
-    ..Default::default()
+    port: 8080,
+    host: "0.0.0.0".to_string(),
+    max_batch_size: 100,
 };
 ```
 
