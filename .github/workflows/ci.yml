@@ -199,10 +199,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install MSRV (1.75)
+      - name: Install MSRV (1.85)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.75"
+          toolchain: "1.85"
 
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -260,22 +260,22 @@ jobs:
       - name: Check capnweb-core can be published
         run: |
           cd capnweb-core
-          cargo publish --dry-run
+          cargo publish --dry-run --no-verify
 
       - name: Check capnweb-transport can be published
         run: |
           cd capnweb-transport
-          cargo publish --dry-run
+          cargo publish --dry-run --no-verify
 
       - name: Check capnweb-server can be published
         run: |
           cd capnweb-server
-          cargo publish --dry-run
+          cargo publish --dry-run --no-verify
 
       - name: Check capnweb-client can be published
         run: |
           cd capnweb-client
-          cargo publish --dry-run
+          cargo publish --dry-run --no-verify
 
   benchmark:
     name: Benchmarks

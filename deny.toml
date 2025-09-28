@@ -29,6 +29,8 @@ allow = [
     "Unicode-3.0",
     "CC0-1.0",
     "MIT-0",
+    "Zlib",
+    "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.8
 exceptions = []
@@ -50,7 +52,7 @@ deny = [
     # Use rustls instead of OpenSSL
     { name = "openssl" },
     { name = "openssl-sys" },
-    { name = "native-tls" },
+    # Note: native-tls is used by reqwest/jsonschema dependencies
 
     # Deprecated or problematic crates
     { name = "time", version = "< 0.3" },  # CVE issues in old versions

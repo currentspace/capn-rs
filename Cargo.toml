@@ -12,7 +12,7 @@ members = [
 version = "0.1.0"
 authors = ["Brian Meek <brian@currentspace.dev>"]
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/currentspace/capn-rs"
 homepage = "https://github.com/currentspace/capn-rs"
@@ -113,10 +113,10 @@ insta = "1.41"
 chrono = { version = "0.4", features = ["serde"] }
 
 # Internal crates
-capnweb-core = { path = "capnweb-core" }
-capnweb-transport = { path = "capnweb-transport" }
-capnweb-server = { path = "capnweb-server" }
-capnweb-client = { path = "capnweb-client" }
+capnweb-core = { version = "0.1.0", path = "capnweb-core" }
+capnweb-transport = { version = "0.1.0", path = "capnweb-transport" }
+capnweb-server = { version = "0.1.0", path = "capnweb-server" }
+capnweb-client = { version = "0.1.0", path = "capnweb-client" }
 
 [profile.release]
 lto = true

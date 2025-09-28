@@ -4,12 +4,12 @@
 //! This binary provides HTTP batch and WebSocket endpoints for RPC calls.
 
 use anyhow::Result;
+use async_trait::async_trait;
 use capnweb_core::{CapId, RpcError};
-use capnweb_server::{Server, ServerConfig, RpcTarget};
+use capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
-use tracing::{info, error};
-use async_trait::async_trait;
+use tracing::{error, info};
 
 /// Example calculator service for testing
 #[derive(Debug)]
@@ -32,7 +32,9 @@ impl RpcTarget for CalculatorService {
             }
             "multiply" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request("multiply requires exactly 2 arguments"));
+                    return Err(RpcError::bad_request(
+                        "multiply requires exactly 2 arguments",
+                    ));
                 }
                 Ok(json!({
                     "result": "product of inputs",
@@ -40,12 +42,10 @@ impl RpcTarget for CalculatorService {
                     "args_count": args.len()
                 }))
             }
-            "echo" => {
-                Ok(json!({
-                    "echoed": args,
-                    "method": "echo"
-                }))
-            }
+            "echo" => Ok(json!({
+                "echoed": args,
+                "method": "echo"
+            })),
             _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
@@ -88,15 +88,9 @@ async fn main() -> Result<()> {
     let server = Server::new(config);
 
     // Register capabilities
-    server.register_capability(
-        CapId::new(1),
-        Arc::new(CalculatorService)
-    );
+    server.register_capability(CapId::new(1), Arc::new(CalculatorService));
 
-    server.register_capability(
-        CapId::new(2),
-        Arc::new(EchoService)
-    );
+    server.register_capability(CapId::new(2), Arc::new(EchoService));
 
     info!("Server configured with capabilities:");
     info!("  - CapId(1): Calculator Service");
