@@ -249,9 +249,10 @@ jobs:
         with:
           tool: cargo-semver-checks
 
-      - name: Check semver compatibility
-        run: cargo semver-checks check-release --workspace
-        continue-on-error: true  # Don't fail on first release
+      # Skip semver checks for unpublished crates
+      # - name: Check semver compatibility
+      #   run: cargo semver-checks check-release --workspace
+      #   continue-on-error: true  # Don't fail on first release
 
       - name: Check capnweb-core can be packaged
         run: cargo package --package capnweb-core --no-verify

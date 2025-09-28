@@ -96,6 +96,7 @@ rand = "0.9"
 
 # Validation
 jsonschema = "0.33"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "blocking"] }
 schemars = "1.0"
 
 # Observability
