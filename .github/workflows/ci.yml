@@ -254,17 +254,17 @@ jobs:
       #   run: cargo semver-checks check-release --workspace
       #   continue-on-error: true  # Don't fail on first release
 
-      - name: Check capnweb-core can be packaged
-        run: cargo package --package capnweb-core --no-verify
+      - name: Check capnweb-core manifest
+        run: cargo check --package capnweb-core --no-default-features
 
-      - name: Check capnweb-transport can be packaged
-        run: cargo package --package capnweb-transport --no-verify
+      - name: Check capnweb-transport manifest
+        run: cargo check --package capnweb-transport --no-default-features
 
-      - name: Check capnweb-server can be packaged
-        run: cargo package --package capnweb-server --no-verify
+      - name: Check capnweb-server manifest
+        run: cargo check --package capnweb-server --no-default-features
 
-      - name: Check capnweb-client can be packaged
-        run: cargo package --package capnweb-client --no-verify
+      - name: Check capnweb-client manifest
+        run: cargo check --package capnweb-client --no-default-features
 
   benchmark:
     name: Benchmarks

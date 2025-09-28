@@ -25,7 +25,7 @@ tracing.workspace = true
 tokio.workspace = true
 futures.workspace = true
 async-trait.workspace = true
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "blocking"] }
 
 # Concurrent data structures
 dashmap.workspace = true
