@@ -13,6 +13,10 @@ readme = "../README.md"
 keywords.workspace = true
 categories.workspace = true
 
+[[bin]]
+name = "capnweb-server"
+path = "src/bin/capnweb-server.rs"
+
 [dependencies]
 capnweb-core.workspace = true
 capnweb-transport.workspace = true

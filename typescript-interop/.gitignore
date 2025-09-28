@@ -1,1 +1,15 @@
+# Cloned repositories
 capnweb-github/
+capnweb/
+
+# Node.js
+node_modules/
+dist/
+*.log
+
+# pnpm
+pnpm-lock.yaml
+
+# Build artifacts
+*.tsbuildinfo
+.turbo/
