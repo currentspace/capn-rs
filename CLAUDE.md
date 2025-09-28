@@ -8,7 +8,7 @@ This is a Rust implementation of the Cap'n Web protocol, delivering both server 
 
 - **Remote**: https://github.com/currentspace/capn-rs.git
 - **Main Branch**: main
-- **Language**: Rust (edition 2021, rust-version 1.75+)
+- **Language**: Rust (edition 2021, rust-version 1.85+)
 
 ## Current Progress
 
@@ -19,16 +19,19 @@ This is a Rust implementation of the Cap'n Web protocol, delivering both server 
    - Transport abstraction trait
    - HTTP batch transport
    - Basic server with batch endpoint
-   - **47 tests passing**
+   - Core protocol implementation complete
+
+2. **Milestone 2: Transport Layer**
+   - ✅ HTTP batch transport
+   - ✅ WebSocket transport implementation
+   - ✅ WebTransport/H3 support
 
 ### 🚧 Pending Milestones
 
-2. **Milestone 2: Pipelining and Disposal** - Promise support, capability lifecycle
-3. **Milestone 3: IL, Plan Runner, .map()** - Plan execution engine
-4. **Milestone 4: WebSocket Support** - H1/H2/H3 WebSocket
-5. **Milestone 5: WebTransport Support** - H3 WebTransport with quinn
-6. **Milestone 6: Recorder Macros** - Client-side ergonomics
-7. **Milestone 7: Interop Tests** - TypeScript compatibility tests
+3. **Milestone 3: Pipelining and Disposal** - Promise support, capability lifecycle
+4. **Milestone 4: IL, Plan Runner, .map()** - Plan execution engine
+5. **Milestone 5: Recorder Macros** - Client-side ergonomics
+6. **Milestone 6: Comprehensive Interop Tests** - TypeScript compatibility validation
 
 ## Development Standards
 
@@ -42,14 +45,10 @@ Key requirements:
 - **Document all public APIs**
 - **Add error context with `anyhow`**
 
-See RUST_CODING_STANDARDS.md for complete guidelines.
-Quick reference: CODING_QUICK_REFERENCE.md for instant lookup.
+See RUST_CODING_STANDARDS.md for complete guidelines including modern Rust 1.85+ patterns.
 
 ### Git Workflow
 ```bash
-# ALWAYS initialize git first
-git init
-
 # Commit after EVERY implementation step
 git add -A
 git commit -m "Descriptive message explaining changes"
@@ -126,8 +125,7 @@ capnweb-rs/
 #[serde(transparent)]
 pub struct CallId(u64);
 
-// Async trait pattern
-#[async_trait]
+// Async trait pattern (native async traits since Rust 1.75+)
 pub trait RpcTarget: Send + Sync {
     async fn call(&self, member: &str, args: Vec<Value>) -> Result<Value, RpcError>;
 }
@@ -172,9 +170,7 @@ mod tests {
 ## Critical Implementation Notes
 
 ### Known Issues
-1. **h3-quinn compatibility**: Version 0.0.7 incompatible with quinn 0.11+
-   - **Workaround**: WebTransport temporarily disabled in default features
-   - **Fix planned**: Milestone 5 will address with compatible versions
+1. **Minimal dependency versions**: Some dependencies may require specific version combinations
 
 ### Frame Format Decision
 - **Current**: Supporting both length-prefixed and newline-delimited
@@ -194,8 +190,8 @@ cargo build --workspace
 # Build specific crate
 cargo build -p capnweb-core
 
-# Run example server
-cargo run --example basic_server -p capnweb-server
+# Run the server binary
+cargo run --bin capnweb-server
 
 # Run with specific features
 cargo build --features webtransport
@@ -218,8 +214,8 @@ cargo test test_name
 
 ### Benchmarking
 ```bash
-# Run benchmarks (when implemented)
-cargo bench -p capnweb-core
+# Run benchmarks
+cargo bench --bench protocol_benchmarks
 ```
 
 ## API Documentation
@@ -241,12 +237,16 @@ server.register_capability(CapId::new(1), Arc::new(MyCapability));
 server.run().await?;
 ```
 
-### Client Usage (Future)
+### Client Usage
 ```rust
 use capnweb_client::{Client, ClientConfig};
 
-// Connect to server
-let client = Client::connect("http://localhost:8080/rpc/batch").await?;
+// Create client with configuration
+let config = ClientConfig {
+    url: "http://localhost:8080/rpc/batch".to_string(),
+    ..Default::default()
+};
+let client = Client::new(config)?;
 
 // Make RPC call
 let result = client.call(cap_id, "method", args).await?;
@@ -261,8 +261,8 @@ let result = client.call(cap_id, "method", args).await?;
 
 ### Endpoints
 - HTTP Batch: `/rpc/batch`
-- WebSocket: `/rpc/ws` (future)
-- WebTransport: `/rpc/wt` (future)
+- WebSocket: `/rpc/ws`
+- WebTransport: `/rpc/wt`
 
 ### Testing Interop
 - Golden transcripts from TypeScript implementation

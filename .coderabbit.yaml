@@ -1,0 +1,192 @@
+# CodeRabbit Configuration for Cap'n Web Rust Implementation
+# This configuration enforces the strict standards defined in RUST_CODING_STANDARDS.md
+
+version: "1.0"
+
+# Language-specific settings
+language_specific:
+  rust:
+    # Enforce Rust 1.85+ patterns
+    min_rust_version: "1.85"
+
+    # Strict error handling
+    deny_unwrap: true
+    deny_expect: true
+    deny_panic: true
+    require_error_context: true
+
+    # Performance requirements
+    check_allocations: true
+    prefer_references: true
+    avoid_unnecessary_clone: true
+
+    # Async patterns
+    check_async_traits: true
+    enforce_send_sync: true
+
+    # Documentation
+    require_public_docs: true
+    require_safety_comments: true
+
+# Review settings
+reviews:
+  # Auto-approve dependabot updates that pass CI
+  auto_approve_dependabot: true
+
+  # Review intensity
+  review_level: "thorough"  # Options: light, standard, thorough
+
+  # Focus areas for this project
+  focus_areas:
+    - error_handling
+    - memory_safety
+    - concurrency
+    - protocol_compliance
+    - performance
+    - security
+
+# Custom rules based on RUST_CODING_STANDARDS.md
+custom_rules:
+  - name: "No unwrap() in production code"
+    pattern: '\.unwrap\(\)'
+    severity: "error"
+    message: "Use proper error handling instead of unwrap(). See RUST_CODING_STANDARDS.md"
+    exclude_paths:
+      - "**/tests/**"
+      - "**/benches/**"
+      - "**/examples/**"
+
+  - name: "No expect() in production code"
+    pattern: '\.expect\('
+    severity: "error"
+    message: "Use proper error handling instead of expect(). See RUST_CODING_STANDARDS.md"
+    exclude_paths:
+      - "**/tests/**"
+      - "**/benches/**"
+
+  - name: "Use anyhow context for errors"
+    pattern: '\.map_err\(.*\)[^.]*(\.context|\.with_context)'
+    severity: "warning"
+    message: "Consider adding context to errors using .context() or .with_context()"
+
+  - name: "Avoid format! in error paths"
+    pattern: 'format!\([^)]+\).*\?'
+    severity: "warning"
+    message: "Avoid format! in error paths. Use lazy evaluation for error messages."
+
+  - name: "Prefer Arc over Rc"
+    pattern: '\bRc<'
+    severity: "warning"
+    message: "Prefer Arc for thread-safe reference counting"
+
+  - name: "Check for missing Send + Sync"
+    pattern: 'trait\s+\w+\s*(?::|{)'
+    severity: "info"
+    message: "Consider if this trait should require Send + Sync bounds"
+
+# Protocol-specific checks
+protocol_checks:
+  - name: "Capability lifecycle"
+    description: "Ensure capabilities are properly disposed"
+    check_dispose_on_drop: true
+
+  - name: "Message validation"
+    description: "Validate message format compliance"
+    check_message_types: ["Call", "Result", "CapRef", "Dispose"]
+
+  - name: "ID monotonicity"
+    description: "Ensure IDs are allocated monotonically"
+    check_id_allocation: true
+
+# Ignored paths
+ignore_paths:
+  - "target/**"
+  - "*.lock"
+  - "node_modules/**"
+  - ".git/**"
+  - "docs/**/*.md"
+
+# Pull request settings
+pull_request:
+  # Summary generation
+  generate_summary: true
+  summary_language: "technical"
+
+  # Suggestion settings
+  max_suggestions_per_file: 10
+  group_similar_suggestions: true
+
+  # Comment style
+  comment_style: "constructive"
+  include_positive_feedback: true
+
+  # Labels to add based on review
+  labels:
+    needs_review: "needs-code-review"
+    approved: "code-review-approved"
+    changes_requested: "changes-requested"
+
+# Integration with existing CI
+ci_integration:
+  # Wait for these checks before reviewing
+  wait_for_checks:
+    - "cargo test"
+    - "cargo clippy"
+    - "cargo fmt"
+
+  # Skip review if CI fails
+  skip_on_ci_failure: false
+
+  # Comment on CI failures
+  comment_on_ci_failure: true
+
+# Performance thresholds
+performance:
+  # Alert on potential performance issues
+  check_benchmarks: true
+  allocation_threshold: "warn"  # warn, error, or ignore
+
+  # Check for common performance anti-patterns
+  detect_anti_patterns:
+    - unnecessary_collect
+    - repeated_allocations
+    - inefficient_string_concatenation
+    - excessive_cloning
+
+# Security settings
+security:
+  # Check for common security issues
+  check_security_patterns: true
+
+  # Specific checks for this project
+  checks:
+    - no_unsafe_code_without_comment
+    - validate_input_boundaries
+    - check_capability_forgery
+    - verify_tls_configuration
+
+# Notification settings
+notifications:
+  # Who gets notified
+  notify_on_error: ["maintainers"]
+  notify_on_warning: ["pr_author"]
+
+  # Notification triggers
+  triggers:
+    - security_issue
+    - performance_regression
+    - breaking_change
+
+# Experimental features (opt-in)
+experimental:
+  # AI-powered refactoring suggestions
+  suggest_refactoring: true
+
+  # Generate missing tests
+  suggest_tests: false
+
+  # Generate documentation
+  suggest_docs: true
+
+  # Protocol compliance checking
+  check_protocol_compliance: true

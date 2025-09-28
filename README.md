@@ -286,6 +286,15 @@ tracing_subscriber::fmt()
 - Comprehensive documentation for all public APIs
 - See [RUST_CODING_STANDARDS.md](RUST_CODING_STANDARDS.md) for complete guidelines
 
+### Automated Code Review
+This repository uses [CodeRabbit](https://coderabbit.ai) for automated PR reviews. The bot will:
+- Check for compliance with our coding standards
+- Suggest improvements for error handling and performance
+- Verify protocol implementation correctness
+- Ensure no `unwrap()` or `panic!` in production code
+
+Configuration is in [`.coderabbit.yaml`](.coderabbit.yaml). The bot's suggestions are educational but not mandatory - maintainers make final decisions.
+
 ## License
 
 Licensed under either of:
