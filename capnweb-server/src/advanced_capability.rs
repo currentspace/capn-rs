@@ -489,7 +489,7 @@ impl AdvancedCapability {
                         },
                     })
                 }
-                _ => Err(RpcError::bad_request(&format!(
+                _ => Err(RpcError::bad_request(format!(
                     "Unknown operation type: {}",
                     op_type
                 ))),
@@ -601,7 +601,7 @@ impl AdvancedCapability {
                         },
                     })
                 }
-                _ => Err(RpcError::bad_request(&format!(
+                _ => Err(RpcError::bad_request(format!(
                     "Unknown source type: {}",
                     source_type
                 ))),
@@ -704,7 +704,7 @@ impl RpcTarget for NestedCapabilityImpl {
                 // Validation logic
                 Ok(Value::Bool(true))
             }
-            _ => Err(RpcError::not_found(&format!(
+            _ => Err(RpcError::not_found(format!(
                 "Method {} not found on nested capability",
                 method
             ))),
@@ -719,7 +719,7 @@ impl RpcTarget for NestedCapabilityImpl {
                 Some(id) => Value::String(id.as_u64().to_string()),
                 None => Value::Null,
             }),
-            _ => Err(RpcError::not_found(&format!(
+            _ => Err(RpcError::not_found(format!(
                 "Property {} not found",
                 property
             ))),
@@ -788,7 +788,7 @@ impl RpcTarget for AdvancedCapability {
                     )
                     .await
                     .map_err(|e| {
-                        RpcError::internal(&format!("Failed to create snapshot: {:?}", e))
+                        RpcError::internal(format!("Failed to create snapshot: {:?}", e))
                     })?;
 
                 // Store session state if requested
@@ -812,7 +812,7 @@ impl RpcTarget for AdvancedCapability {
                     .resume_manager
                     .generate_token(snapshot.clone())
                     .map_err(|e| {
-                        RpcError::internal(&format!("Failed to generate token: {:?}", e))
+                        RpcError::internal(format!("Failed to generate token: {:?}", e))
                     })?;
 
                 // Persistent manager will handle storage internally
@@ -847,13 +847,13 @@ impl RpcTarget for AdvancedCapability {
 
                 // Parse token from JSON
                 let resume_token: ResumeToken = serde_json::from_str(token)
-                    .map_err(|e| RpcError::bad_request(&format!("Invalid token format: {}", e)))?;
+                    .map_err(|e| RpcError::bad_request(format!("Invalid token format: {}", e)))?;
 
                 // Parse and validate token
                 let snapshot = self
                     .resume_manager
                     .parse_token(&resume_token)
-                    .map_err(|e| RpcError::bad_request(&format!("Invalid token: {:?}", e)))?;
+                    .map_err(|e| RpcError::bad_request(format!("Invalid token: {:?}", e)))?;
 
                 // Restore session state
                 let session_id = format!("restored_{}", Utc::now().timestamp());
@@ -926,7 +926,7 @@ impl RpcTarget for AdvancedCapability {
                     .variables
                     .get(var_name)
                     .cloned()
-                    .ok_or_else(|| RpcError::not_found(&format!("Variable {} not found", var_name)))
+                    .ok_or_else(|| RpcError::not_found(format!("Variable {} not found", var_name)))
             }
 
             // ============================================================================
@@ -980,7 +980,7 @@ impl RpcTarget for AdvancedCapability {
                     .add_capability(node)
                     .await
                     .map_err(|e| {
-                        RpcError::internal(&format!("Failed to add capability: {:?}", e))
+                        RpcError::internal(format!("Failed to add capability: {:?}", e))
                     })?;
 
                 // Store in local registry
@@ -1018,7 +1018,7 @@ impl RpcTarget for AdvancedCapability {
                 // Find and call the sub-capability
                 let capabilities = self.nested_capabilities.read().await;
                 let capability = capabilities.get(cap_name).ok_or_else(|| {
-                    RpcError::not_found(&format!("Capability {} not found", cap_name))
+                    RpcError::not_found(format!("Capability {} not found", cap_name))
                 })?;
 
                 capability.call(sub_method, sub_args).await
@@ -1036,7 +1036,7 @@ impl RpcTarget for AdvancedCapability {
                 // Remove from registry
                 let mut capabilities = self.nested_capabilities.write().await;
                 capabilities.remove(cap_name).ok_or_else(|| {
-                    RpcError::not_found(&format!("Capability {} not found", cap_name))
+                    RpcError::not_found(format!("Capability {} not found", cap_name))
                 })?;
 
                 Ok(Value::Bool(true))
@@ -1049,7 +1049,7 @@ impl RpcTarget for AdvancedCapability {
                 Ok(Value::Array(
                     cap_list
                         .into_iter()
-                        .map(|name| Value::String(name))
+                        .map(Value::String)
                         .collect(),
                 ))
             }
@@ -1092,7 +1092,7 @@ impl RpcTarget for AdvancedCapability {
                     .plan_runner
                     .execute_plan(&plan, parameters, captures)
                     .await
-                    .map_err(|e| RpcError::internal(&format!("Plan execution failed: {:?}", e)))?;
+                    .map_err(|e| RpcError::internal(format!("Plan execution failed: {:?}", e)))?;
 
                 // Store result in session
                 {
@@ -1159,7 +1159,7 @@ impl RpcTarget for AdvancedCapability {
                 let cache = self.plan_cache.read().await;
                 let plan = cache
                     .get(plan_name)
-                    .ok_or_else(|| RpcError::not_found(&format!("Plan {} not found", plan_name)))?
+                    .ok_or_else(|| RpcError::not_found(format!("Plan {} not found", plan_name)))?
                     .clone();
 
                 // Execute it
@@ -1167,7 +1167,7 @@ impl RpcTarget for AdvancedCapability {
                     .plan_runner
                     .execute_plan(&plan, parameters, vec![])
                     .await
-                    .map_err(|e| RpcError::internal(&format!("Plan execution failed: {:?}", e)))?;
+                    .map_err(|e| RpcError::internal(format!("Plan execution failed: {:?}", e)))?;
 
                 Ok(result)
             }
@@ -1276,7 +1276,7 @@ impl RpcTarget for AdvancedCapability {
                 self.json_to_value(&response)
             }
 
-            _ => Err(RpcError::not_found(&format!("Method {} not found", method))),
+            _ => Err(RpcError::not_found(format!("Method {} not found", method))),
         }
     }
 
@@ -1298,7 +1298,7 @@ impl RpcTarget for AdvancedCapability {
                 let plans = self.plan_cache.read().await;
                 Ok(Value::Number(serde_json::Number::from(plans.len())))
             }
-            _ => Err(RpcError::not_found(&format!(
+            _ => Err(RpcError::not_found(format!(
                 "Property {} not found",
                 property
             ))),

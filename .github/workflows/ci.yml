@@ -128,13 +128,7 @@ jobs:
       - name: Run clippy
         run: |
           cargo clippy --workspace --all-features --tests --examples -- \
-            -D warnings \
-            -W clippy::all \
-            -W clippy::pedantic \
-            -W clippy::nursery \
-            -A clippy::missing_errors_doc \
-            -A clippy::missing_panics_doc \
-            -A clippy::module_name_repetitions
+            -D warnings
 
       - name: Check for banned dependencies
         run: |

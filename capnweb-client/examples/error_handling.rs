@@ -10,7 +10,6 @@ use anyhow::Result;
 use capnweb_client::{Client, ClientConfig};
 use capnweb_core::CapId;
 use serde_json::json;
-use std::time::Duration;
 use tracing::info;
 
 #[tokio::main]

@@ -849,7 +849,7 @@ async fn evaluate_expression(
                         {
                             // Extract call arguments
                             let args = if let Some(args_expr) = &import.call_arguments {
-                                extract_args(&**args_expr)?
+                                extract_args(args_expr)?
                             } else {
                                 Vec::new()
                             };
@@ -879,7 +879,7 @@ async fn evaluate_expression(
                             {
                                 // Extract call arguments
                                 let args = if let Some(args_expr) = &pipeline.call_arguments {
-                                    extract_args(&**args_expr)?
+                                    extract_args(args_expr)?
                                 } else {
                                     Vec::new()
                                 };
@@ -892,18 +892,18 @@ async fn evaluate_expression(
                                     .map_err(|e| e.to_string().into());
                             }
                         }
-                        return Err("Invalid pipeline path".into());
+                        Err("Invalid pipeline path".into())
                     }
                     _ => {
-                        return Err(format!(
+                        Err(format!(
                             "Import {} is not a capability stub",
                             pipeline.import_id.0
                         )
-                        .into());
+                        .into())
                     }
                 }
             } else {
-                return Err(format!("Import {} not found", pipeline.import_id.0).into());
+                Err(format!("Import {} not found", pipeline.import_id.0).into())
             }
         }
 

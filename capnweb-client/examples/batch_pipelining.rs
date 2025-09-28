@@ -9,7 +9,7 @@ use capnweb_client::{Client, ClientConfig};
 use capnweb_core::CapId;
 use serde_json::{json, Value};
 use std::time::Instant;
-use tracing::{debug, info};
+use tracing::info;
 
 async fn run_pipelined() -> Result<(Value, Value, Value, u128, usize)> {
     let start = Instant::now();

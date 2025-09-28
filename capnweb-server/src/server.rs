@@ -458,11 +458,11 @@ async fn handle_batch(
                 &response_body.chars().take(500).collect::<String>()
             );
 
-            return (
+            (
                 StatusCode::OK,
                 [("content-type", "text/plain")],
                 response_body,
-            );
+            )
         }
         Err(e) => {
             tracing::error!("Failed to parse wire protocol: {}", e);
@@ -479,11 +479,11 @@ async fn handle_batch(
                 },
             );
             let response = serialize_wire_batch(&[error_response]);
-            return (
+            (
                 StatusCode::BAD_REQUEST,
                 [("content-type", "text/plain")],
                 response,
-            );
+            )
         }
     }
 }
@@ -574,13 +574,14 @@ mod tests {
         server.register_capability(cap_id, Arc::new(TestTarget));
 
         // Simulate wire protocol push message for "echo" method
-        let wire_messages = vec![WireMessage::Push(WireExpression::Pipeline {
-            import_id: 1, // Map to CapId(1)
-            property_path: Some(vec![PropertyKey::String("echo".to_string())]),
-            args: Some(Box::new(WireExpression::Array(vec![
-                WireExpression::String("hello".to_string()),
-            ]))),
-        })];
+        // This would be the wire format:
+        // let _wire_messages = vec![WireMessage::Push(WireExpression::Pipeline {
+        //     import_id: 1, // Map to CapId(1)
+        //     property_path: Some(vec![PropertyKey::String("echo".to_string())]),
+        //     args: Some(Box::new(WireExpression::Array(vec![
+        //         WireExpression::String("hello".to_string()),
+        //     ]))),
+        // })];
 
         // Process directly (simulating what handle_batch would do)
         let capability = server.cap_table.lookup(&cap_id).unwrap();

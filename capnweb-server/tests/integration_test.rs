@@ -123,13 +123,10 @@ async fn test_dispose_in_batch() {
 
     // Process batch
     for msg in batch_request {
-        match msg {
-            Message::Dispose { dispose } => {
-                for id in &dispose.caps {
-                    server.cap_table().remove(id);
-                }
+        if let Message::Dispose { dispose } = msg {
+            for id in &dispose.caps {
+                server.cap_table().remove(id);
             }
-            _ => {}
         }
     }
 
