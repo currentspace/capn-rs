@@ -1,8 +1,8 @@
 # Rust Coding Standards for Cap'n Web
 
-## Version 1.0 - 2025 Best Practices
+## Version 2.0 - Modern Rust 1.85+ Best Practices
 
-This document defines the coding standards for the Cap'n Web Rust implementation, incorporating modern Rust best practices and lessons learned from code analysis.
+This document defines the comprehensive coding standards for the Cap'n Web Rust implementation, incorporating modern Rust 1.85+ best practices including async traits, const evaluation, zero-copy patterns, and advanced type system features. These standards represent the state-of-the-art in Rust development as of 2025.
 
 ## Table of Contents
 1. [Core Principles](#core-principles)
@@ -15,7 +15,18 @@ This document defines the coding standards for the Cap'n Web Rust implementation
 8. [Testing](#testing)
 9. [Documentation](#documentation)
 10. [Project Structure](#project-structure)
-11. [Tooling & Lints](#tooling--lints)
+11. [Modern Async Patterns](#modern-async-patterns)
+12. [Zero-Copy Operations](#zero-copy-operations)
+13. [Compile-Time Optimization](#compile-time-optimization)
+14. [Advanced Type Patterns](#advanced-type-patterns)
+15. [Observability](#observability)
+16. [Feature Flags](#feature-flags)
+17. [Macro Patterns](#macro-patterns)
+18. [Common Anti-Patterns to Avoid](#common-anti-patterns-to-avoid)
+19. [Tooling & Lints](#tooling--lints)
+20. [Performance Benchmarking](#performance-benchmarking)
+21. [Security Considerations](#security-considerations)
+22. [Migration Guide](#migration-guide)
 
 ## Core Principles
 
@@ -67,6 +78,12 @@ let port = config.port.unwrap_or(8080);
 // ✅ GOOD - Use expect() only with impossible-to-fail invariants
 let mutex = STATIC_MUTEX.lock()
     .expect("mutex poisoned - this is a bug");
+
+// ✅ GOOD - Use let-else for cleaner error handling (stabilized 1.65)
+let Some(user) = find_user(id) else {
+    tracing::warn!("User {} not found", id);
+    return Err(Error::NotFound);
+};
 ```
 
 ### Error Context Pattern
@@ -100,6 +117,32 @@ pub enum CapabilityError {
 
     #[error("Capability {id} has been revoked")]
     Revoked { id: CapId, revoked_at: Instant },
+}
+
+// ✅ GOOD - Custom Try trait for validation (experimental, requires nightly)
+#[cfg(feature = "try_trait")]
+use std::ops::Try;
+
+pub enum Validated<T> {
+    Valid(T),
+    Invalid(ValidationError),
+}
+
+#[cfg(feature = "try_trait")]
+impl<T> Try for Validated<T> {
+    type Output = T;
+    type Residual = ValidationError;
+
+    fn from_output(output: Self::Output) -> Self {
+        Validated::Valid(output)
+    }
+
+    fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
+        match self {
+            Validated::Valid(v) => ControlFlow::Continue(v),
+            Validated::Invalid(e) => ControlFlow::Break(e),
+        }
+    }
 }
 ```
 
@@ -427,6 +470,39 @@ mod tests {
 // Benchmarks in benches/ directory
 ```
 
+### Modern Testing Patterns
+
+```rust
+// ✅ GOOD - Snapshot testing for complex outputs
+#[test]
+fn test_render_output() {
+    let output = render_complex_structure();
+    insta::assert_snapshot!(output);
+}
+
+// ✅ GOOD - Parameterized tests with rstest
+use rstest::rstest;
+
+#[rstest]
+#[case(0, false)]
+#[case(1, true)]
+#[case(100, true)]
+fn test_is_valid(#[case] input: u32, #[case] expected: bool) {
+    assert_eq!(is_valid(input), expected);
+}
+
+// ✅ GOOD - Test fixtures
+#[fixture]
+fn test_db() -> TestDatabase {
+    TestDatabase::new()
+}
+
+#[rstest]
+fn test_with_db(test_db: TestDatabase) {
+    // Use the test database
+}
+```
+
 ### Test Utilities
 
 ```rust
@@ -561,6 +637,395 @@ thiserror = "^1.0"
 quickcheck = "1.0"
 proptest = "1.4"
 criterion = "0.5"
+```
+
+## Modern Async Patterns
+
+### Structured Concurrency
+
+```rust
+// ✅ GOOD - Use async drop guards for cleanup
+use tokio_util::sync::CancellationToken;
+
+pub struct Server {
+    cancellation: CancellationToken,
+}
+
+impl Server {
+    pub async fn graceful_shutdown(self) {
+        self.cancellation.cancel();
+        // Await all spawned tasks
+        tokio::time::timeout(
+            Duration::from_secs(30),
+            self.await_termination()
+        ).await.ok();
+    }
+}
+
+// ✅ GOOD - Structured task spawning with tracing
+pub fn spawn_scoped<F>(task: F) -> JoinHandle<()>
+where
+    F: Future<Output = ()> + Send + 'static,
+{
+    let span = tracing::Span::current();
+    tokio::spawn(
+        task.instrument(span)
+            .catch_unwind()  // Prevent task panics from propagating
+    )
+}
+```
+
+### Async Traits (Stabilized 1.75)
+
+```rust
+// ✅ GOOD - Use async traits directly
+pub trait AsyncProcessor: Send + Sync {
+    async fn process(&self, input: Input) -> Result<Output>;
+}
+
+// ✅ GOOD - Generic Associated Types (GATs) - stabilized 1.65
+pub trait Database {
+    type Transaction<'a>: Transaction where Self: 'a;
+
+    async fn begin_transaction(&mut self) -> Result<Self::Transaction<'_>>;
+}
+```
+
+### Pin and Async Safety
+
+```rust
+// ✅ GOOD - Document pin requirements
+use std::pin::Pin;
+
+/// This future captures self-referential data and must be pinned.
+pub struct Connection {
+    _pin: PhantomPinned,
+}
+
+impl Connection {
+    pub fn poll_read(self: Pin<&mut Self>) -> Poll<Result<Bytes>> {
+        // Safe because we're pinned
+        // ...
+    }
+}
+```
+
+## Zero-Copy Operations
+
+### Use Bytes for Efficient Memory Management
+
+```rust
+// ✅ GOOD - Use bytes for zero-copy operations
+use bytes::{Bytes, BytesMut};
+
+pub struct Message {
+    // Cheap to clone, reference-counted
+    payload: Bytes,
+}
+
+impl Message {
+    pub fn parse(mut buffer: BytesMut) -> Result<Self> {
+        // Zero-copy: split buffer without allocation
+        let payload = buffer.split_to(header.len).freeze();
+        Ok(Message { payload })
+    }
+}
+
+// ✅ GOOD - Use zerocopy for parsing
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
+
+#[repr(C)]
+#[derive(AsBytes, FromBytes, FromZeroes)]
+pub struct Header {
+    version: u32,
+    flags: u32,
+    length: u32,
+}
+```
+
+### Efficient String Formatting
+
+```rust
+// ✅ GOOD - Reuse buffer for formatting
+use std::fmt::Write;
+
+thread_local! {
+    static FMT_BUFFER: RefCell<String> = RefCell::new(String::with_capacity(256));
+}
+
+// ✅ GOOD - Use format_args! for zero-allocation formatting
+fn log_message(level: Level, args: fmt::Arguments<'_>) {
+    // No allocation if not actually logging
+    if level >= current_level() {
+        println!("{}: {}", level, args);
+    }
+}
+
+macro_rules! log_info {
+    ($($arg:tt)*) => {
+        log_message(Level::Info, format_args!($($arg)*))
+    };
+}
+```
+
+## Compile-Time Optimization
+
+### Const Context Evaluation
+
+```rust
+// ✅ GOOD - Leverage const evaluation for compile-time validation
+pub const fn validate_at_compile_time(value: u32) -> u32 {
+    assert!(value > 0, "Value must be positive");
+    value
+}
+
+// ✅ GOOD - Use const generics for compile-time guarantees
+pub struct BoundedVec<T, const MAX_SIZE: usize> {
+    inner: Vec<T>,
+}
+
+impl<T, const MAX_SIZE: usize> BoundedVec<T, MAX_SIZE> {
+    pub fn push(&mut self, item: T) -> Result<()> {
+        if self.inner.len() >= MAX_SIZE {
+            return Err(Error::CapacityExceeded);
+        }
+        self.inner.push(item);
+        Ok(())
+    }
+}
+```
+
+### NonZero Types for Space Optimization
+
+```rust
+// ✅ GOOD - Use NonZero types for Option optimization
+use std::num::NonZeroU64;
+
+pub struct SessionId(NonZeroU64);  // Option<SessionId> is same size as SessionId
+
+impl SessionId {
+    /// Creates a new SessionId.
+    /// Returns None for invalid (zero) input.
+    pub fn new(id: u64) -> Option<Self> {
+        NonZeroU64::new(id).map(Self)
+    }
+}
+```
+
+### Inline and Optimization Hints
+
+```rust
+// ✅ GOOD - Strategic inlining
+#[inline]  // Small, frequently called
+pub fn is_valid(&self) -> bool {
+    self.state == State::Valid
+}
+
+#[inline(never)]  // Large, cold path
+fn handle_rare_error_case() {
+    // ... complex error handling
+}
+
+#[cold]  // Hint that function is unlikely to be called
+fn panic_handler(msg: &str) -> ! {
+    panic!("{}", msg)
+}
+```
+
+## Advanced Type Patterns
+
+### Sealed Traits for API Stability
+
+```rust
+// ✅ GOOD - Sealed traits prevent external implementation
+mod sealed {
+    pub trait Sealed {}
+}
+
+pub trait PublicTrait: sealed::Sealed {
+    // Users can use but not implement this trait
+}
+
+impl sealed::Sealed for MyType {}
+impl PublicTrait for MyType {}
+```
+
+### Type-Safe Dependency Injection
+
+```rust
+// ✅ GOOD - Type-safe dependency injection
+pub struct AppContext {
+    db: Arc<dyn Database>,
+    cache: Arc<dyn Cache>,
+    config: Arc<Config>,
+}
+
+// ✅ GOOD - Use extension traits for testing
+#[cfg_attr(test, mockall::automock)]
+pub trait TimeProvider: Send + Sync {
+    fn now(&self) -> Instant;
+}
+
+pub struct Handler<T: TimeProvider = SystemTime> {
+    time: T,
+}
+```
+
+### Modern Iterator Patterns
+
+```rust
+// ✅ GOOD - Use array_chunks (stabilized 1.77)
+let data: Vec<u8> = vec![1, 2, 3, 4, 5, 6, 7, 8];
+for chunk in data.array_chunks::<4>() {
+    process_chunk(chunk);  // chunk is &[u8; 4]
+}
+
+// ✅ GOOD - Use try_fold for fallible iteration
+let sum = numbers.iter()
+    .try_fold(0u32, |acc, &x| {
+        acc.checked_add(x).ok_or(Error::Overflow)
+    })?;
+
+// ✅ GOOD - Use intersperse (stabilized 1.79)
+let formatted = items.iter()
+    .map(|i| i.to_string())
+    .intersperse(", ".to_string())
+    .collect::<String>();
+```
+
+## Observability
+
+### Structured Logging with Tracing
+
+```rust
+// ✅ GOOD - Structured logging with sensitive data handling
+use tracing::{instrument, span, Level};
+
+#[instrument(
+    skip(password),  // Don't log sensitive data
+    fields(
+        user_id = %user.id,
+        request_id = %Uuid::new_v4(),
+    )
+)]
+pub async fn authenticate(user: User, password: String) -> Result<Session> {
+    let span = span!(Level::DEBUG, "auth_check");
+    let _guard = span.enter();
+
+    // Metrics integration
+    metrics::counter!("auth_attempts").increment(1);
+
+    // ... authentication logic
+}
+```
+
+### OpenTelemetry Integration
+
+```rust
+// ✅ GOOD - OpenTelemetry for distributed tracing
+use opentelemetry::trace::Tracer;
+
+pub fn init_telemetry() -> Result<()> {
+    let tracer = opentelemetry_jaeger::new_agent_pipeline()
+        .with_service_name("capnweb")
+        .install_batch(opentelemetry::runtime::Tokio)?;
+
+    tracing_opentelemetry::layer().with_tracer(tracer);
+    Ok(())
+}
+```
+
+## Feature Flags
+
+### Best Practices
+
+```toml
+# Cargo.toml
+[features]
+default = ["std", "async"]
+std = []
+async = ["tokio", "futures"]
+# Use additive features only
+testing = ["mockall", "quickcheck"]
+
+# Document feature requirements
+#! Features:
+#! - `std`: Enables standard library (enabled by default)
+#! - `async`: Enables async runtime support
+#! - `testing`: Enables test utilities (not for production)
+```
+
+```rust
+// ✅ GOOD - Conditional compilation
+#[cfg(feature = "async")]
+pub async fn async_process() { }
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;  // no_std support
+
+// ✅ GOOD - Feature-gated test utilities
+#[cfg(feature = "testing")]
+pub mod test_helpers {
+    pub fn create_mock_client() -> MockClient { }
+}
+```
+
+### RAII and Drop Patterns
+
+```rust
+// ✅ GOOD - RAII for resource management
+pub struct TempFile {
+    path: PathBuf,
+}
+
+impl Drop for TempFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.path);  // Best effort cleanup
+    }
+}
+
+// ✅ GOOD - Guard patterns
+pub struct MutexGuard<'a, T> {
+    lock: &'a Mutex<T>,
+    _phantom: PhantomData<*const ()>,  // !Send + !Sync
+}
+```
+
+## Macro Patterns
+
+### Hygienic Macro Design
+
+```rust
+// ✅ GOOD - Hygienic macros with proper scoping
+macro_rules! define_id_type {
+    ($name:ident) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub struct $name($crate::types::InternalId);
+
+        impl $name {
+            pub const fn new(id: u64) -> Self {
+                Self($crate::types::InternalId::new(id))
+            }
+        }
+    };
+}
+
+// ✅ GOOD - Use proc macros for complex derivations
+use proc_macro::TokenStream;
+
+#[proc_macro_derive(Validate, attributes(validate))]
+pub fn derive_validate(input: TokenStream) -> TokenStream {
+    // ... for complex compile-time code generation
+}
+
+// ✅ GOOD - Declarative macro with clear error messages
+macro_rules! ensure {
+    ($cond:expr, $err:expr) => {
+        if !$cond {
+            return Err($err.into());
+        }
+    };
+}
 ```
 
 ## Tooling & Lints
@@ -699,6 +1164,73 @@ impl RateLimiter {
 }
 ```
 
+## Common Anti-Patterns to Avoid
+
+### Collection Anti-Patterns
+
+```rust
+// ❌ BAD - Unnecessary intermediate collection
+let names: Vec<_> = users.iter().map(|u| u.name.clone()).collect();
+let count = names.len();
+
+// ✅ GOOD - Direct count without collection
+let count = users.iter().count();
+
+// ❌ BAD - Collecting just to iterate again
+let items: Vec<_> = data.iter().filter(|x| x.is_valid()).collect();
+for item in items { process(item); }
+
+// ✅ GOOD - Direct iteration
+for item in data.iter().filter(|x| x.is_valid()) {
+    process(item);
+}
+```
+
+### Async Anti-Patterns
+
+```rust
+// ❌ BAD - Blocking in async context
+async fn bad_async() {
+    std::thread::sleep(Duration::from_secs(1)); // Blocks thread!
+}
+
+// ✅ GOOD - Use async-aware sleep
+async fn good_async() {
+    tokio::time::sleep(Duration::from_secs(1)).await;
+}
+
+// ❌ BAD - Large futures on stack
+async fn huge_future() -> [u8; 1_000_000] {
+    [0; 1_000_000] // Too large for stack
+}
+
+// ✅ GOOD - Box large futures
+async fn boxed_future() -> Box<[u8; 1_000_000]> {
+    Box::new([0; 1_000_000])
+}
+```
+
+### Error Handling Anti-Patterns
+
+```rust
+// ❌ BAD - Silently ignoring errors
+let _ = important_operation();
+
+// ✅ GOOD - Explicitly handle or log
+if let Err(e) = important_operation() {
+    tracing::warn!("Operation failed: {}", e);
+}
+
+// ❌ BAD - String errors without context
+return Err("operation failed".to_string());
+
+// ✅ GOOD - Typed errors with context
+return Err(Error::OperationFailed {
+    reason: "timeout",
+    context: format!("after {} retries", retries),
+});
+```
+
 ## Migration Guide
 
 When updating existing code to meet these standards:
@@ -711,6 +1243,17 @@ When updating existing code to meet these standards:
 
 ## Version History
 
+- **2.0** (2025-01-28): Added modern Rust 1.85+ patterns:
+  - Async traits and structured concurrency
+  - Zero-copy operations with bytes crate
+  - Const context optimization and NonZero types
+  - Generic Associated Types (GATs)
+  - Sealed traits and dependency injection
+  - Modern iterator patterns (array_chunks, try_fold, intersperse)
+  - Observability with tracing and OpenTelemetry
+  - Feature flag best practices
+  - RAII and macro patterns
+  - Enhanced testing with rstest and snapshot testing
 - **1.0** (2025-01-24): Initial version based on code analysis and modern Rust best practices
 
 ---
