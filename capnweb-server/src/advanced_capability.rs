@@ -1047,10 +1047,7 @@ impl RpcTarget for AdvancedCapability {
                 let cap_list: Vec<String> = capabilities.keys().cloned().collect();
 
                 Ok(Value::Array(
-                    cap_list
-                        .into_iter()
-                        .map(Value::String)
-                        .collect(),
+                    cap_list.into_iter().map(Value::String).collect(),
                 ))
             }
 

@@ -894,13 +894,9 @@ async fn evaluate_expression(
                         }
                         Err("Invalid pipeline path".into())
                     }
-                    _ => {
-                        Err(format!(
-                            "Import {} is not a capability stub",
-                            pipeline.import_id.0
-                        )
-                        .into())
-                    }
+                    _ => Err(
+                        format!("Import {} is not a capability stub", pipeline.import_id.0).into(),
+                    ),
                 }
             } else {
                 Err(format!("Import {} not found", pipeline.import_id.0).into())
