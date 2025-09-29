@@ -25,37 +25,63 @@ impl RpcTarget for BootstrapService {
 
         match method {
             "getCapability" => {
-                // Extract capability ID from args
-                if let Some(Value::Number(id)) = args.first() {
-                    let cap_id = id.as_u64().unwrap_or(0);
-                    info!("getCapability requested for ID: {}", cap_id);
+                // Extract and validate capability ID from args
+                let id_value = args.first()
+                    .ok_or_else(|| {
+                        error!("getCapability called without proper ID argument");
+                        RpcError::bad_request("getCapability requires a capability ID argument")
+                    })?;
 
-                    // For testing, we support capabilities 1-10
-                    match cap_id {
-                        1..=10 => {
-                            // Return capability reference in Cap'n Web wire format
-                            // The client expects an object that will be recognized as a capability
-                            let response = json!({
-                                "$capnweb": {
-                                    "import_id": cap_id
-                                }
-                            });
-                            info!("Returning capability reference for ID {}", cap_id);
-                            Ok(response)
-                        }
-                        _ => {
-                            warn!("Capability {} not found", cap_id);
-                            Err(RpcError::not_found(format!(
-                                "Capability {} not found",
-                                cap_id
-                            )))
-                        }
+                // Ensure it's a JSON number
+                let id_number = id_value.as_number()
+                    .ok_or_else(|| {
+                        error!("getCapability called with non-number argument: {:?}", id_value);
+                        RpcError::bad_request("Capability ID must be a number")
+                    })?;
+
+                // Validate it's an integer (no fractional part)
+                if !id_number.is_i64() && !id_number.is_u64() {
+                    error!("getCapability called with non-integer number: {:?}", id_number);
+                    return Err(RpcError::bad_request("Capability ID must be an integer"));
+                }
+
+                // Try to get as i64 first to check for negative numbers
+                let cap_id = if let Some(i64_val) = id_number.as_i64() {
+                    if i64_val < 0 {
+                        error!("getCapability called with negative ID: {}", i64_val);
+                        return Err(RpcError::bad_request("Capability ID must be non-negative"));
                     }
+                    // Safe to convert to u64 since we checked it's non-negative
+                    i64_val as u64
+                } else if let Some(u64_val) = id_number.as_u64() {
+                    // Direct u64 value (already non-negative by type)
+                    u64_val
                 } else {
-                    error!("getCapability called without proper ID argument");
-                    Err(RpcError::bad_request(
-                        "getCapability requires a capability ID argument",
-                    ))
+                    error!("getCapability called with out-of-range number: {:?}", id_number);
+                    return Err(RpcError::bad_request("Capability ID value is out of valid range"));
+                };
+
+                info!("getCapability requested for ID: {}", cap_id);
+
+                // For testing, we support capabilities 0-10
+                match cap_id {
+                    0..=10 => {
+                        // Return capability reference in Cap'n Web wire format
+                        let response = json!({
+                            "$capnweb": {
+                                "import_id": cap_id
+                            }
+                        });
+                        info!("Returning capability reference for ID {}", cap_id);
+                        Ok(response)
+                    }
+                    _ => {
+                        warn!("Capability {} not found", cap_id);
+                        Err(RpcError::not_found(format!(
+                            "Capability {} not found",
+                            cap_id
+                        )))
+                    }
                 }
             }
             "echo" => {

@@ -273,17 +273,45 @@ impl RpcTarget for MainService {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "getCapability" => {
-                let id = args
-                    .first()
-                    .and_then(|v| v.as_u64())
-                    .ok_or_else(|| RpcError::bad_request("getCapability requires an ID"))?;
+                // Extract and validate capability ID from args
+                let id_value = args.first()
+                    .ok_or_else(|| RpcError::bad_request("getCapability requires a capability ID argument"))?;
 
-                // Return capability reference
-                Ok(json!({
-                    "$capnweb": {
-                        "import_id": id
+                // Ensure it's a JSON number
+                let id_number = id_value.as_number()
+                    .ok_or_else(|| RpcError::bad_request("Capability ID must be a number"))?;
+
+                // Validate it's an integer (no fractional part)
+                if !id_number.is_i64() && !id_number.is_u64() {
+                    return Err(RpcError::bad_request("Capability ID must be an integer"));
+                }
+
+                // Try to get as i64 first to check for negative numbers
+                let cap_id = if let Some(i64_val) = id_number.as_i64() {
+                    if i64_val < 0 {
+                        return Err(RpcError::bad_request("Capability ID must be non-negative"));
                     }
-                }))
+                    // Safe to convert to u64 since we checked it's non-negative
+                    i64_val as u64
+                } else if let Some(u64_val) = id_number.as_u64() {
+                    // Direct u64 value (already non-negative by type)
+                    u64_val
+                } else {
+                    return Err(RpcError::bad_request("Capability ID value is out of valid range"));
+                };
+
+                // Check if capability exists (for this example, we support 0-4)
+                match cap_id {
+                    0..=4 => {
+                        // Return capability reference in Cap'n Web wire format
+                        Ok(json!({
+                            "$capnweb": {
+                                "import_id": cap_id
+                            }
+                        }))
+                    }
+                    _ => Err(RpcError::not_found(format!("Capability {} not found", cap_id)))
+                }
             }
             "listServices" => Ok(json!({
                 "services": [

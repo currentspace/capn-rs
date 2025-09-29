@@ -61,16 +61,47 @@ impl RpcTarget for BootstrapService {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "getCapability" => {
-                // Extract capability ID from args
-                if let Some(Value::Number(id)) = args.first() {
-                    let cap_id = id.as_u64().unwrap_or(0);
+                // Extract and validate capability ID from args
+                let id_value = args.first()
+                    .ok_or_else(|| RpcError::bad_request("getCapability requires a capability ID argument"))?;
 
-                    // For now, we'll return a capability reference for known capabilities
-                    // In a real implementation, this would check the capability table
+                // Ensure it's a JSON number
+                let id_number = id_value.as_number()
+                    .ok_or_else(|| RpcError::bad_request("Capability ID must be a number"))?;
+
+                // Validate it's an integer (no fractional part)
+                if !id_number.is_i64() && !id_number.is_u64() {
+                    return Err(RpcError::bad_request("Capability ID must be an integer"));
+                }
+
+                // Try to get as i64 first to check for negative numbers
+                if let Some(i64_val) = id_number.as_i64() {
+                    if i64_val < 0 {
+                        return Err(RpcError::bad_request("Capability ID must be non-negative"));
+                    }
+                    // Safe to convert to u64 since we checked it's non-negative
+                    let cap_id = i64_val as u64;
+
+                    // Check against registered capabilities
+                    // For now using hardcoded check, but should use server's capability registry
                     match cap_id {
-                        1 | 2 => {
+                        0 | 1 | 2 => {
                             // Return capability reference in Cap'n Web wire format
-                            // The client expects an object with $capnweb.import_id
+                            Ok(json!({
+                                "$capnweb": {
+                                    "import_id": cap_id
+                                }
+                            }))
+                        }
+                        _ => Err(RpcError::not_found(format!(
+                            "Capability {} not found",
+                            cap_id
+                        ))),
+                    }
+                } else if let Some(cap_id) = id_number.as_u64() {
+                    // Direct u64 value (already non-negative by type)
+                    match cap_id {
+                        0 | 1 | 2 => {
                             Ok(json!({
                                 "$capnweb": {
                                     "import_id": cap_id
@@ -83,9 +114,7 @@ impl RpcTarget for BootstrapService {
                         ))),
                     }
                 } else {
-                    Err(RpcError::bad_request(
-                        "getCapability requires a capability ID argument",
-                    ))
+                    Err(RpcError::bad_request("Capability ID value is out of valid range"))
                 }
             }
             "echo" => {
