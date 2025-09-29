@@ -178,9 +178,31 @@ async fn handle_batch(
                                 );
                                 tracing::info!("  Pipeline args raw wire expression: {:#?}", args);
 
-                                // Map import_id to capability
+                                // Validate and map import_id to capability
                                 // Official protocol: import_id 0 is the main capability/bootstrap interface
                                 // All import_ids map directly to their corresponding capability IDs
+
+                                // Check for negative import_id values
+                                if *import_id < 0 {
+                                    tracing::error!(
+                                        "Invalid negative import_id: {}. Import IDs must be non-negative.",
+                                        import_id
+                                    );
+                                    session.results.insert(
+                                        assigned_import_id,
+                                        WireExpression::Error {
+                                            error_type: "bad_request".to_string(),
+                                            message: format!(
+                                                "Invalid import_id: {}. Import IDs must be non-negative",
+                                                import_id
+                                            ),
+                                            stack: None,
+                                        },
+                                    );
+                                    continue;
+                                }
+
+                                // Safe to convert to u64 now that we've validated it's non-negative
                                 let cap_id = CapId::new(*import_id as u64);
 
                                 tracing::debug!(
