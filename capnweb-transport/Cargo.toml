@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 documentation = "https://docs.rs/capnweb-transport"
 description = "Transport layer implementations for Cap'n Web protocol (HTTP, WebSocket, WebTransport)"
-readme = "../README.md"
+readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
@@ -52,3 +52,7 @@ websocket = ["dep:tokio-tungstenite", "dep:tungstenite"]
 webtransport = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls", "dep:rustls-pemfile"]
 # http3 = ["dep:quinn", "dep:rustls", "dep:rustls-pemfile"]  # Disabled: experimental, needs update
 http-batch = ["dep:hyper", "dep:tower"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

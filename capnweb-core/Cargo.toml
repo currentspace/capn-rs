@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 documentation = "https://docs.rs/capnweb-core"
 description = "Core protocol implementation for Cap'n Web RPC - capability-based security with promise pipelining"
-readme = "../README.md"
+readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
@@ -46,4 +46,8 @@ uuid = { workspace = true, features = ["v4"] }
 default = ["validation"]
 validation = ["dep:jsonschema", "dep:schemars"]
 simd = ["dep:simd-json"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
