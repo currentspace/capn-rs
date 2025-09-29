@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 documentation = "https://docs.rs/capnweb-server"
 description = "Production-ready server for Cap'n Web RPC protocol with capability management"
-readme = "../README.md"
+readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
@@ -67,3 +67,7 @@ tracing-subscriber.workspace = true
 default = ["all-transports"]
 all-transports = ["capnweb-transport/default"]
 h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls", "dep:rcgen", "dep:http"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

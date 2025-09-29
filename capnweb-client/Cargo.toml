@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 documentation = "https://docs.rs/capnweb-client"
 description = "High-performance Rust client for Cap'n Web RPC protocol with batching and pipelining"
-readme = "../README.md"
+readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
@@ -47,3 +47,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 default = ["all-transports", "macros"]
 all-transports = ["capnweb-transport/default"]
 macros = ["dep:syn", "dep:quote", "dep:proc-macro2"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
