@@ -20,6 +20,19 @@ fi
 
 VERSION="$1"
 
+# Portable in-place substitution
+sed_inplace() {
+    local pattern="$1"
+    local target="$2"
+    if sed --version >/dev/null 2>&1; then
+        # GNU sed
+        sed -i.bak "$pattern" "$target"
+    else
+        # BSD sed (macOS)
+        sed -i '.bak' "$pattern" "$target"
+    fi
+}
+
 # Validate version format
 if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
     echo -e "${RED}Error: Invalid version format${NC}"
@@ -40,19 +53,19 @@ update_cargo_toml() {
     fi
 
     # Update the crate version
-    sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" "$file"
+    sed_inplace "s/^version = \".*\"/version = \"$VERSION\"/" "$file"
 
     # Update internal dependencies
-    sed -i.bak "s/capnweb-core = { version = \"[^\"]*\"/capnweb-core = { version = \"$VERSION\"/" "$file"
-    sed -i.bak "s/capnweb-transport = { version = \"[^\"]*\"/capnweb-transport = { version = \"$VERSION\"/" "$file"
-    sed -i.bak "s/capnweb-server = { version = \"[^\"]*\"/capnweb-server = { version = \"$VERSION\"/" "$file"
-    sed -i.bak "s/capnweb-client = { version = \"[^\"]*\"/capnweb-client = { version = \"$VERSION\"/" "$file"
+    sed_inplace "s/capnweb-core = { version = \"[^\"]*\"/capnweb-core = { version = \"$VERSION\"/" "$file"
+    sed_inplace "s/capnweb-transport = { version = \"[^\"]*\"/capnweb-transport = { version = \"$VERSION\"/" "$file"
+    sed_inplace "s/capnweb-server = { version = \"[^\"]*\"/capnweb-server = { version = \"$VERSION\"/" "$file"
+    sed_inplace "s/capnweb-client = { version = \"[^\"]*\"/capnweb-client = { version = \"$VERSION\"/" "$file"
 
     # Also update path+version dependencies
-    sed -i.bak "s/version = \"[^\"]*\", path = \"..\/capnweb-core\"/version = \"$VERSION\", path = \"..\/capnweb-core\"/" "$file"
-    sed -i.bak "s/version = \"[^\"]*\", path = \"..\/capnweb-transport\"/version = \"$VERSION\", path = \"..\/capnweb-transport\"/" "$file"
-    sed -i.bak "s/version = \"[^\"]*\", path = \"..\/capnweb-server\"/version = \"$VERSION\", path = \"..\/capnweb-server\"/" "$file"
-    sed -i.bak "s/version = \"[^\"]*\", path = \"..\/capnweb-client\"/version = \"$VERSION\", path = \"..\/capnweb-client\"/" "$file"
+    sed_inplace "s/version = \"[^\"]*\", path = \"..\/capnweb-core\"/version = \"$VERSION\", path = \"..\/capnweb-core\"/" "$file"
+    sed_inplace "s/version = \"[^\"]*\", path = \"..\/capnweb-transport\"/version = \"$VERSION\", path = \"..\/capnweb-transport\"/" "$file"
+    sed_inplace "s/version = \"[^\"]*\", path = \"..\/capnweb-server\"/version = \"$VERSION\", path = \"..\/capnweb-server\"/" "$file"
+    sed_inplace "s/version = \"[^\"]*\", path = \"..\/capnweb-client\"/version = \"$VERSION\", path = \"..\/capnweb-client\"/" "$file"
 
     # Remove backup file
     rm -f "$file.bak"
@@ -70,7 +83,7 @@ update_cargo_toml "capnweb-interop-tests/Cargo.toml"
 
 # Update the workspace Cargo.toml if it has a version
 if grep -q "^version = " "Cargo.toml"; then
-    sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" "Cargo.toml"
+    sed_inplace "s/^version = \".*\"/version = \"$VERSION\"/" "Cargo.toml"
     rm -f "Cargo.toml.bak"
     echo -e "${GREEN}✓${NC} Updated workspace Cargo.toml"
 fi
