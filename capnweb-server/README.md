@@ -30,7 +30,9 @@ Create a simple server:
 use capnweb_server::{Server, ServerConfig, RpcTarget};
 use capnweb_core::{CapId, RpcError};
 use async_trait::async_trait;
-use serde_json::Value;
+use serde_json::{json, Value};
+use std::sync::Arc;
+use anyhow::Result;
 
 #[derive(Debug)]
 struct MyService;
@@ -84,7 +86,7 @@ The server can be configured via `ServerConfig`:
 
 This project is licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](../LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](../LICENSE-MIT) or https://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0, ([LICENSE-APACHE](https://github.com/currentspace/capn-rs/blob/main/LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](https://github.com/currentspace/capn-rs/blob/main/LICENSE-MIT) or https://opensource.org/licenses/MIT)
 
 at your option.

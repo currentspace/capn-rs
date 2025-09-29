@@ -34,12 +34,12 @@ use capnweb_transport::{Transport, HttpBatchTransport, WebSocketTransport};
 use capnweb_core::Message;
 
 // HTTP Batch transport
-let http_transport = HttpBatchTransport::new("http://localhost:8080/rpc/batch");
+let transport = HttpBatchTransport::new("http://localhost:8080/rpc/batch");
+transport.send(message).await?;
+let response = transport.receive().await?;
 
-// WebSocket transport
-let ws_transport = WebSocketTransport::connect("ws://localhost:8080/rpc/ws").await?;
-
-// Send messages
+// Or use WebSocket transport
+let transport = WebSocketTransport::connect("ws://localhost:8080/rpc/ws").await?;
 transport.send(message).await?;
 let response = transport.receive().await?;
 ```
@@ -62,7 +62,7 @@ Choose your transport based on your needs:
 
 This project is licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](../LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](../LICENSE-MIT) or https://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0, ([LICENSE-APACHE](https://github.com/currentspace/capn-rs/blob/main/LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](https://github.com/currentspace/capn-rs/blob/main/LICENSE-MIT) or https://opensource.org/licenses/MIT)
 
 at your option.
