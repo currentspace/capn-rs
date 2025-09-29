@@ -65,7 +65,7 @@ impl std::fmt::Debug for NegotiationResult {
 ///
 /// # Arguments
 ///
-/// * `url` - The server URL to connect to (e.g., "https://example.com")
+/// * `url` - The server URL to connect to (e.g., <https://example.com>)
 /// * `config` - Optional configuration for the negotiation process
 ///
 /// # Returns
@@ -118,7 +118,7 @@ pub async fn negotiate(
     // the feature is not yet available.
 
     Err(TransportError::Protocol(
-        "Transport negotiation not yet implemented".to_string()
+        "Transport negotiation not yet implemented".to_string(),
     ))
 }
 
@@ -133,6 +133,7 @@ pub async fn negotiate(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "webtransport")]
+#[allow(dead_code)]
 async fn try_webtransport(
     url: &str,
     timeout_ms: Option<u64>,
@@ -140,7 +141,9 @@ async fn try_webtransport(
     let _url = url;
     let _timeout = timeout_ms;
     // TODO: Implement WebTransport connection attempt
-    Err(TransportError::Protocol("WebTransport not available".to_string()))
+    Err(TransportError::Protocol(
+        "WebTransport not available".to_string(),
+    ))
 }
 
 /// Attempts to establish a WebSocket connection.
@@ -154,6 +157,7 @@ async fn try_webtransport(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "websocket")]
+#[allow(dead_code)]
 async fn try_websocket(
     url: &str,
     timeout_ms: Option<u64>,
@@ -161,7 +165,9 @@ async fn try_websocket(
     let _url = url;
     let _timeout = timeout_ms;
     // TODO: Implement WebSocket connection attempt
-    Err(TransportError::Protocol("WebSocket not available".to_string()))
+    Err(TransportError::Protocol(
+        "WebSocket not available".to_string(),
+    ))
 }
 
 /// Attempts to establish an HTTP batch transport connection.
@@ -175,6 +181,7 @@ async fn try_websocket(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "http-batch")]
+#[allow(dead_code)]
 async fn try_http_batch(
     url: &str,
     timeout_ms: Option<u64>,
@@ -182,7 +189,9 @@ async fn try_http_batch(
     let _url = url;
     let _timeout = timeout_ms;
     // TODO: Implement HTTP batch connection attempt
-    Err(TransportError::Protocol("HTTP batch not available".to_string()))
+    Err(TransportError::Protocol(
+        "HTTP batch not available".to_string(),
+    ))
 }
 
 #[cfg(test)]
