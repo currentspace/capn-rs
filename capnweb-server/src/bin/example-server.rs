@@ -32,24 +32,32 @@ impl RpcTarget for CounterService {
     async fn call(&self, method: &str, _args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "increment" => {
-                let mut count = self.count.lock()
+                let mut count = self
+                    .count
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count += 1;
                 Ok(json!({ "count": *count }))
             }
             "decrement" => {
-                let mut count = self.count.lock()
+                let mut count = self
+                    .count
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count -= 1;
                 Ok(json!({ "count": *count }))
             }
             "get" => {
-                let count = self.count.lock()
+                let count = self
+                    .count
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 Ok(json!({ "count": *count }))
             }
             "reset" => {
-                let mut count = self.count.lock()
+                let mut count = self
+                    .count
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count = 0;
                 Ok(json!({ "count": 0 }))
@@ -85,7 +93,9 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let store = self.store.lock()
+                let store = self
+                    .store
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 match store.get(key) {
                     Some(value) => Ok(json!({ "value": value })),
@@ -100,7 +110,9 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let mut store = self.store.lock()
+                let mut store = self
+                    .store
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 store.insert(key.to_string(), args[1].clone());
                 Ok(json!({ "success": true }))
@@ -113,19 +125,25 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let mut store = self.store.lock()
+                let mut store = self
+                    .store
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let existed = store.remove(key).is_some();
                 Ok(json!({ "deleted": existed }))
             }
             "list" => {
-                let store = self.store.lock()
+                let store = self
+                    .store
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let keys: Vec<String> = store.keys().cloned().collect();
                 Ok(json!({ "keys": keys }))
             }
             "clear" => {
-                let mut store = self.store.lock()
+                let mut store = self
+                    .store
+                    .lock()
                     .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let count = store.len();
                 store.clear();
@@ -283,11 +301,13 @@ impl RpcTarget for MainService {
         match method {
             "getCapability" => {
                 // Extract and validate capability ID from args
-                let id_value = args.first()
-                    .ok_or_else(|| RpcError::bad_request("getCapability requires a capability ID argument"))?;
+                let id_value = args.first().ok_or_else(|| {
+                    RpcError::bad_request("getCapability requires a capability ID argument")
+                })?;
 
                 // Ensure it's a JSON number
-                let id_number = id_value.as_number()
+                let id_number = id_value
+                    .as_number()
                     .ok_or_else(|| RpcError::bad_request("Capability ID must be a number"))?;
 
                 // Validate it's an integer (no fractional part)
@@ -306,7 +326,9 @@ impl RpcTarget for MainService {
                     // Direct u64 value (already non-negative by type)
                     u64_val
                 } else {
-                    return Err(RpcError::bad_request("Capability ID value is out of valid range"));
+                    return Err(RpcError::bad_request(
+                        "Capability ID value is out of valid range",
+                    ));
                 };
 
                 // Check if capability exists (for this example, we support 0-4)
@@ -319,7 +341,10 @@ impl RpcTarget for MainService {
                             }
                         }))
                     }
-                    _ => Err(RpcError::not_found(format!("Capability {} not found", cap_id)))
+                    _ => Err(RpcError::not_found(format!(
+                        "Capability {} not found",
+                        cap_id
+                    ))),
                 }
             }
             "listServices" => Ok(json!({

@@ -62,11 +62,13 @@ impl RpcTarget for BootstrapService {
         match method {
             "getCapability" => {
                 // Extract and validate capability ID from args
-                let id_value = args.first()
-                    .ok_or_else(|| RpcError::bad_request("getCapability requires a capability ID argument"))?;
+                let id_value = args.first().ok_or_else(|| {
+                    RpcError::bad_request("getCapability requires a capability ID argument")
+                })?;
 
                 // Ensure it's a JSON number
-                let id_number = id_value.as_number()
+                let id_number = id_value
+                    .as_number()
                     .ok_or_else(|| RpcError::bad_request("Capability ID must be a number"))?;
 
                 // Validate it's an integer (no fractional part)
@@ -85,7 +87,7 @@ impl RpcTarget for BootstrapService {
                     // Check against registered capabilities
                     // For now using hardcoded check, but should use server's capability registry
                     match cap_id {
-                        0 | 1 | 2 => {
+                        0..=2 => {
                             // Return capability reference in Cap'n Web wire format
                             Ok(json!({
                                 "$capnweb": {
@@ -101,20 +103,20 @@ impl RpcTarget for BootstrapService {
                 } else if let Some(cap_id) = id_number.as_u64() {
                     // Direct u64 value (already non-negative by type)
                     match cap_id {
-                        0 | 1 | 2 => {
-                            Ok(json!({
-                                "$capnweb": {
-                                    "import_id": cap_id
-                                }
-                            }))
-                        }
+                        0..=2 => Ok(json!({
+                            "$capnweb": {
+                                "import_id": cap_id
+                            }
+                        })),
                         _ => Err(RpcError::not_found(format!(
                             "Capability {} not found",
                             cap_id
                         ))),
                     }
                 } else {
-                    Err(RpcError::bad_request("Capability ID value is out of valid range"))
+                    Err(RpcError::bad_request(
+                        "Capability ID value is out of valid range",
+                    ))
                 }
             }
             "echo" => {

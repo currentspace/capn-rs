@@ -26,22 +26,26 @@ impl RpcTarget for BootstrapService {
         match method {
             "getCapability" => {
                 // Extract and validate capability ID from args
-                let id_value = args.first()
-                    .ok_or_else(|| {
-                        error!("getCapability called without proper ID argument");
-                        RpcError::bad_request("getCapability requires a capability ID argument")
-                    })?;
+                let id_value = args.first().ok_or_else(|| {
+                    error!("getCapability called without proper ID argument");
+                    RpcError::bad_request("getCapability requires a capability ID argument")
+                })?;
 
                 // Ensure it's a JSON number
-                let id_number = id_value.as_number()
-                    .ok_or_else(|| {
-                        error!("getCapability called with non-number argument: {:?}", id_value);
-                        RpcError::bad_request("Capability ID must be a number")
-                    })?;
+                let id_number = id_value.as_number().ok_or_else(|| {
+                    error!(
+                        "getCapability called with non-number argument: {:?}",
+                        id_value
+                    );
+                    RpcError::bad_request("Capability ID must be a number")
+                })?;
 
                 // Validate it's an integer (no fractional part)
                 if !id_number.is_i64() && !id_number.is_u64() {
-                    error!("getCapability called with non-integer number: {:?}", id_number);
+                    error!(
+                        "getCapability called with non-integer number: {:?}",
+                        id_number
+                    );
                     return Err(RpcError::bad_request("Capability ID must be an integer"));
                 }
 
@@ -57,8 +61,13 @@ impl RpcTarget for BootstrapService {
                     // Direct u64 value (already non-negative by type)
                     u64_val
                 } else {
-                    error!("getCapability called with out-of-range number: {:?}", id_number);
-                    return Err(RpcError::bad_request("Capability ID value is out of valid range"));
+                    error!(
+                        "getCapability called with out-of-range number: {:?}",
+                        id_number
+                    );
+                    return Err(RpcError::bad_request(
+                        "Capability ID value is out of valid range",
+                    ));
                 };
 
                 info!("getCapability requested for ID: {}", cap_id);
