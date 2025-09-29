@@ -51,6 +51,51 @@ impl RpcTarget for CalculatorService {
     }
 }
 
+/// Bootstrap service that provides capability imports
+/// This is the main interface (import_id=0) required by the Cap'n Web protocol
+#[derive(Debug)]
+struct BootstrapService;
+
+#[async_trait]
+impl RpcTarget for BootstrapService {
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        match method {
+            "getCapability" => {
+                // Extract capability ID from args
+                if let Some(Value::Number(id)) = args.first() {
+                    let cap_id = id.as_u64().unwrap_or(0);
+
+                    // For now, we'll return a capability reference for known capabilities
+                    // In a real implementation, this would check the capability table
+                    match cap_id {
+                        1 | 2 => {
+                            // Return capability reference in Cap'n Web wire format
+                            // The client expects an object with $capnweb.import_id
+                            Ok(json!({
+                                "$capnweb": {
+                                    "import_id": cap_id
+                                }
+                            }))
+                        }
+                        _ => Err(RpcError::not_found(format!("Capability {} not found", cap_id)))
+                    }
+                } else {
+                    Err(RpcError::bad_request("getCapability requires a capability ID argument"))
+                }
+            }
+            "echo" => {
+                // Bootstrap echo for compatibility
+                Ok(json!({
+                    "echoed": args,
+                    "method": "echo",
+                    "source": "bootstrap"
+                }))
+            }
+            _ => Err(RpcError::not_found(format!("Unknown bootstrap method: {}", method)))
+        }
+    }
+}
+
 /// Example echo service for testing
 #[derive(Debug)]
 struct EchoService;
@@ -88,11 +133,13 @@ async fn main() -> Result<()> {
     let server = Server::new(config);
 
     // Register capabilities
+    // IMPORTANT: import_id=0 is the main interface/bootstrap service per Cap'n Web protocol
+    server.register_capability(CapId::new(0), Arc::new(BootstrapService));
     server.register_capability(CapId::new(1), Arc::new(CalculatorService));
-
     server.register_capability(CapId::new(2), Arc::new(EchoService));
 
     info!("Server configured with capabilities:");
+    info!("  - CapId(0): Bootstrap Service (main interface)");
     info!("  - CapId(1): Calculator Service");
     info!("  - CapId(2): Echo Service");
 
