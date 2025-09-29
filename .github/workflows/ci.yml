@@ -39,6 +39,9 @@ jobs:
             rust: nightly
           - os: windows-latest
             rust: nightly
+          # Skip Windows beta due to timeout issues (exceeds 15 min limit)
+          - os: windows-latest
+            rust: beta
     steps:
       - uses: actions/checkout@v4
         with:
