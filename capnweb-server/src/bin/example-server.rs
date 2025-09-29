@@ -32,21 +32,25 @@ impl RpcTarget for CounterService {
     async fn call(&self, method: &str, _args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "increment" => {
-                let mut count = self.count.lock().unwrap();
+                let mut count = self.count.lock()
+                    .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count += 1;
                 Ok(json!({ "count": *count }))
             }
             "decrement" => {
-                let mut count = self.count.lock().unwrap();
+                let mut count = self.count.lock()
+                    .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count -= 1;
                 Ok(json!({ "count": *count }))
             }
             "get" => {
-                let count = self.count.lock().unwrap();
+                let count = self.count.lock()
+                    .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 Ok(json!({ "count": *count }))
             }
             "reset" => {
-                let mut count = self.count.lock().unwrap();
+                let mut count = self.count.lock()
+                    .map_err(|e| RpcError::internal(format!("Counter lock poisoned: {}", e)))?;
                 *count = 0;
                 Ok(json!({ "count": 0 }))
             }
@@ -81,7 +85,8 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let store = self.store.lock().unwrap();
+                let store = self.store.lock()
+                    .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 match store.get(key) {
                     Some(value) => Ok(json!({ "value": value })),
                     None => Ok(json!({ "value": null })),
@@ -95,7 +100,8 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let mut store = self.store.lock().unwrap();
+                let mut store = self.store.lock()
+                    .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 store.insert(key.to_string(), args[1].clone());
                 Ok(json!({ "success": true }))
             }
@@ -107,17 +113,20 @@ impl RpcTarget for KeyValueStore {
                     .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
-                let mut store = self.store.lock().unwrap();
+                let mut store = self.store.lock()
+                    .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let existed = store.remove(key).is_some();
                 Ok(json!({ "deleted": existed }))
             }
             "list" => {
-                let store = self.store.lock().unwrap();
+                let store = self.store.lock()
+                    .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let keys: Vec<String> = store.keys().cloned().collect();
                 Ok(json!({ "keys": keys }))
             }
             "clear" => {
-                let mut store = self.store.lock().unwrap();
+                let mut store = self.store.lock()
+                    .map_err(|e| RpcError::internal(format!("Store lock poisoned: {}", e)))?;
                 let count = store.len();
                 store.clear();
                 Ok(json!({ "cleared": count }))
