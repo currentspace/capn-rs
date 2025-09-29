@@ -65,7 +65,7 @@ impl std::fmt::Debug for NegotiationResult {
 ///
 /// # Arguments
 ///
-/// * `url` - The server URL to connect to (e.g., "https://example.com")
+/// * `url` - The server URL to connect to (e.g., <https://example.com>)
 /// * `config` - Optional configuration for the negotiation process
 ///
 /// # Returns
