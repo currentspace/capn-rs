@@ -31,11 +31,20 @@ Using different transports:
 
 ```rust
 use capnweb_transport::{Transport, HttpBatchTransport, WebSocketTransport};
-use capnweb_core::Message;
+use capnweb_core::{Message, CallId, CapId};
+use serde_json::json;
+
+// Create a message to send
+let message = Message::Call {
+    id: CallId::new(1),
+    target: CapId::new(0),
+    method: "echo".to_string(),
+    args: vec![json!("hello world")],
+};
 
 // HTTP Batch transport
 let transport = HttpBatchTransport::new("http://localhost:8080/rpc/batch");
-transport.send(message).await?;
+transport.send(message.clone()).await?;
 let response = transport.receive().await?;
 
 // Or use WebSocket transport

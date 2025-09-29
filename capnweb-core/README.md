@@ -32,21 +32,33 @@ capnweb-core = "0.1.0"
 Basic usage:
 
 ```rust
-use capnweb_core::{CapId, Message, RpcError};
+use capnweb_core::{CapId, Message, CallId, RpcError};
+use serde_json::json;
 
 // Create a capability ID
 let cap_id = CapId::new(1);
+
+// Example: create a message
+let message = Message::Call {
+    id: CallId::new(1),
+    target: cap_id,
+    method: "echo".to_string(),
+    args: vec![json!("hello")],
+};
 
 // Handle protocol messages
 match message {
     Message::Call { target, method, args, .. } => {
         // Process RPC call
+        println!("Call to {}: {}", target, method);
     }
     Message::Result { value, .. } => {
         // Handle result
+        println!("Result: {:?}", value);
     }
     Message::Error { error, .. } => {
         // Handle error
+        println!("Error: {}", error);
     }
 }
 ```
