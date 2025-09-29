@@ -156,7 +156,7 @@ impl RpcTarget for TimeService {
                     .and_then(|v| v.as_i64())
                     .ok_or_else(|| RpcError::bad_request("format requires a unix timestamp"))?;
 
-                use chrono::{DateTime, Utc};
+                use chrono::DateTime;
                 let dt = DateTime::from_timestamp(timestamp, 0)
                     .ok_or_else(|| RpcError::bad_request("Invalid timestamp"))?;
 

@@ -177,7 +177,7 @@ struct TypeScriptTestService;
 
 #[async_trait]
 impl RpcTarget for TypeScriptTestService {
-    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+    async fn call(&self, method: &str, _args: Vec<Value>) -> Result<Value, RpcError> {
         info!("TypeScriptTest.{} called", method);
 
         match method {

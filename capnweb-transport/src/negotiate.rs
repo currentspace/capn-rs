@@ -133,6 +133,7 @@ pub async fn negotiate(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "webtransport")]
+#[allow(dead_code)]
 async fn try_webtransport(
     url: &str,
     timeout_ms: Option<u64>,
@@ -156,6 +157,7 @@ async fn try_webtransport(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "websocket")]
+#[allow(dead_code)]
 async fn try_websocket(
     url: &str,
     timeout_ms: Option<u64>,
@@ -179,6 +181,7 @@ async fn try_websocket(
 ///
 /// Returns the established transport or an error if connection fails.
 #[cfg(feature = "http-batch")]
+#[allow(dead_code)]
 async fn try_http_batch(
     url: &str,
     timeout_ms: Option<u64>,
