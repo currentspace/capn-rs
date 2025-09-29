@@ -49,11 +49,24 @@ jobs:
       - name: Verify version in Cargo.toml
         run: |
           VERSION=${{ steps.version.outputs.version }}
+
+          # Check workspace version
+          WORKSPACE_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
+          if [[ "$WORKSPACE_VERSION" != "$VERSION" ]]; then
+            echo "Version mismatch in workspace: expected $VERSION, found $WORKSPACE_VERSION"
+            exit 1
+          fi
+
+          # Verify crates are using workspace version
           for crate in capnweb-core capnweb-transport capnweb-server capnweb-client; do
-            CARGO_VERSION=$(grep "^version" $crate/Cargo.toml | head -1 | cut -d'"' -f2)
-            if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
-              echo "Version mismatch in $crate: expected $VERSION, found $CARGO_VERSION"
-              exit 1
+            if grep -q "^version.workspace = true" $crate/Cargo.toml; then
+              echo "✓ $crate uses workspace version"
+            else
+              CARGO_VERSION=$(grep "^version" $crate/Cargo.toml | head -1 | cut -d'"' -f2)
+              if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
+                echo "Version mismatch in $crate: expected $VERSION, found $CARGO_VERSION"
+                exit 1
+              fi
             fi
           done
 
