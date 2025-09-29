@@ -35,6 +35,9 @@ jobs:
           # Clone and build the official Cap'n Web client
           ./setup-capnweb.sh
 
+          # Apply Node.js compatibility patch
+          ./patch-capnweb.sh
+
       - name: Install TypeScript dependencies
         working-directory: ./typescript-interop
         run: pnpm install
