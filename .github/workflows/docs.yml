@@ -1,0 +1,320 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.rs'
+      - '**/Cargo.toml'
+      - '.github/workflows/docs.yml'
+      - 'README.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.rs'
+      - '**/Cargo.toml'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to GitHub Pages'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-docs
+
+      - name: Install cargo-doc-links
+        run: cargo install cargo-rdme
+
+      - name: Check for broken documentation links
+        run: |
+          cargo doc --no-deps --all-features 2>&1 | tee doc-build.log
+          if grep -q "warning:" doc-build.log; then
+            echo "Documentation warnings found:"
+            grep "warning:" doc-build.log
+            exit 1
+          fi
+
+      - name: Build documentation with all features
+        run: |
+          cargo doc \
+            --workspace \
+            --no-deps \
+            --all-features \
+            --document-private-items
+        env:
+          RUSTDOCFLAGS: --html-in-header ./docs/assets/doc-header.html --extend-css ./docs/assets/doc-styles.css
+        continue-on-error: true  # Custom header/css might not exist yet
+
+      - name: Build standard documentation
+        run: |
+          cargo doc \
+            --workspace \
+            --no-deps \
+            --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Add landing page
+        run: |
+          cat > target/doc/index.html <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Cap'n Web Rust Documentation</title>
+              <meta http-equiv="refresh" content="0; url=capnweb_core/index.html">
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                      max-width: 800px;
+                      margin: 50px auto;
+                      padding: 20px;
+                      line-height: 1.6;
+                  }
+                  h1 { color: #333; }
+                  .crates {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                      gap: 20px;
+                      margin-top: 30px;
+                  }
+                  .crate {
+                      border: 1px solid #ddd;
+                      border-radius: 8px;
+                      padding: 15px;
+                      transition: box-shadow 0.3s;
+                  }
+                  .crate:hover {
+                      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                  }
+                  .crate h2 {
+                      margin-top: 0;
+                      color: #0066cc;
+                  }
+                  a {
+                      color: #0066cc;
+                      text-decoration: none;
+                  }
+                  a:hover {
+                      text-decoration: underline;
+                  }
+                  .auto-redirect {
+                      background: #f0f8ff;
+                      border-left: 4px solid #0066cc;
+                      padding: 10px;
+                      margin: 20px 0;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>🚀 Cap'n Web Rust Implementation</h1>
+
+              <div class="auto-redirect">
+                  <strong>Auto-redirecting to capnweb-core documentation...</strong><br>
+                  If not redirected, <a href="capnweb_core/index.html">click here</a>.
+              </div>
+
+              <p>A complete, production-ready implementation of the Cap'n Web protocol in Rust,
+                 providing capability-based RPC with promise pipelining and multi-transport support.</p>
+
+              <div class="crates">
+                  <div class="crate">
+                      <h2><a href="capnweb_core/index.html">capnweb-core</a></h2>
+                      <p>Core protocol implementation including messages, IL, and validation.</p>
+                  </div>
+
+                  <div class="crate">
+                      <h2><a href="capnweb_transport/index.html">capnweb-transport</a></h2>
+                      <p>Transport layer implementations for HTTP, WebSocket, and WebTransport.</p>
+                  </div>
+
+                  <div class="crate">
+                      <h2><a href="capnweb_server/index.html">capnweb-server</a></h2>
+                      <p>Server implementation with capability management and lifecycle.</p>
+                  </div>
+
+                  <div class="crate">
+                      <h2><a href="capnweb_client/index.html">capnweb-client</a></h2>
+                      <p>Client implementation with ergonomic recorder API.</p>
+                  </div>
+
+                  <div class="crate">
+                      <h2><a href="capnweb_interop_tests/index.html">capnweb-interop-tests</a></h2>
+                      <p>JavaScript interoperability verification tests.</p>
+                  </div>
+              </div>
+
+              <hr style="margin-top: 40px;">
+
+              <p><a href="https://github.com/currentspace/capn-rs">GitHub Repository</a> |
+                 <a href="https://github.com/currentspace/capn-rs/blob/main/README.md">README</a> |
+                 <a href="https://github.com/currentspace/capn-rs/blob/main/RUST_CODING_STANDARDS.md">Coding Standards</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Add .nojekyll file
+        run: touch target/doc/.nojekyll
+
+      - name: Check documentation coverage
+        run: |
+          echo "## Documentation Coverage Report" > doc-coverage.md
+          echo "" >> doc-coverage.md
+
+          for crate in capnweb-core capnweb-transport capnweb-server capnweb-client; do
+            echo "### $crate" >> doc-coverage.md
+            echo '```' >> doc-coverage.md
+            cargo rustdoc -p $crate -- -Z unstable-options --show-coverage 2>&1 | tail -n 20 >> doc-coverage.md || true
+            echo '```' >> doc-coverage.md
+            echo "" >> doc-coverage.md
+          done
+
+          cat doc-coverage.md
+        continue-on-error: true
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: target/doc
+          retention-days: 30
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: doc-coverage-report
+          path: doc-coverage.md
+          retention-days: 7
+
+  check-links:
+    name: Check Documentation Links
+    runs-on: ubuntu-latest
+    needs: build-docs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: target/doc
+
+      - name: Check for broken links
+        run: |
+          # Simple broken link checker
+          find target/doc -name "*.html" -exec grep -l "href=\".*\"" {} \; | head -20 | while read file; do
+            echo "Checking $file"
+            grep -o 'href="[^"]*"' "$file" | sed 's/href="//;s/"//' | while read link; do
+              if [[ $link == http* ]]; then
+                continue  # Skip external links
+              fi
+              if [[ $link == /* ]]; then
+                continue  # Skip absolute paths
+              fi
+              if [[ $link == "#"* ]]; then
+                continue  # Skip anchors
+              fi
+              # Check if local file exists
+              dir=$(dirname "$file")
+              if [[ ! -f "$dir/$link" ]] && [[ ! -f "target/doc/$link" ]]; then
+                echo "  Broken link: $link"
+              fi
+            done
+          done
+        continue-on-error: true
+
+  deploy-docs:
+    name: Deploy Documentation to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build-docs, check-links]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: ./docs-to-deploy
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs-to-deploy
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Output deployment URL
+        run: |
+          echo "Documentation deployed to: ${{ steps.deployment.outputs.page_url }}"
+          echo "Direct links:"
+          echo "  - Core: ${{ steps.deployment.outputs.page_url }}capnweb_core/index.html"
+          echo "  - Transport: ${{ steps.deployment.outputs.page_url }}capnweb_transport/index.html"
+          echo "  - Server: ${{ steps.deployment.outputs.page_url }}capnweb_server/index.html"
+          echo "  - Client: ${{ steps.deployment.outputs.page_url }}capnweb_client/index.html"
+
+  pr-comment:
+    name: Add PR Comment with Documentation Preview
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: target/doc
+
+      - name: Upload to temporary hosting
+        id: upload
+        run: |
+          # In a real setup, you might upload to a preview service
+          # For now, we'll just note that docs were built successfully
+          echo "preview_url=Documentation built successfully. Artifacts available in Actions." >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const preview_info = `${{ steps.upload.outputs.preview_url }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📚 Documentation Build Successful\n\n${preview_info}\n\n### Quick Links:\n- [Download Documentation Artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n- [View Workflow](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\n*Documentation will be published to GitHub Pages when merged to main.*`
+            })

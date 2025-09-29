@@ -3,8 +3,10 @@
 A complete, production-ready implementation of the [Cap'n Web](https://github.com/cloudflare/capnweb) protocol in Rust, providing capability-based RPC with promise pipelining and multi-transport support.
 
 [![CI](https://github.com/currentspace/capn-rs/workflows/CI/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/ci.yml)
+[![Documentation](https://github.com/currentspace/capn-rs/workflows/Documentation/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/docs.yml)
 [![TypeScript Interop](https://github.com/currentspace/capn-rs/workflows/TypeScript%20Interop%20Tests/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/interop.yml)
-[![Documentation](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
+[![docs.rs](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
+[![GitHub Pages](https://img.shields.io/badge/docs-github%20pages-blue)](https://currentspace.github.io/capn-rs/)
 [![Crates.io](https://img.shields.io/crates/v/capnweb-core.svg)](https://crates.io/crates/capnweb-core)
 [![License](https://img.shields.io/crates/l/capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
 [![Rust 1.85+](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -305,11 +307,43 @@ at your option.
 
 ## Documentation
 
-- [API Documentation](https://docs.rs/capnweb-core)
-- [Cap'n Web Protocol Specification](spec.md)
-- [Development Guide](CLAUDE.md)
-- [Coding Standards](RUST_CODING_STANDARDS.md)
-- Additional docs in [`docs/`](docs/) directory
+### 📚 Online Documentation
+
+- **[API Documentation (GitHub Pages)](https://currentspace.github.io/capn-rs/)** - Full API documentation for all crates
+  - [capnweb-core](https://currentspace.github.io/capn-rs/capnweb_core/) - Core protocol types and messages
+  - [capnweb-transport](https://currentspace.github.io/capn-rs/capnweb_transport/) - Transport implementations
+  - [capnweb-server](https://currentspace.github.io/capn-rs/capnweb_server/) - Server capabilities
+  - [capnweb-client](https://currentspace.github.io/capn-rs/capnweb_client/) - Client implementation
+
+- **[docs.rs](https://docs.rs/capnweb-core)** - Alternative documentation on docs.rs (when published)
+
+### 📖 Project Documentation
+
+- [Cap'n Web Protocol Specification](spec.md) - Technical specification
+- [Development Guide](CLAUDE.md) - Implementation guide for contributors
+- [Coding Standards](RUST_CODING_STANDARDS.md) - Rust coding standards and best practices
+- [CodeRabbit Setup](docs/CODERABBIT_SETUP.md) - Automated code review configuration
+
+### 🔧 Building Documentation Locally
+
+```bash
+# Build documentation with all features
+cargo doc --workspace --all-features --no-deps --open
+
+# Build with private items documented
+cargo doc --workspace --all-features --document-private-items --no-deps --open
+
+# Check for documentation issues
+cargo doc --workspace --all-features --no-deps 2>&1 | grep warning
+```
+
+### 📝 Documentation Coverage
+
+All public APIs are documented. To check documentation coverage:
+
+```bash
+cargo rustdoc -p capnweb-core -- -Z unstable-options --show-coverage
+```
 
 ## Roadmap
 

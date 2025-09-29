@@ -1,0 +1,95 @@
+<!-- Custom header for Cap'n Web Rust documentation -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+<!-- Add GitHub link to all documentation pages -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add GitHub ribbon
+    var githubRibbon = document.createElement('a');
+    githubRibbon.href = 'https://github.com/currentspace/capn-rs';
+    githubRibbon.innerHTML = '<img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_purple_aa00cc.png" class="attachment-full size-full" alt="Fork me on GitHub" style="position: fixed; top: 0; right: 0; border: 0; z-index: 1000;">';
+    githubRibbon.style.position = 'fixed';
+    githubRibbon.style.top = '0';
+    githubRibbon.style.right = '0';
+    githubRibbon.style.zIndex = '1000';
+    githubRibbon.setAttribute('aria-label', 'View source on GitHub');
+    document.body.appendChild(githubRibbon);
+
+    // Add navigation breadcrumbs
+    var path = window.location.pathname;
+    if (path.includes('/capnweb_')) {
+        var nav = document.createElement('nav');
+        nav.style.cssText = 'background: #f8f9fa; padding: 10px 20px; margin: -10px -10px 20px -10px; border-bottom: 1px solid #dee2e6;';
+        nav.innerHTML = '<a href="../index.html">Cap\'n Web Docs</a> › ' + document.title;
+        document.body.insertBefore(nav, document.body.firstChild);
+    }
+
+    // Add copy button to code blocks
+    var codeBlocks = document.querySelectorAll('pre.rust');
+    codeBlocks.forEach(function(block) {
+        var button = document.createElement('button');
+        button.textContent = '📋 Copy';
+        button.style.cssText = 'position: absolute; top: 5px; right: 5px; padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;';
+        button.onclick = function() {
+            var code = block.textContent || block.innerText;
+            navigator.clipboard.writeText(code).then(function() {
+                button.textContent = '✅ Copied!';
+                setTimeout(function() {
+                    button.textContent = '📋 Copy';
+                }, 2000);
+            });
+        };
+
+        // Make the parent position relative
+        block.style.position = 'relative';
+        block.appendChild(button);
+    });
+
+    // Add search improvements
+    var searchBox = document.querySelector('.search-input');
+    if (searchBox) {
+        searchBox.placeholder = '🔍 Search Cap\'n Web docs...';
+    }
+
+    // Add version info
+    var versionInfo = document.createElement('div');
+    versionInfo.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;';
+    versionInfo.innerHTML = 'Cap\'n Web v0.1.0 | Rust 1.85+';
+    document.body.appendChild(versionInfo);
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Press '/' to focus search
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        var searchBox = document.querySelector('.search-input');
+        if (searchBox && document.activeElement !== searchBox) {
+            e.preventDefault();
+            searchBox.focus();
+        }
+    }
+
+    // Press 'g' then 'h' to go home
+    if (e.key === 'g') {
+        window.lastKeyG = Date.now();
+    } else if (e.key === 'h' && window.lastKeyG && Date.now() - window.lastKeyG < 500) {
+        window.location.href = '../index.html';
+    }
+
+    // Press 'g' then 's' to go to source
+    if (e.key === 's' && window.lastKeyG && Date.now() - window.lastKeyG < 500) {
+        window.location.href = 'https://github.com/currentspace/capn-rs';
+    }
+});
+</script>
+
+<!-- Analytics placeholder - uncomment and add your tracking ID if needed -->
+<!--
+<script async src="https://www.googletagmanager.com/gtag/js?id=YOUR-GA-ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'YOUR-GA-ID');
+</script>
+-->

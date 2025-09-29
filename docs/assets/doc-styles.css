@@ -1,0 +1,141 @@
+/* Custom styles for Cap'n Web Rust documentation */
+
+/* Add a banner to the top of the documentation */
+body::before {
+    content: "🚀 Cap'n Web Protocol - Rust Implementation";
+    display: block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: -10px -10px 20px -10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Improve code block styling */
+pre.rust {
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Better highlighting for important items */
+.important-traits {
+    background-color: #f0f4ff !important;
+    border-left: 4px solid #667eea;
+}
+
+/* Make trait implementations more visible */
+.impl {
+    border-left: 3px solid #e0e0e0;
+    margin-left: -3px;
+    transition: border-color 0.3s;
+}
+
+.impl:hover {
+    border-left-color: #667eea;
+}
+
+/* Improve search results */
+.search-results a {
+    transition: all 0.2s;
+}
+
+.search-results a:hover {
+    transform: translateX(5px);
+    color: #667eea;
+}
+
+/* Better module navigation */
+.sidebar-menu .current {
+    background: linear-gradient(90deg, #f0f4ff 0%, transparent 100%);
+    font-weight: bold;
+}
+
+/* Add icons to different item types */
+.struct::before { content: "📦 "; }
+.enum::before { content: "🔢 "; }
+.trait::before { content: "🔧 "; }
+.fn::before { content: "⚡ "; }
+.mod::before { content: "📁 "; }
+
+/* Improve mobile experience */
+@media (max-width: 768px) {
+    body::before {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}
+
+/* Add warning styles for deprecated items */
+.deprecated {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.deprecated::after {
+    content: " (deprecated)";
+    color: #ff6b6b;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+/* Better visibility for unsafe code */
+.unsafe {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.unsafe::before {
+    content: "⚠️ ";
+}
+
+/* Improve table styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+table td {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Add custom notes styling */
+.note {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 10px 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.warning {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 10px 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.tip {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    padding: 10px 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
