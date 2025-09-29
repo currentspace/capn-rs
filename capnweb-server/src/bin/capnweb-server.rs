@@ -77,10 +77,15 @@ impl RpcTarget for BootstrapService {
                                 }
                             }))
                         }
-                        _ => Err(RpcError::not_found(format!("Capability {} not found", cap_id)))
+                        _ => Err(RpcError::not_found(format!(
+                            "Capability {} not found",
+                            cap_id
+                        ))),
                     }
                 } else {
-                    Err(RpcError::bad_request("getCapability requires a capability ID argument"))
+                    Err(RpcError::bad_request(
+                        "getCapability requires a capability ID argument",
+                    ))
                 }
             }
             "echo" => {
@@ -91,7 +96,10 @@ impl RpcTarget for BootstrapService {
                     "source": "bootstrap"
                 }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown bootstrap method: {}", method)))
+            _ => Err(RpcError::not_found(format!(
+                "Unknown bootstrap method: {}",
+                method
+            ))),
         }
     }
 }

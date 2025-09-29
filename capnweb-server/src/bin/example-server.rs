@@ -50,7 +50,7 @@ impl RpcTarget for CounterService {
                 *count = 0;
                 Ok(json!({ "count": 0 }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }
@@ -77,7 +77,8 @@ impl RpcTarget for KeyValueStore {
                 if args.is_empty() {
                     return Err(RpcError::bad_request("get requires a key"));
                 }
-                let key = args[0].as_str()
+                let key = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
                 let store = self.store.lock().unwrap();
@@ -90,7 +91,8 @@ impl RpcTarget for KeyValueStore {
                 if args.len() < 2 {
                     return Err(RpcError::bad_request("set requires key and value"));
                 }
-                let key = args[0].as_str()
+                let key = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
                 let mut store = self.store.lock().unwrap();
@@ -101,7 +103,8 @@ impl RpcTarget for KeyValueStore {
                 if args.is_empty() {
                     return Err(RpcError::bad_request("delete requires a key"));
                 }
-                let key = args[0].as_str()
+                let key = args[0]
+                    .as_str()
                     .ok_or_else(|| RpcError::bad_request("Key must be a string"))?;
 
                 let mut store = self.store.lock().unwrap();
@@ -119,7 +122,7 @@ impl RpcTarget for KeyValueStore {
                 store.clear();
                 Ok(json!({ "cleared": count }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }
@@ -132,17 +135,13 @@ struct TimeService;
 impl RpcTarget for TimeService {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
-            "now" => {
-                Ok(json!({
-                    "timestamp": chrono::Utc::now().to_rfc3339(),
-                    "unix": chrono::Utc::now().timestamp(),
-                }))
-            }
+            "now" => Ok(json!({
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "unix": chrono::Utc::now().timestamp(),
+            })),
             "delay" => {
                 // Simulate async delay
-                let delay_ms = args.first()
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(1000);
+                let delay_ms = args.first().and_then(|v| v.as_u64()).unwrap_or(1000);
 
                 tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
 
@@ -152,7 +151,8 @@ impl RpcTarget for TimeService {
                 }))
             }
             "format" => {
-                let timestamp = args.first()
+                let timestamp = args
+                    .first()
                     .and_then(|v| v.as_i64())
                     .ok_or_else(|| RpcError::bad_request("format requires a unix timestamp"))?;
 
@@ -165,7 +165,7 @@ impl RpcTarget for TimeService {
                     "iso": dt.to_rfc3339(),
                 }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }
@@ -179,7 +179,8 @@ impl RpcTarget for MathService {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "fibonacci" => {
-                let n = args.first()
+                let n = args
+                    .first()
                     .and_then(|v| v.as_u64())
                     .ok_or_else(|| RpcError::bad_request("fibonacci requires a number"))?;
 
@@ -191,7 +192,8 @@ impl RpcTarget for MathService {
                 Ok(json!({ "result": result, "n": n }))
             }
             "factorial" => {
-                let n = args.first()
+                let n = args
+                    .first()
                     .and_then(|v| v.as_u64())
                     .ok_or_else(|| RpcError::bad_request("factorial requires a number"))?;
 
@@ -203,7 +205,8 @@ impl RpcTarget for MathService {
                 Ok(json!({ "result": result, "n": n }))
             }
             "isPrime" => {
-                let n = args.first()
+                let n = args
+                    .first()
                     .and_then(|v| v.as_u64())
                     .ok_or_else(|| RpcError::bad_request("isPrime requires a number"))?;
 
@@ -211,7 +214,8 @@ impl RpcTarget for MathService {
                 Ok(json!({ "isPrime": result, "n": n }))
             }
             "sqrt" => {
-                let n = args.first()
+                let n = args
+                    .first()
                     .and_then(|v| v.as_f64())
                     .ok_or_else(|| RpcError::bad_request("sqrt requires a number"))?;
 
@@ -221,7 +225,7 @@ impl RpcTarget for MathService {
 
                 Ok(json!({ "result": n.sqrt() }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }
@@ -269,7 +273,8 @@ impl RpcTarget for MainService {
     async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
         match method {
             "getCapability" => {
-                let id = args.first()
+                let id = args
+                    .first()
                     .and_then(|v| v.as_u64())
                     .ok_or_else(|| RpcError::bad_request("getCapability requires an ID"))?;
 
@@ -280,23 +285,19 @@ impl RpcTarget for MainService {
                     }
                 }))
             }
-            "listServices" => {
-                Ok(json!({
-                    "services": [
-                        { "id": 1, "name": "counter", "description": "Stateful counter service" },
-                        { "id": 2, "name": "keyvalue", "description": "Key-value store" },
-                        { "id": 3, "name": "time", "description": "Time and delay operations" },
-                        { "id": 4, "name": "math", "description": "Mathematical operations" },
-                    ]
-                }))
-            }
-            "health" => {
-                Ok(json!({
-                    "status": "healthy",
-                    "timestamp": chrono::Utc::now().to_rfc3339(),
-                }))
-            }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            "listServices" => Ok(json!({
+                "services": [
+                    { "id": 1, "name": "counter", "description": "Stateful counter service" },
+                    { "id": 2, "name": "keyvalue", "description": "Key-value store" },
+                    { "id": 3, "name": "time", "description": "Time and delay operations" },
+                    { "id": 4, "name": "math", "description": "Mathematical operations" },
+                ]
+            })),
+            "health" => Ok(json!({
+                "status": "healthy",
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+            })),
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }

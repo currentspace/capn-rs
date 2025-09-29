@@ -45,12 +45,17 @@ impl RpcTarget for BootstrapService {
                         }
                         _ => {
                             warn!("Capability {} not found", cap_id);
-                            Err(RpcError::not_found(format!("Capability {} not found", cap_id)))
+                            Err(RpcError::not_found(format!(
+                                "Capability {} not found",
+                                cap_id
+                            )))
                         }
                     }
                 } else {
                     error!("getCapability called without proper ID argument");
-                    Err(RpcError::bad_request("getCapability requires a capability ID argument"))
+                    Err(RpcError::bad_request(
+                        "getCapability requires a capability ID argument",
+                    ))
                 }
             }
             "echo" => {
@@ -89,7 +94,10 @@ impl RpcTarget for BootstrapService {
             }
             _ => {
                 warn!("Unknown bootstrap method: {}", method);
-                Err(RpcError::not_found(format!("Unknown bootstrap method: {}", method)))
+                Err(RpcError::not_found(format!(
+                    "Unknown bootstrap method: {}",
+                    method
+                )))
             }
         }
     }
@@ -107,15 +115,18 @@ impl RpcTarget for CalculatorService {
         match method {
             "add" | "subtract" | "multiply" | "divide" => {
                 if args.len() != 2 {
-                    return Err(RpcError::bad_request(
-                        format!("{} requires exactly 2 arguments", method)
-                    ));
+                    return Err(RpcError::bad_request(format!(
+                        "{} requires exactly 2 arguments",
+                        method
+                    )));
                 }
 
-                let a = args[0].as_f64().ok_or_else(||
-                    RpcError::bad_request("First argument must be a number"))?;
-                let b = args[1].as_f64().ok_or_else(||
-                    RpcError::bad_request("Second argument must be a number"))?;
+                let a = args[0]
+                    .as_f64()
+                    .ok_or_else(|| RpcError::bad_request("First argument must be a number"))?;
+                let b = args[1]
+                    .as_f64()
+                    .ok_or_else(|| RpcError::bad_request("Second argument must be a number"))?;
 
                 let result = match method {
                     "add" => a + b,
@@ -132,14 +143,12 @@ impl RpcTarget for CalculatorService {
 
                 Ok(json!({ "result": result, "operation": method }))
             }
-            "echo" => {
-                Ok(json!({
-                    "echoed": args,
-                    "method": "echo",
-                    "service": "calculator"
-                }))
-            }
-            _ => Err(RpcError::not_found(format!("Unknown method: {}", method)))
+            "echo" => Ok(json!({
+                "echoed": args,
+                "method": "echo",
+                "service": "calculator"
+            })),
+            _ => Err(RpcError::not_found(format!("Unknown method: {}", method))),
         }
     }
 }
@@ -210,7 +219,10 @@ impl RpcTarget for TypeScriptTestService {
                     }
                 }))
             }
-            _ => Err(RpcError::not_found(format!("Unknown test method: {}", method)))
+            _ => Err(RpcError::not_found(format!(
+                "Unknown test method: {}",
+                method
+            ))),
         }
     }
 }
