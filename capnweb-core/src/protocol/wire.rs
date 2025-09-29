@@ -401,7 +401,20 @@ impl WireExpression {
                         }
                     }
                 } else {
-                    // Regular array
+                    // Check if it's an escaped array (Cap'n Web protocol wraps arrays in arrays)
+                    // If the array has exactly one element that is itself an array, unwrap it
+                    if arr.len() == 1 {
+                        if let Some(JsonValue::Array(inner)) = arr.first() {
+                            // This is an escaped array, unwrap it
+                            let items = inner
+                                .iter()
+                                .map(WireExpression::from_json)
+                                .collect::<Result<Vec<_>, _>>()?;
+                            return Ok(WireExpression::Array(items));
+                        }
+                    }
+
+                    // Regular array (not escaped)
                     let items = arr
                         .iter()
                         .map(WireExpression::from_json)
@@ -431,7 +444,10 @@ impl WireExpression {
             WireExpression::String(s) => JsonValue::String(s.clone()),
 
             WireExpression::Array(items) => {
-                JsonValue::Array(items.iter().map(|e| e.to_json()).collect())
+                // Cap'n Web protocol requires arrays to be "escaped" by wrapping in another array
+                // This matches the TypeScript client's expectation for array serialization
+                let inner_array = items.iter().map(|e| e.to_json()).collect();
+                JsonValue::Array(vec![JsonValue::Array(inner_array)])
             }
 
             WireExpression::Object(map) => {
