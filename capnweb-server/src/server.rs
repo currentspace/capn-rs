@@ -176,15 +176,34 @@ async fn handle_batch(
                                     import_id,
                                     property_path
                                 );
-                                tracing::trace!("  Pipeline args: {:#?}", args);
+                                tracing::info!("  Pipeline args raw wire expression: {:#?}", args);
 
-                                // Map import_id to capability
-                                // Official protocol: import_id 0 is the main capability
-                                let cap_id = if *import_id == 0 {
-                                    CapId::new(1) // Main capability (Calculator for now)
-                                } else {
-                                    CapId::new(*import_id as u64)
-                                };
+                                // Validate and map import_id to capability
+                                // Official protocol: import_id 0 is the main capability/bootstrap interface
+                                // All import_ids map directly to their corresponding capability IDs
+
+                                // Check for negative import_id values
+                                if *import_id < 0 {
+                                    tracing::error!(
+                                        "Invalid negative import_id: {}. Import IDs must be non-negative.",
+                                        import_id
+                                    );
+                                    session.results.insert(
+                                        assigned_import_id,
+                                        WireExpression::Error {
+                                            error_type: "bad_request".to_string(),
+                                            message: format!(
+                                                "Invalid import_id: {}. Import IDs must be non-negative",
+                                                import_id
+                                            ),
+                                            stack: None,
+                                        },
+                                    );
+                                    continue;
+                                }
+
+                                // Safe to convert to u64 now that we've validated it's non-negative
+                                let cap_id = CapId::new(*import_id as u64);
 
                                 tracing::debug!(
                                     "  Mapped import_id {} to capability {}",
@@ -211,7 +230,7 @@ async fn handle_batch(
                                                 vec![]
                                             };
 
-                                            tracing::trace!(
+                                            tracing::info!(
                                                 "  Method args (converted): {:?}",
                                                 json_args
                                             );

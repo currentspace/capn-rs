@@ -51,6 +51,90 @@ impl RpcTarget for CalculatorService {
     }
 }
 
+/// Bootstrap service that provides capability imports
+/// This is the main interface (import_id=0) required by the Cap'n Web protocol
+#[derive(Debug)]
+struct BootstrapService;
+
+#[async_trait]
+impl RpcTarget for BootstrapService {
+    async fn call(&self, method: &str, args: Vec<Value>) -> Result<Value, RpcError> {
+        match method {
+            "getCapability" => {
+                // Extract and validate capability ID from args
+                let id_value = args.first().ok_or_else(|| {
+                    RpcError::bad_request("getCapability requires a capability ID argument")
+                })?;
+
+                // Ensure it's a JSON number
+                let id_number = id_value
+                    .as_number()
+                    .ok_or_else(|| RpcError::bad_request("Capability ID must be a number"))?;
+
+                // Validate it's an integer (no fractional part)
+                if !id_number.is_i64() && !id_number.is_u64() {
+                    return Err(RpcError::bad_request("Capability ID must be an integer"));
+                }
+
+                // Try to get as i64 first to check for negative numbers
+                if let Some(i64_val) = id_number.as_i64() {
+                    if i64_val < 0 {
+                        return Err(RpcError::bad_request("Capability ID must be non-negative"));
+                    }
+                    // Safe to convert to u64 since we checked it's non-negative
+                    let cap_id = i64_val as u64;
+
+                    // Check against registered capabilities
+                    // For now using hardcoded check, but should use server's capability registry
+                    match cap_id {
+                        0..=2 => {
+                            // Return capability reference in Cap'n Web wire format
+                            Ok(json!({
+                                "$capnweb": {
+                                    "import_id": cap_id
+                                }
+                            }))
+                        }
+                        _ => Err(RpcError::not_found(format!(
+                            "Capability {} not found",
+                            cap_id
+                        ))),
+                    }
+                } else if let Some(cap_id) = id_number.as_u64() {
+                    // Direct u64 value (already non-negative by type)
+                    match cap_id {
+                        0..=2 => Ok(json!({
+                            "$capnweb": {
+                                "import_id": cap_id
+                            }
+                        })),
+                        _ => Err(RpcError::not_found(format!(
+                            "Capability {} not found",
+                            cap_id
+                        ))),
+                    }
+                } else {
+                    Err(RpcError::bad_request(
+                        "Capability ID value is out of valid range",
+                    ))
+                }
+            }
+            "echo" => {
+                // Bootstrap echo for compatibility
+                Ok(json!({
+                    "echoed": args,
+                    "method": "echo",
+                    "source": "bootstrap"
+                }))
+            }
+            _ => Err(RpcError::not_found(format!(
+                "Unknown bootstrap method: {}",
+                method
+            ))),
+        }
+    }
+}
+
 /// Example echo service for testing
 #[derive(Debug)]
 struct EchoService;
@@ -88,11 +172,13 @@ async fn main() -> Result<()> {
     let server = Server::new(config);
 
     // Register capabilities
+    // IMPORTANT: import_id=0 is the main interface/bootstrap service per Cap'n Web protocol
+    server.register_capability(CapId::new(0), Arc::new(BootstrapService));
     server.register_capability(CapId::new(1), Arc::new(CalculatorService));
-
     server.register_capability(CapId::new(2), Arc::new(EchoService));
 
     info!("Server configured with capabilities:");
+    info!("  - CapId(0): Bootstrap Service (main interface)");
     info!("  - CapId(1): Calculator Service");
     info!("  - CapId(2): Echo Service");
 
