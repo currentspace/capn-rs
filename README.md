@@ -27,8 +27,8 @@ A complete, production-ready implementation of the [Cap'n Web](https://github.co
 
 ```toml
 [dependencies]
-capnweb-server = { git = "https://github.com/currentspace/capn-rs" }
-capnweb-client = { git = "https://github.com/currentspace/capn-rs" }
+capnweb-server = "0.1.0"
+capnweb-client = "0.1.0"
 ```
 
 ### Server Example
@@ -315,7 +315,11 @@ at your option.
   - [capnweb-server](https://currentspace.github.io/capn-rs/capnweb_server/) - Server capabilities
   - [capnweb-client](https://currentspace.github.io/capn-rs/capnweb_client/) - Client implementation
 
-- **[docs.rs](https://docs.rs/capnweb-core)** - Alternative documentation on docs.rs (when published)
+- **[docs.rs](https://docs.rs/capnweb-core)** - Published crate documentation:
+  - [capnweb-core](https://docs.rs/capnweb-core/0.1.0) - Core protocol types
+  - [capnweb-transport](https://docs.rs/capnweb-transport/0.1.0) - Transport layers
+  - [capnweb-server](https://docs.rs/capnweb-server/0.1.0) - Server implementation
+  - [capnweb-client](https://docs.rs/capnweb-client/0.1.0) - Client library
 
 ### 📖 Project Documentation
 
