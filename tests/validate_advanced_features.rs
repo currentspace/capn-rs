@@ -1,7 +1,7 @@
 // Comprehensive End-to-End Validation of Cap'n Web Advanced Features
 // This test validates that all advanced features work correctly together
 
-use capnweb_core::{
+use currentspace_capnweb_core::{
     protocol::{
         // Resume Tokens
         ResumeTokenManager, PersistentSessionManager, SessionSnapshot,
@@ -15,7 +15,7 @@ use capnweb_core::{
     il::{Plan, Source},
     RpcTarget, RpcError, CapId,
 };
-use capnweb_transport::{
+use currentspace_capnweb_transport::{
     Http3Transport, Http3Config, Http3Stats,
     advanced::{Http3ConnectionPool, Http3LoadBalancer},
 };
@@ -98,7 +98,7 @@ impl AdvancedFeaturesValidator {
         assert_eq!(restored_id, "test-session-001", "Restored session ID mismatch");
 
         // Test expiration handling
-        let expired_token = capnweb_core::protocol::ResumeToken {
+        let expired_token = currentspace_capnweb_core::protocol::ResumeToken {
             token_data: token.token_data.clone(),
             session_id: token.session_id.clone(),
             expires_at: 0, // Already expired
@@ -461,7 +461,7 @@ impl CapabilityFactory for TestCapabilityFactory {
         vec!["test".to_string()]
     }
 
-    fn get_capability_metadata(&self, _capability_type: &str) -> Option<capnweb_core::protocol::CapabilityMetadata> {
+    fn get_capability_metadata(&self, _capability_type: &str) -> Option<currentspace_capnweb_core::protocol::CapabilityMetadata> {
         None
     }
 }

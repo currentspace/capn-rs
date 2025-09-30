@@ -5,10 +5,10 @@ A complete, production-ready implementation of the [Cap'n Web](https://github.co
 [![CI](https://github.com/currentspace/capn-rs/workflows/CI/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/ci.yml)
 [![Documentation](https://github.com/currentspace/capn-rs/workflows/Documentation/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/docs.yml)
 [![TypeScript Interop](https://github.com/currentspace/capn-rs/workflows/TypeScript%20Interop%20Tests/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/interop.yml)
-[![docs.rs](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
+[![docs.rs](https://docs.rs/currentspace-capnweb-core/badge.svg)](https://docs.rs/currentspace-capnweb-core)
 [![GitHub Pages](https://img.shields.io/badge/docs-github%20pages-blue)](https://currentspace.github.io/capn-rs/)
-[![Crates.io](https://img.shields.io/crates/v/capnweb-core.svg)](https://crates.io/crates/capnweb-core)
-[![License](https://img.shields.io/crates/l/capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
+[![Crates.io](https://img.shields.io/crates/v/currentspace-capnweb-core.svg)](https://crates.io/crates/currentspace-capnweb-core)
+[![License](https://img.shields.io/crates/l/currentspace-capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
 [![Rust 1.85+](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
 ## Features
@@ -27,15 +27,15 @@ A complete, production-ready implementation of the [Cap'n Web](https://github.co
 
 ```toml
 [dependencies]
-capnweb-server = "0.1.0"
-capnweb-client = "0.1.0"
+currentspace-capnweb-server = "0.1.0"
+currentspace-capnweb-client = "0.1.0"
 ```
 
 ### Server Example
 
 ```rust
-use capnweb_server::{Server, ServerConfig, RpcTarget};
-use capnweb_core::{CapId, RpcError};
+use currentspace_capnweb_server::{Server, ServerConfig, RpcTarget};
+use currentspace_capnweb_core::{CapId, RpcError};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
@@ -72,8 +72,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Client Example
 
 ```rust
-use capnweb_client::{Client, ClientConfig};
-use capnweb_core::CapId;
+use currentspace_capnweb_client::{Client, ClientConfig};
+use currentspace_capnweb_core::CapId;
 use serde_json::json;
 
 #[tokio::main]
@@ -97,17 +97,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 The implementation is organized into focused crates:
 
-- **`capnweb-core`** - Core protocol implementation (messages, IL, validation)
-- **`capnweb-transport`** - Transport layer implementations (HTTP, WebSocket, WebTransport)
-- **`capnweb-server`** - Server implementation with capability management
-- **`capnweb-client`** - Client implementation with ergonomic recorder API
-- **`capnweb-interop-tests`** - JavaScript interoperability verification
+- **`currentspace-capnweb-core`** - Core protocol implementation (messages, IL, validation)
+- **`currentspace-capnweb-transport`** - Transport layer implementations (HTTP, WebSocket, WebTransport)
+- **`currentspace-capnweb-server`** - Server implementation with capability management
+- **`currentspace-capnweb-client`** - Client implementation with ergonomic recorder API
+- **`currentspace-capnweb-interop-tests`** - JavaScript interoperability verification
 
 ## Transport Support
 
 ### HTTP Batch Transport
 ```rust
-use capnweb_client::{Client, ClientConfig};
+use currentspace_capnweb_client::{Client, ClientConfig};
 
 let config = ClientConfig {
     url: "http://localhost:8080/rpc/batch".to_string(),
@@ -120,7 +120,7 @@ let client = Client::new(config)?;
 ```rust
 // WebSocket transport is implemented and available
 // Usage requires creating a WebSocketTransport from an established WebSocket connection
-use capnweb_transport::WebSocketTransport;
+use currentspace_capnweb_transport::WebSocketTransport;
 use tokio_tungstenite::connect_async;
 
 let (ws_stream, _) = connect_async("ws://localhost:8080/ws").await?;
@@ -129,7 +129,7 @@ let transport = WebSocketTransport::new(ws_stream);
 
 ### WebTransport/HTTP3
 ```rust
-use capnweb_server::H3Server;
+use currentspace_capnweb_server::H3Server;
 
 let mut h3_server = H3Server::new(server);
 h3_server.listen("0.0.0.0:8443".parse()?).await?;
@@ -191,8 +191,8 @@ cargo run --example calculator_client
 cargo run --example error_handling
 cargo run --example batch_pipelining
 
-# Start the server (using bin/capnweb-server)
-cargo run --bin capnweb-server
+# Start the server (using bin/currentspace-capnweb-server)
+cargo run --bin currentspace-capnweb-server
 ```
 
 ## Performance
@@ -218,9 +218,9 @@ Comprehensive test suite with tests across all core modules:
 cargo test --workspace
 
 # Run specific crate tests
-cargo test -p capnweb-core
-cargo test -p capnweb-server
-cargo test -p capnweb-client
+cargo test -p currentspace-capnweb-core
+cargo test -p currentspace-capnweb-server
+cargo test -p currentspace-capnweb-client
 
 # Run with output for debugging
 cargo test -- --nocapture
@@ -237,14 +237,14 @@ The Rust implementation is fully compatible with JavaScript Cap'n Web implementa
 
 Test interoperability:
 ```bash
-cargo test --package capnweb-interop-tests
+cargo test --package currentspace-capnweb-interop-tests
 ```
 
 ## Production Deployment
 
 ### Configuration
 ```rust
-use capnweb_server::ServerConfig;
+use currentspace_capnweb_server::ServerConfig;
 
 let config = ServerConfig {
     port: 8080,
@@ -310,16 +310,16 @@ at your option.
 ### 📚 Online Documentation
 
 - **[API Documentation (GitHub Pages)](https://currentspace.github.io/capn-rs/)** - Full API documentation for all crates
-  - [capnweb-core](https://currentspace.github.io/capn-rs/capnweb_core/) - Core protocol types and messages
-  - [capnweb-transport](https://currentspace.github.io/capn-rs/capnweb_transport/) - Transport implementations
-  - [capnweb-server](https://currentspace.github.io/capn-rs/capnweb_server/) - Server capabilities
-  - [capnweb-client](https://currentspace.github.io/capn-rs/capnweb_client/) - Client implementation
+  - [currentspace-capnweb-core](https://currentspace.github.io/capn-rs/currentspace_capnweb_core/) - Core protocol types and messages
+  - [currentspace-capnweb-transport](https://currentspace.github.io/capn-rs/currentspace_capnweb_transport/) - Transport implementations
+  - [currentspace-capnweb-server](https://currentspace.github.io/capn-rs/currentspace_capnweb_server/) - Server capabilities
+  - [currentspace-capnweb-client](https://currentspace.github.io/capn-rs/currentspace_capnweb_client/) - Client implementation
 
-- **[docs.rs](https://docs.rs/capnweb-core)** - Published crate documentation:
-  - [capnweb-core](https://docs.rs/capnweb-core/0.1.0) - Core protocol types
-  - [capnweb-transport](https://docs.rs/capnweb-transport/0.1.0) - Transport layers
-  - [capnweb-server](https://docs.rs/capnweb-server/0.1.0) - Server implementation
-  - [capnweb-client](https://docs.rs/capnweb-client/0.1.0) - Client library
+- **[docs.rs](https://docs.rs/currentspace-capnweb-core)** - Published crate documentation:
+  - [currentspace-capnweb-core](https://docs.rs/currentspace-capnweb-core/0.1.0) - Core protocol types
+  - [currentspace-capnweb-transport](https://docs.rs/currentspace-capnweb-transport/0.1.0) - Transport layers
+  - [currentspace-capnweb-server](https://docs.rs/currentspace-capnweb-server/0.1.0) - Server implementation
+  - [currentspace-capnweb-client](https://docs.rs/currentspace-capnweb-client/0.1.0) - Client library
 
 ### 📖 Project Documentation
 
@@ -346,7 +346,7 @@ cargo doc --workspace --all-features --no-deps 2>&1 | grep warning
 All public APIs are documented. To check documentation coverage:
 
 ```bash
-cargo rustdoc -p capnweb-core -- -Z unstable-options --show-coverage
+cargo rustdoc -p currentspace-capnweb-core -- -Z unstable-options --show-coverage
 ```
 
 ## Roadmap

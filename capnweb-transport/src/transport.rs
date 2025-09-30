@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use bytes::Bytes;
-use capnweb_core::Message;
+use currentspace_capnweb_core::Message;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

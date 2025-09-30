@@ -65,7 +65,7 @@ git push
 - **Test execution**:
   ```bash
   # Run tests for specific crate
-  cargo test -p capnweb-core
+  cargo test -p currentspace-capnweb-core
 
   # Run all tests
   cargo test --workspace
@@ -102,11 +102,11 @@ git push
 #### Crate Structure
 ```
 capnweb-rs/
-  capnweb-core/        # Protocol types, wire format
-  capnweb-transport/   # Transport abstractions
-  capnweb-server/      # Server implementation
-  capnweb-client/      # Client implementation
-  capnweb-interop-tests/ # Cross-language tests
+  capnweb-core/        # Protocol types, wire format (crate: currentspace-capnweb-core)
+  capnweb-transport/   # Transport abstractions (crate: currentspace-capnweb-transport)
+  capnweb-server/      # Server implementation (crate: currentspace-capnweb-server)
+  capnweb-client/      # Client implementation (crate: currentspace-capnweb-client)
+  capnweb-interop-tests/ # Cross-language tests (crate: currentspace-capnweb-interop-tests)
 ```
 
 #### Module Patterns
@@ -188,7 +188,7 @@ mod tests {
 cargo build --workspace
 
 # Build specific crate
-cargo build -p capnweb-core
+cargo build -p currentspace-capnweb-core
 
 # Run the server binary
 cargo run --bin capnweb-server
@@ -203,7 +203,7 @@ cargo build --features webtransport
 cargo test --workspace
 
 # Run specific crate tests
-cargo test -p capnweb-server
+cargo test -p currentspace-capnweb-server
 
 # Run with output for debugging
 cargo test -- --nocapture

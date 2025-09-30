@@ -81,7 +81,7 @@ impl std::fmt::Debug for NegotiationResult {
 /// # Example
 ///
 /// ```no_run
-/// use capnweb_transport::negotiate::{negotiate, NegotiationConfig};
+/// use currentspace_capnweb_transport::negotiate::{negotiate, NegotiationConfig};
 ///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// // Use default negotiation (tries all transports)

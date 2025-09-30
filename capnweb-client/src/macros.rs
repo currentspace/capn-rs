@@ -5,7 +5,7 @@
 /// # Example
 ///
 /// ```rust
-/// use capnweb_client::params;
+/// use currentspace_capnweb_client::params;
 /// let args = params![5, "hello", true];
 /// ```
 #[macro_export]
@@ -22,8 +22,8 @@ macro_rules! params {
 /// # Example
 ///
 /// ```rust
-/// use capnweb_client::{record_object, Recorder};
-/// use capnweb_core::CapId;
+/// use currentspace_capnweb_client::{record_object, Recorder};
+/// use currentspace_capnweb_core::CapId;
 /// let recorder = Recorder::new();
 /// let cap = recorder.capture("api", CapId::new(1));
 /// let name_result = cap.call("getName", vec![]);
@@ -49,8 +49,8 @@ macro_rules! record_object {
 /// # Example
 ///
 /// ```rust
-/// use capnweb_client::{record_array, Recorder};
-/// use capnweb_core::CapId;
+/// use currentspace_capnweb_client::{record_array, Recorder};
+/// use currentspace_capnweb_core::CapId;
 /// let recorder = Recorder::new();
 /// let cap = recorder.capture("api", CapId::new(1));
 /// let item1 = cap.call("getValue", vec![]);
@@ -70,8 +70,8 @@ macro_rules! record_array {
 /// # Example
 ///
 /// ```rust
-/// use capnweb_client::{record_plan, Recorder, params};
-/// use capnweb_core::CapId;
+/// use currentspace_capnweb_client::{record_plan, Recorder, params};
+/// use currentspace_capnweb_core::CapId;
 /// let cap_id = CapId::new(1);
 /// let plan = record_plan! {
 ///     {
@@ -92,7 +92,7 @@ macro_rules! record_plan {
 #[cfg(test)]
 mod tests {
     use crate::recorder::Recorder;
-    use capnweb_core::CapId;
+    use currentspace_capnweb_core::CapId;
 
     #[test]
     fn test_params_macro() {

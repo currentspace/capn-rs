@@ -1,5 +1,5 @@
 [package]
-name = "capnweb-client"
+name = "currentspace-capnweb-client"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,15 +7,15 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-documentation = "https://docs.rs/capnweb-client"
+documentation = "https://docs.rs/currentspace-capnweb-client"
 description = "High-performance Rust client for Cap'n Web RPC protocol with batching and pipelining"
 readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-capnweb-core.workspace = true
-capnweb-transport.workspace = true
+currentspace-capnweb-core.workspace = true
+currentspace-capnweb-transport.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -40,12 +40,12 @@ proc-macro2 = { version = "1.0", optional = true }
 mockito.workspace = true
 proptest.workspace = true
 criterion.workspace = true
-capnweb-server.workspace = true
+currentspace-capnweb-server.workspace = true
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 default = ["all-transports", "macros"]
-all-transports = ["capnweb-transport/default"]
+all-transports = ["currentspace-capnweb-transport/default"]
 macros = ["dep:syn", "dep:quote", "dep:proc-macro2"]
 
 [package.metadata.docs.rs]

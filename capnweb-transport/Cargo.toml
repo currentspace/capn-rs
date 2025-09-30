@@ -1,5 +1,5 @@
 [package]
-name = "capnweb-transport"
+name = "currentspace-capnweb-transport"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,14 +7,14 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-documentation = "https://docs.rs/capnweb-transport"
+documentation = "https://docs.rs/currentspace-capnweb-transport"
 description = "Transport layer implementations for Cap'n Web protocol (HTTP, WebSocket, WebTransport)"
 readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-capnweb-core.workspace = true
+currentspace-capnweb-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

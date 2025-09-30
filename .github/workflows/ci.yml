@@ -135,7 +135,7 @@ jobs:
 
       - name: Check for banned dependencies
         run: |
-          if cargo tree -p capnweb-core | grep -E "(openssl|native-tls)"; then
+          if cargo tree -p currentspace-capnweb-core | grep -E "(openssl|native-tls)"; then
             echo "Found banned dependencies (openssl/native-tls). Use rustls instead."
             exit 1
           fi
@@ -258,16 +258,16 @@ jobs:
       #   continue-on-error: true  # Don't fail on first release
 
       - name: Check capnweb-core manifest
-        run: cargo check --package capnweb-core --no-default-features
+        run: cargo check --package currentspace-capnweb-core --no-default-features
 
       - name: Check capnweb-transport manifest
-        run: cargo check --package capnweb-transport --no-default-features
+        run: cargo check --package currentspace-capnweb-transport --no-default-features
 
       - name: Check capnweb-server manifest
-        run: cargo check --package capnweb-server --no-default-features
+        run: cargo check --package currentspace-capnweb-server --no-default-features
 
       - name: Check capnweb-client manifest
-        run: cargo check --package capnweb-client --no-default-features
+        run: cargo check --package currentspace-capnweb-client --no-default-features
 
   benchmark:
     name: Benchmarks

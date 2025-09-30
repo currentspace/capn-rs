@@ -16,7 +16,7 @@ rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/currentspace/capn-rs"
 homepage = "https://github.com/currentspace/capn-rs"
-documentation = "https://docs.rs/capnweb-core"
+documentation = "https://docs.rs/currentspace-capnweb-core"
 readme = "README.md"
 keywords = ["rpc", "capnweb", "capability", "protocol", "async"]
 categories = ["network-programming", "web-programming", "asynchronous"]
@@ -114,10 +114,10 @@ insta = "1.41"
 chrono = { version = "0.4", features = ["serde"] }
 
 # Internal crates
-capnweb-core = { version = "0.1.0", path = "capnweb-core" }
-capnweb-transport = { version = "0.1.0", path = "capnweb-transport" }
-capnweb-server = { version = "0.1.0", path = "capnweb-server" }
-capnweb-client = { version = "0.1.0", path = "capnweb-client" }
+currentspace-capnweb-core = { version = "0.1.0", path = "capnweb-core" }
+currentspace-capnweb-transport = { version = "0.1.0", path = "capnweb-transport" }
+currentspace-capnweb-server = { version = "0.1.0", path = "capnweb-server" }
+currentspace-capnweb-client = { version = "0.1.0", path = "capnweb-client" }
 
 [profile.release]
 lto = true

@@ -5,8 +5,8 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
-use capnweb_core::{CapId, RpcError};
-use capnweb_server::{RpcTarget, Server, ServerConfig};
+use currentspace_capnweb_core::{CapId, RpcError};
+use currentspace_capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tracing::{error, info};

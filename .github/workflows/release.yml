@@ -160,25 +160,25 @@ jobs:
         run: |
           cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-      - name: Publish capnweb-core
+      - name: Publish currentspace-capnweb-core
         run: |
           cd capnweb-core
           cargo publish --no-verify
           sleep 10  # Wait for crates.io to index
 
-      - name: Publish capnweb-transport
+      - name: Publish currentspace-capnweb-transport
         run: |
           cd capnweb-transport
           cargo publish --no-verify
           sleep 10
 
-      - name: Publish capnweb-server
+      - name: Publish currentspace-capnweb-server
         run: |
           cd capnweb-server
           cargo publish --no-verify
           sleep 10
 
-      - name: Publish capnweb-client
+      - name: Publish currentspace-capnweb-client
         run: |
           cd capnweb-client
           cargo publish --no-verify
@@ -220,13 +220,13 @@ jobs:
           echo "" >> RELEASE_NOTES.md
           echo '```toml' >> RELEASE_NOTES.md
           echo "[dependencies]" >> RELEASE_NOTES.md
-          echo "capnweb-server = \"$VERSION\"" >> RELEASE_NOTES.md
-          echo "capnweb-client = \"$VERSION\"" >> RELEASE_NOTES.md
+          echo "currentspace-capnweb-server = \"$VERSION\"" >> RELEASE_NOTES.md
+          echo "currentspace-capnweb-client = \"$VERSION\"" >> RELEASE_NOTES.md
           echo '```' >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
           echo "## Documentation" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
-          echo "- [API Documentation](https://docs.rs/capnweb-core/$VERSION)" >> RELEASE_NOTES.md
+          echo "- [API Documentation](https://docs.rs/currentspace-capnweb-core/$VERSION)" >> RELEASE_NOTES.md
           echo "- [Examples](https://github.com/currentspace/capn-rs/tree/v$VERSION/examples)" >> RELEASE_NOTES.md
 
       - name: Create Release
@@ -255,7 +255,7 @@ jobs:
       - name: Build documentation
         run: |
           cargo +nightly doc --workspace --no-deps --all-features
-          echo '<meta http-equiv="refresh" content="0; url=capnweb_core/index.html">' > target/doc/index.html
+          echo '<meta http-equiv="refresh" content="0; url=currentspace_capnweb_core/index.html">' > target/doc/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -276,4 +276,4 @@ jobs:
           VERSION=${{ needs.verify.outputs.version }}
           echo "🎉 Cap'n Web Rust v$VERSION has been released!"
           echo "View the release: https://github.com/currentspace/capn-rs/releases/tag/v$VERSION"
-          echo "Crates.io: https://crates.io/crates/capnweb-core"
+          echo "Crates.io: https://crates.io/crates/currentspace-capnweb-core"

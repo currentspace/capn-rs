@@ -10,7 +10,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use capnweb_core::{
+use currentspace_capnweb_core::{
     parse_wire_batch, serialize_wire_batch, PropertyKey, RpcError, WireExpression, WireMessage,
 };
 use dashmap::DashMap;

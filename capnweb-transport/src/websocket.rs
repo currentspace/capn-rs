@@ -1,6 +1,6 @@
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::{decode_message, encode_message, Message};
+use currentspace_capnweb_core::{decode_message, encode_message, Message};
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};

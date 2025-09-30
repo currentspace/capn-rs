@@ -1,6 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use capnweb_core::{Plan, Op, Source, CapId, Message, CallId, Target, Outcome};
-use capnweb_client::{Recorder, params};
+use currentspace_capnweb_core::{Plan, Op, Source, CapId, Message, CallId, Target, Outcome};
+use currentspace_capnweb_client::{Recorder, params};
 use serde_json::json;
 use std::collections::BTreeMap;
 
@@ -149,7 +149,7 @@ fn bench_recorder_api(c: &mut Criterion) {
             let user = api.call("getUser", params![123]);
             let name = user.call("getName", vec![]);
 
-            use capnweb_client::record_object;
+            use currentspace_capnweb_client::record_object;
             let result = record_object!(recorder; {
                 "sum" => sum,
                 "userName" => name,

@@ -83,7 +83,7 @@ jobs:
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Cap'n Web Rust Documentation</title>
-              <meta http-equiv="refresh" content="0; url=capnweb_core/index.html">
+              <meta http-equiv="refresh" content="0; url=currentspace_capnweb_core/index.html">
               <style>
                   body {
                       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -131,8 +131,8 @@ jobs:
               <h1>🚀 Cap'n Web Rust Implementation</h1>
 
               <div class="auto-redirect">
-                  <strong>Auto-redirecting to capnweb-core documentation...</strong><br>
-                  If not redirected, <a href="capnweb_core/index.html">click here</a>.
+                  <strong>Auto-redirecting to currentspace-capnweb-core documentation...</strong><br>
+                  If not redirected, <a href="currentspace_capnweb_core/index.html">click here</a>.
               </div>
 
               <p>A complete, production-ready implementation of the Cap'n Web protocol in Rust,
@@ -140,27 +140,27 @@ jobs:
 
               <div class="crates">
                   <div class="crate">
-                      <h2><a href="capnweb_core/index.html">capnweb-core</a></h2>
+                      <h2><a href="currentspace_capnweb_core/index.html">currentspace-capnweb-core</a></h2>
                       <p>Core protocol implementation including messages, IL, and validation.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_transport/index.html">capnweb-transport</a></h2>
+                      <h2><a href="currentspace_capnweb_transport/index.html">currentspace-capnweb-transport</a></h2>
                       <p>Transport layer implementations for HTTP, WebSocket, and WebTransport.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_server/index.html">capnweb-server</a></h2>
+                      <h2><a href="currentspace_capnweb_server/index.html">currentspace-capnweb-server</a></h2>
                       <p>Server implementation with capability management and lifecycle.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_client/index.html">capnweb-client</a></h2>
+                      <h2><a href="currentspace_capnweb_client/index.html">currentspace-capnweb-client</a></h2>
                       <p>Client implementation with ergonomic recorder API.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_interop_tests/index.html">capnweb-interop-tests</a></h2>
+                      <h2><a href="currentspace_capnweb_interop_tests/index.html">currentspace-capnweb-interop-tests</a></h2>
                       <p>JavaScript interoperability verification tests.</p>
                   </div>
               </div>
@@ -270,10 +270,10 @@ jobs:
         run: |
           echo "Documentation deployed to: ${{ steps.deployment.outputs.page_url }}"
           echo "Direct links:"
-          echo "  - Core: ${{ steps.deployment.outputs.page_url }}capnweb_core/index.html"
-          echo "  - Transport: ${{ steps.deployment.outputs.page_url }}capnweb_transport/index.html"
-          echo "  - Server: ${{ steps.deployment.outputs.page_url }}capnweb_server/index.html"
-          echo "  - Client: ${{ steps.deployment.outputs.page_url }}capnweb_client/index.html"
+          echo "  - Core: ${{ steps.deployment.outputs.page_url }}currentspace_capnweb_core/index.html"
+          echo "  - Transport: ${{ steps.deployment.outputs.page_url }}currentspace_capnweb_transport/index.html"
+          echo "  - Server: ${{ steps.deployment.outputs.page_url }}currentspace_capnweb_server/index.html"
+          echo "  - Client: ${{ steps.deployment.outputs.page_url }}currentspace_capnweb_client/index.html"
 
   pr-comment:
     name: Add PR Comment with Documentation Preview

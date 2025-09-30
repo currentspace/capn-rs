@@ -11,8 +11,8 @@
 //! ## Quick Start
 //!
 //! ```rust,no_run
-//! use capnweb_client::{Client, ClientConfig};
-//! use capnweb_core::CapId;
+//! use currentspace_capnweb_client::{Client, ClientConfig};
+//! use currentspace_capnweb_core::CapId;
 //! use serde_json::json;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -36,8 +36,8 @@
 //! Batch multiple operations for efficient network usage:
 //!
 //! ```rust,no_run
-//! use capnweb_client::Client;
-//! use capnweb_core::CapId;
+//! use currentspace_capnweb_client::Client;
+//! use currentspace_capnweb_core::CapId;
 //! use serde_json::json;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -63,8 +63,8 @@
 //! Chain operations on unresolved promises to minimize latency:
 //!
 //! ```rust,no_run
-//! use capnweb_client::Client;
-//! use capnweb_core::CapId;
+//! use currentspace_capnweb_client::Client;
+//! use currentspace_capnweb_core::CapId;
 //! use serde_json::json;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {

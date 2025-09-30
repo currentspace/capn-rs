@@ -1,4 +1,4 @@
-use capnweb_core::{CapId, Op, Plan, Source};
+use currentspace_capnweb_core::{CapId, Op, Plan, Source};
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
