@@ -3,10 +3,8 @@
 A complete, production-ready implementation of the [Cap'n Web](https://github.com/cloudflare/capnweb) protocol in Rust, providing capability-based RPC with promise pipelining and multi-transport support.
 
 [![CI](https://github.com/currentspace/capn-rs/workflows/CI/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/ci.yml)
-[![Documentation](https://github.com/currentspace/capn-rs/workflows/Documentation/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/docs.yml)
 [![TypeScript Interop](https://github.com/currentspace/capn-rs/workflows/TypeScript%20Interop%20Tests/badge.svg)](https://github.com/currentspace/capn-rs/actions/workflows/interop.yml)
 [![docs.rs](https://docs.rs/capnweb-core/badge.svg)](https://docs.rs/capnweb-core)
-[![GitHub Pages](https://img.shields.io/badge/docs-github%20pages-blue)](https://currentspace.github.io/capn-rs/)
 [![Crates.io](https://img.shields.io/crates/v/capnweb-core.svg)](https://crates.io/crates/capnweb-core)
 [![License](https://img.shields.io/crates/l/capnweb-core.svg)](https://github.com/currentspace/capn-rs#license)
 [![Rust 1.85+](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -309,17 +307,11 @@ at your option.
 
 ### 📚 Online Documentation
 
-- **[API Documentation (GitHub Pages)](https://currentspace.github.io/capn-rs/)** - Full API documentation for all crates
-  - [capnweb-core](https://currentspace.github.io/capn-rs/capnweb_core/) - Core protocol types and messages
-  - [capnweb-transport](https://currentspace.github.io/capn-rs/capnweb_transport/) - Transport implementations
-  - [capnweb-server](https://currentspace.github.io/capn-rs/capnweb_server/) - Server capabilities
-  - [capnweb-client](https://currentspace.github.io/capn-rs/capnweb_client/) - Client implementation
-
-- **[docs.rs](https://docs.rs/capnweb-core)** - Published crate documentation:
-  - [capnweb-core](https://docs.rs/capnweb-core/0.1.0) - Core protocol types
-  - [capnweb-transport](https://docs.rs/capnweb-transport/0.1.0) - Transport layers
-  - [capnweb-server](https://docs.rs/capnweb-server/0.1.0) - Server implementation
-  - [capnweb-client](https://docs.rs/capnweb-client/0.1.0) - Client library
+Published crate documentation on [docs.rs](https://docs.rs):
+- [capnweb-core](https://docs.rs/capnweb-core) - Core protocol types and messages
+- [capnweb-transport](https://docs.rs/capnweb-transport) - Transport layer implementations
+- [capnweb-server](https://docs.rs/capnweb-server) - Server implementation with capability management
+- [capnweb-client](https://docs.rs/capnweb-client) - Client library with ergonomic API
 
 ### 📖 Project Documentation
 
