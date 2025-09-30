@@ -1,4 +1,6 @@
-use currentspace_capnweb_core::{CallId, PendingPromise, PromiseDependencyGraph, PromiseId, RpcError};
+use currentspace_capnweb_core::{
+    CallId, PendingPromise, PromiseDependencyGraph, PromiseId, RpcError,
+};
 use dashmap::DashMap;
 use serde_json::Value;
 use std::collections::HashSet;

@@ -254,7 +254,9 @@ impl CapabilityFactory for CalculatorFactory {
                     let mut schema = HashMap::new();
                     schema.insert(
                         "precision".to_string(),
-                        Box::new(currentspace_capnweb_core::protocol::Value::String("number".to_string())),
+                        Box::new(currentspace_capnweb_core::protocol::Value::String(
+                            "number".to_string(),
+                        )),
                     );
                     schema
                 })),
@@ -338,7 +340,9 @@ async fn test_comprehensive_advanced_features_integration() {
         let mut obj = HashMap::new();
         obj.insert(
             "precision".to_string(),
-            Box::new(currentspace_capnweb_core::protocol::Value::Number(Number::from(4))),
+            Box::new(currentspace_capnweb_core::protocol::Value::Number(
+                Number::from(4),
+            )),
         );
         obj
     });
@@ -430,7 +434,8 @@ async fn test_comprehensive_advanced_features_integration() {
 
             // Verify the calculation: (5 + 3) * 2 = 16
             if let Some(boxed_final) = obj.get("final_result") {
-                if let currentspace_capnweb_core::protocol::Value::Number(n) = boxed_final.as_ref() {
+                if let currentspace_capnweb_core::protocol::Value::Number(n) = boxed_final.as_ref()
+                {
                     assert_eq!(n.as_f64(), Some(16.0), "Calculation result should be 16");
                     println!("✅ Calculation result verified: {}", n);
                 }
@@ -489,7 +494,9 @@ async fn test_comprehensive_advanced_features_integration() {
         let mut obj = HashMap::new();
         obj.insert(
             "precision".to_string(),
-            Box::new(currentspace_capnweb_core::protocol::Value::Number(Number::from(6))),
+            Box::new(currentspace_capnweb_core::protocol::Value::Number(
+                Number::from(6),
+            )),
         );
         obj
     });
@@ -527,7 +534,10 @@ async fn test_comprehensive_advanced_features_integration() {
 
     // Test capability factory error handling
     let bad_capability = factory
-        .create_capability("nonexistent", currentspace_capnweb_core::protocol::Value::Null)
+        .create_capability(
+            "nonexistent",
+            currentspace_capnweb_core::protocol::Value::Null,
+        )
         .await;
     assert!(
         bad_capability.is_err(),
@@ -557,11 +567,15 @@ async fn test_resume_token_persistence_and_recovery() {
             let mut obj = HashMap::new();
             obj.insert(
                 "theme".to_string(),
-                Box::new(currentspace_capnweb_core::protocol::Value::String("dark".to_string())),
+                Box::new(currentspace_capnweb_core::protocol::Value::String(
+                    "dark".to_string(),
+                )),
             );
             obj.insert(
                 "language".to_string(),
-                Box::new(currentspace_capnweb_core::protocol::Value::String("en".to_string())),
+                Box::new(currentspace_capnweb_core::protocol::Value::String(
+                    "en".to_string(),
+                )),
             );
             obj
         }),
@@ -633,13 +647,15 @@ async fn test_nested_capability_lifecycle() {
             let mut obj = HashMap::new();
             obj.insert(
                 "precision".to_string(),
-                Box::new(currentspace_capnweb_core::protocol::Value::Number(Number::from(
-                    precision,
-                ))),
+                Box::new(currentspace_capnweb_core::protocol::Value::Number(
+                    Number::from(precision),
+                )),
             );
             obj.insert(
                 "name".to_string(),
-                Box::new(currentspace_capnweb_core::protocol::Value::String(name.to_string())),
+                Box::new(currentspace_capnweb_core::protocol::Value::String(
+                    name.to_string(),
+                )),
             );
             obj
         });
@@ -809,7 +825,8 @@ async fn test_il_plan_runner_edge_cases() {
     println!("✅ Complex nested structure execution successful");
 
     // Test 4: Plan complexity analysis
-    let complexity = currentspace_capnweb_core::protocol::PlanOptimizer::analyze_complexity(&complex_plan);
+    let complexity =
+        currentspace_capnweb_core::protocol::PlanOptimizer::analyze_complexity(&complex_plan);
     println!("✅ Complex plan analysis: {:?}", complexity);
     assert!(
         complexity.total_operations >= 5,

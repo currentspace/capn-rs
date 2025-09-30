@@ -6,6 +6,7 @@
 #![allow(clippy::new_without_default)] // Legacy code, will be removed
 
 use async_trait::async_trait;
+use chrono::Utc;
 use currentspace_capnweb_core::{
     il::{ArrayOp, CallOp, CaptureRef, ObjectOp, ParamRef, ResultRef, ValueRef},
     protocol::{
@@ -20,7 +21,6 @@ use currentspace_capnweb_core::{
     },
     CapId, Op, Plan, RpcError, RpcTarget, Source, Value,
 };
-use chrono::Utc;
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 use std::sync::Arc;

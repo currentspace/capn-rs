@@ -675,12 +675,13 @@ async fn process_message(
                     }
                     Err(e) => {
                         // Store error in import table
-                        let error_expr =
-                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
+                        let error_expr = Expression::Error(
+                            currentspace_capnweb_core::protocol::ErrorExpression {
                                 error_type: "EvalError".to_string(),
                                 message: e.to_string(),
                                 stack: None,
-                            });
+                            },
+                        );
 
                         let _ = session.imports.insert(
                             import_id,
@@ -719,11 +720,13 @@ async fn process_message(
                         {
                             Ok(Some(Message::Reject(
                                 ExportId(import_id.0),
-                                Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
-                                    error_type: error_type.clone(),
-                                    message: message.clone(),
-                                    stack: stack.clone(),
-                                }),
+                                Expression::Error(
+                                    currentspace_capnweb_core::protocol::ErrorExpression {
+                                        error_type: error_type.clone(),
+                                        message: message.clone(),
+                                        stack: stack.clone(),
+                                    },
+                                ),
                             )))
                         } else {
                             Ok(Some(Message::Resolve(
@@ -757,11 +760,13 @@ async fn process_message(
                         // Channel closed without sending
                         Ok(Some(Message::Reject(
                             import_id.to_export_id(),
-                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
-                                error_type: "ChannelError".to_string(),
-                                message: "Resolution channel closed".to_string(),
-                                stack: None,
-                            }),
+                            Expression::Error(
+                                currentspace_capnweb_core::protocol::ErrorExpression {
+                                    error_type: "ChannelError".to_string(),
+                                    message: "Resolution channel closed".to_string(),
+                                    stack: None,
+                                },
+                            ),
                         )))
                     }
                     Err(_) => {
@@ -769,11 +774,13 @@ async fn process_message(
                         session_state.pending_pulls.write().await.remove(&import_id);
                         Ok(Some(Message::Reject(
                             import_id.to_export_id(),
-                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
-                                error_type: "Timeout".to_string(),
-                                message: "Pull request timed out".to_string(),
-                                stack: None,
-                            }),
+                            Expression::Error(
+                                currentspace_capnweb_core::protocol::ErrorExpression {
+                                    error_type: "Timeout".to_string(),
+                                    message: "Pull request timed out".to_string(),
+                                    stack: None,
+                                },
+                            ),
                         )))
                     }
                 }
@@ -844,8 +851,9 @@ async fn evaluate_expression(
                 if let Some(main) = &state.main_capability {
                     // Extract method name from property path
                     if let Some(path) = &import.property_path {
-                        if let Some(currentspace_capnweb_core::protocol::LegacyPropertyKey::String(method)) =
-                            path.first()
+                        if let Some(
+                            currentspace_capnweb_core::protocol::LegacyPropertyKey::String(method),
+                        ) = path.first()
                         {
                             // Extract call arguments
                             let args = if let Some(args_expr) = &import.call_arguments {
@@ -874,8 +882,11 @@ async fn evaluate_expression(
                     ImportValue::Stub(stub_ref) => {
                         // Extract method name from property path
                         if let Some(path) = &pipeline.property_path {
-                            if let Some(currentspace_capnweb_core::protocol::LegacyPropertyKey::String(method)) =
-                                path.first()
+                            if let Some(
+                                currentspace_capnweb_core::protocol::LegacyPropertyKey::String(
+                                    method,
+                                ),
+                            ) = path.first()
                             {
                                 // Extract call arguments
                                 let args = if let Some(args_expr) = &pipeline.call_arguments {
