@@ -241,30 +241,6 @@ jobs:
           prerelease: ${{ contains(needs.verify.outputs.version, '-') }}
           token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
-  publish-docs:
-    name: Publish Documentation
-    needs: [verify, publish-crates]
-    runs-on: ubuntu-latest
-    if: github.event.inputs.dry_run != 'true'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@nightly
-
-      - name: Build documentation
-        run: |
-          cargo +nightly doc --workspace --no-deps --all-features
-          echo '<meta http-equiv="refresh" content="0; url=capnweb_core/index.html">' > target/doc/index.html
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/doc
-          cname: capnweb-rust.dev
-
   notify:
     name: Notify Release
     needs: [verify, create-release]
@@ -277,3 +253,4 @@ jobs:
           echo "🎉 Cap'n Web Rust v$VERSION has been released!"
           echo "View the release: https://github.com/currentspace/capn-rs/releases/tag/v$VERSION"
           echo "Crates.io: https://crates.io/crates/capnweb-core"
+          echo "docs.rs: https://docs.rs/capnweb-core"
