@@ -255,7 +255,7 @@ jobs:
       - name: Build documentation
         run: |
           cargo +nightly doc --workspace --no-deps --all-features
-          echo '<meta http-equiv="refresh" content="0; url=capnweb_core/index.html">' > target/doc/index.html
+          echo '<meta http-equiv="refresh" content="0; url=currentspace_capnweb_core/index.html">' > target/doc/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

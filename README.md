@@ -310,10 +310,10 @@ at your option.
 ### 📚 Online Documentation
 
 - **[API Documentation (GitHub Pages)](https://currentspace.github.io/capn-rs/)** - Full API documentation for all crates
-  - [currentspace-capnweb-core](https://currentspace.github.io/capn-rs/capnweb_core/) - Core protocol types and messages
-  - [currentspace-capnweb-transport](https://currentspace.github.io/capn-rs/capnweb_transport/) - Transport implementations
-  - [currentspace-capnweb-server](https://currentspace.github.io/capn-rs/capnweb_server/) - Server capabilities
-  - [currentspace-capnweb-client](https://currentspace.github.io/capn-rs/capnweb_client/) - Client implementation
+  - [currentspace-capnweb-core](https://currentspace.github.io/capn-rs/currentspace_capnweb_core/) - Core protocol types and messages
+  - [currentspace-capnweb-transport](https://currentspace.github.io/capn-rs/currentspace_capnweb_transport/) - Transport implementations
+  - [currentspace-capnweb-server](https://currentspace.github.io/capn-rs/currentspace_capnweb_server/) - Server capabilities
+  - [currentspace-capnweb-client](https://currentspace.github.io/capn-rs/currentspace_capnweb_client/) - Client implementation
 
 - **[docs.rs](https://docs.rs/currentspace-capnweb-core)** - Published crate documentation:
   - [currentspace-capnweb-core](https://docs.rs/currentspace-capnweb-core/0.1.0) - Core protocol types
