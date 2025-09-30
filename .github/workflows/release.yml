@@ -239,8 +239,7 @@ jobs:
             capnweb-*.zip
           draft: false
           prerelease: ${{ contains(needs.verify.outputs.version, '-') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
   publish-docs:
     name: Publish Documentation
