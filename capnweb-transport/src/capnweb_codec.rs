@@ -1,5 +1,5 @@
 use bytes::{Buf, BufMut, BytesMut};
-use capnweb_core::protocol::Message;
+use currentspace_capnweb_core::protocol::Message;
 use serde_json;
 use std::io;
 use tokio_util::codec::{Decoder, Encoder};
@@ -211,7 +211,7 @@ pub enum CodecError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use capnweb_core::{
+    use currentspace_capnweb_core::{
         protocol::{ExportId, ImportId},
         Expression,
     };

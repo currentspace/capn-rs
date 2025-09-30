@@ -131,7 +131,7 @@ jobs:
               <h1>🚀 Cap'n Web Rust Implementation</h1>
 
               <div class="auto-redirect">
-                  <strong>Auto-redirecting to capnweb-core documentation...</strong><br>
+                  <strong>Auto-redirecting to currentspace-capnweb-core documentation...</strong><br>
                   If not redirected, <a href="capnweb_core/index.html">click here</a>.
               </div>
 
@@ -140,27 +140,27 @@ jobs:
 
               <div class="crates">
                   <div class="crate">
-                      <h2><a href="capnweb_core/index.html">capnweb-core</a></h2>
+                      <h2><a href="capnweb_core/index.html">currentspace-capnweb-core</a></h2>
                       <p>Core protocol implementation including messages, IL, and validation.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_transport/index.html">capnweb-transport</a></h2>
+                      <h2><a href="capnweb_transport/index.html">currentspace-capnweb-transport</a></h2>
                       <p>Transport layer implementations for HTTP, WebSocket, and WebTransport.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_server/index.html">capnweb-server</a></h2>
+                      <h2><a href="capnweb_server/index.html">currentspace-capnweb-server</a></h2>
                       <p>Server implementation with capability management and lifecycle.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_client/index.html">capnweb-client</a></h2>
+                      <h2><a href="capnweb_client/index.html">currentspace-capnweb-client</a></h2>
                       <p>Client implementation with ergonomic recorder API.</p>
                   </div>
 
                   <div class="crate">
-                      <h2><a href="capnweb_interop_tests/index.html">capnweb-interop-tests</a></h2>
+                      <h2><a href="capnweb_interop_tests/index.html">currentspace-capnweb-interop-tests</a></h2>
                       <p>JavaScript interoperability verification tests.</p>
                   </div>
               </div>

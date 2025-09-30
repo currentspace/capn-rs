@@ -5,8 +5,8 @@
 // Mirrors the functionality of TypeScript's batch-pipelining/client.mjs
 
 use anyhow::Result;
-use capnweb_client::{Client, ClientConfig};
-use capnweb_core::CapId;
+use currentspace_capnweb_client::{Client, ClientConfig};
+use currentspace_capnweb_core::CapId;
 use serde_json::{json, Value};
 use std::time::Instant;
 use tracing::info;

@@ -6,7 +6,7 @@
 // - Error handling and validation
 
 use anyhow::{Context, Result};
-use capnweb_core::CapId;
+use currentspace_capnweb_core::CapId;
 use reqwest::Client as HttpClient;
 use serde_json::{json, Value};
 use std::collections::HashMap;

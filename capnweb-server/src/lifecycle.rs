@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use capnweb_core::{CapId, RpcError};
+use currentspace_capnweb_core::{CapId, RpcError};
 use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;

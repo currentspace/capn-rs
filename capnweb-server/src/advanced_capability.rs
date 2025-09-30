@@ -6,7 +6,7 @@
 #![allow(clippy::new_without_default)] // Legacy code, will be removed
 
 use async_trait::async_trait;
-use capnweb_core::{
+use currentspace_capnweb_core::{
     il::{ArrayOp, CallOp, CaptureRef, ObjectOp, ParamRef, ResultRef, ValueRef},
     protocol::{
         ids::IdAllocator,
@@ -958,7 +958,7 @@ impl RpcTarget for AdvancedCapability {
                 });
 
                 // Add to capability graph
-                use capnweb_core::protocol::nested_capabilities::CapabilityNode;
+                use currentspace_capnweb_core::protocol::nested_capabilities::CapabilityNode;
                 let node = CapabilityNode {
                     id: cap_name.clone(),
                     capability_type: cap_type.to_string(),
@@ -1488,7 +1488,7 @@ mod tests {
             "operations": []
         });
 
-        // Convert serde_json::Value to capnweb_core::Value
+        // Convert serde_json::Value to currentspace_capnweb_core::Value
         fn json_value_to_core_value(json_val: serde_json::Value) -> Value {
             match json_val {
                 serde_json::Value::Null => Value::Null,

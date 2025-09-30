@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use capnweb_core::{CallId, CapId, Message, Outcome, RpcError, Target};
-use capnweb_server::{RpcTarget, Server, ServerConfig};
+use currentspace_capnweb_core::{CallId, CapId, Message, Outcome, RpcError, Target};
+use currentspace_capnweb_server::{RpcTarget, Server, ServerConfig};
 use serde_json::{json, Value};
 use std::sync::Arc;
 

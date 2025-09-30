@@ -3,7 +3,7 @@
 
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::{decode_message, encode_message, Message};
+use currentspace_capnweb_core::{decode_message, encode_message, Message};
 use quinn::{Connection, Endpoint, RecvStream, SendStream};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

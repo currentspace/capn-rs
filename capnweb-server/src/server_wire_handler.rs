@@ -1,7 +1,7 @@
 // Wire protocol handler for the server
 // This module adds wire protocol support to the existing server
 
-use capnweb_core::{PropertyKey, WireExpression};
+use currentspace_capnweb_core::{PropertyKey, WireExpression};
 use serde_json::Value;
 use std::collections::HashMap;
 use tracing::{debug, warn};

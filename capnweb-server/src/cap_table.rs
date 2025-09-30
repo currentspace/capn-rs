@@ -1,5 +1,5 @@
 use crate::RpcTarget;
-use capnweb_core::CapId;
+use currentspace_capnweb_core::CapId;
 use dashmap::DashMap;
 use std::sync::Arc;
 

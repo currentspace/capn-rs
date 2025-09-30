@@ -5,8 +5,8 @@
 // - Error handling for division by zero
 
 use anyhow::Result;
-use capnweb_client::{Client, ClientConfig};
-use capnweb_core::CapId;
+use currentspace_capnweb_client::{Client, ClientConfig};
+use currentspace_capnweb_core::CapId;
 use serde_json::json;
 use tracing::info;
 

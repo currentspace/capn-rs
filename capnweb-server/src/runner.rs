@@ -1,5 +1,5 @@
 use crate::{RpcTarget, ServerConfig};
-use capnweb_core::{CapId, Op, Plan, RpcError, Source};
+use currentspace_capnweb_core::{CapId, Op, Plan, RpcError, Source};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -169,7 +169,7 @@ impl PlanRunner {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use capnweb_core::{Op, Plan, Source};
+    use currentspace_capnweb_core::{Op, Plan, Source};
 
     /// Test implementation of RpcTarget
     struct TestTarget {

@@ -1,6 +1,6 @@
 //! Simplified interop tests focusing on JSON serialization compatibility
 
-use capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
+use currentspace_capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
 use serde_json::json;
 
 /// Test that Rust plans can be serialized to JSON in a JavaScript-compatible format
@@ -227,7 +227,7 @@ mod tests {
         let error_msg = Message::result(
             CallId::new(1),
             Outcome::Error {
-                error: capnweb_core::RpcError::bad_request("test error"),
+                error: currentspace_capnweb_core::RpcError::bad_request("test error"),
             },
         );
 

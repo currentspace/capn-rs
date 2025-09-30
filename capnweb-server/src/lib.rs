@@ -11,9 +11,9 @@
 //! ## Quick Start
 //!
 //! ```rust,ignore
-//! use capnweb_server::{Server, ServerConfig};
-//! use capnweb_core::{CapId, RpcError, Value};
-//! use capnweb_core::RpcTarget;  // Use RpcTarget from core, not server
+//! use currentspace_capnweb_server::{Server, ServerConfig};
+//! use currentspace_capnweb_core::{CapId, RpcError, Value};
+//! use currentspace_capnweb_core::RpcTarget;  // Use RpcTarget from core, not server
 //! use async_trait::async_trait;
 //! use std::sync::Arc;
 //! use serde_json::json;
@@ -64,8 +64,8 @@
 //! Register multiple capabilities with different IDs:
 //!
 //! ```rust,ignore
-//! # use capnweb_server::Server;
-//! # use capnweb_core::CapId;
+//! # use currentspace_capnweb_server::Server;
+//! # use currentspace_capnweb_core::CapId;
 //! # use std::sync::Arc;
 //! # struct AuthService;
 //! # struct DataService;

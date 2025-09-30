@@ -1,5 +1,5 @@
 [package]
-name = "capnweb-server"
+name = "currentspace-capnweb-server"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,7 +7,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-documentation = "https://docs.rs/capnweb-server"
+documentation = "https://docs.rs/currentspace-capnweb-server"
 description = "Production-ready server for Cap'n Web RPC protocol with capability management"
 readme = "README.md"
 keywords.workspace = true
@@ -18,8 +18,8 @@ name = "capnweb-server"
 path = "src/bin/capnweb-server.rs"
 
 [dependencies]
-capnweb-core.workspace = true
-capnweb-transport.workspace = true
+currentspace-capnweb-core.workspace = true
+currentspace-capnweb-transport.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -65,7 +65,7 @@ tracing-subscriber.workspace = true
 
 [features]
 default = ["all-transports"]
-all-transports = ["capnweb-transport/default"]
+all-transports = ["currentspace-capnweb-transport/default"]
 h3-server = ["dep:quinn", "dep:h3", "dep:h3-quinn", "dep:rustls", "dep:rcgen", "dep:http"]
 
 [package.metadata.docs.rs]

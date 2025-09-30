@@ -1,5 +1,5 @@
 [package]
-name = "capnweb-core"
+name = "currentspace-capnweb-core"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,7 +7,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-documentation = "https://docs.rs/capnweb-core"
+documentation = "https://docs.rs/currentspace-capnweb-core"
 description = "Core protocol implementation for Cap'n Web RPC - capability-based security with promise pipelining"
 readme = "README.md"
 keywords.workspace = true

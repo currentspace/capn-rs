@@ -7,7 +7,7 @@ use axum::{
     },
     response::Response,
 };
-use capnweb_core::{
+use currentspace_capnweb_core::{
     parse_wire_batch, serialize_wire_batch, CapId, PropertyKey, WireExpression, WireMessage,
 };
 use futures::{SinkExt, StreamExt};

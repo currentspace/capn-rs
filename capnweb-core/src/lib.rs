@@ -13,7 +13,7 @@
 //! ## Quick Start
 //!
 //! ```rust,no_run
-//! use capnweb_core::{CapId, RpcTarget, RpcError, Value};
+//! use currentspace_capnweb_core::{CapId, RpcTarget, RpcError, Value};
 //! use async_trait::async_trait;
 //! use serde_json::json;
 //!

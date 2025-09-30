@@ -1,5 +1,5 @@
 [package]
-name = "capnweb-interop-tests"
+name = "currentspace-capnweb-interop-tests"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -9,10 +9,10 @@ repository.workspace = true
 description = "Interoperability tests for Cap'n Web implementations"
 
 [dependencies]
-capnweb-core.workspace = true
-capnweb-transport.workspace = true
-capnweb-server.workspace = true
-capnweb-client.workspace = true
+currentspace-capnweb-core.workspace = true
+currentspace-capnweb-transport.workspace = true
+currentspace-capnweb-server.workspace = true
+currentspace-capnweb-client.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

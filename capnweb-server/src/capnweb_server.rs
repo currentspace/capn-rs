@@ -8,7 +8,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use capnweb_core::{
+use currentspace_capnweb_core::{
     protocol::{ExportId, Expression, ImportId, ImportValue, Message, RpcSession, Value},
     RpcTarget,
 };
@@ -492,7 +492,7 @@ async fn create_websocket_session(server_state: &ServerState, session_id: String
 
     // Set up main capability at import ID 0 like batch sessions do
     if let Some(main_cap) = &server_state.main_capability {
-        use capnweb_core::protocol::tables::StubReference;
+        use currentspace_capnweb_core::protocol::tables::StubReference;
         let stub_ref = StubReference::new(main_cap.clone());
         let _insert_result = session
             .imports
@@ -617,7 +617,7 @@ async fn create_batch_session(state: &ServerState) -> SessionState {
 
     // Pre-allocate import ID 0 to the main capability
     if let Some(main_cap) = &state.main_capability {
-        use capnweb_core::protocol::tables::StubReference;
+        use currentspace_capnweb_core::protocol::tables::StubReference;
 
         let stub_ref = StubReference::new(main_cap.clone());
         let _ = session
@@ -676,7 +676,7 @@ async fn process_message(
                     Err(e) => {
                         // Store error in import table
                         let error_expr =
-                            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
                                 error_type: "EvalError".to_string(),
                                 message: e.to_string(),
                                 stack: None,
@@ -719,7 +719,7 @@ async fn process_message(
                         {
                             Ok(Some(Message::Reject(
                                 ExportId(import_id.0),
-                                Expression::Error(capnweb_core::protocol::ErrorExpression {
+                                Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
                                     error_type: error_type.clone(),
                                     message: message.clone(),
                                     stack: stack.clone(),
@@ -757,7 +757,7 @@ async fn process_message(
                         // Channel closed without sending
                         Ok(Some(Message::Reject(
                             import_id.to_export_id(),
-                            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
                                 error_type: "ChannelError".to_string(),
                                 message: "Resolution channel closed".to_string(),
                                 stack: None,
@@ -769,7 +769,7 @@ async fn process_message(
                         session_state.pending_pulls.write().await.remove(&import_id);
                         Ok(Some(Message::Reject(
                             import_id.to_export_id(),
-                            Expression::Error(capnweb_core::protocol::ErrorExpression {
+                            Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
                                 error_type: "Timeout".to_string(),
                                 message: "Pull request timed out".to_string(),
                                 stack: None,
@@ -844,7 +844,7 @@ async fn evaluate_expression(
                 if let Some(main) = &state.main_capability {
                     // Extract method name from property path
                     if let Some(path) = &import.property_path {
-                        if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) =
+                        if let Some(currentspace_capnweb_core::protocol::LegacyPropertyKey::String(method)) =
                             path.first()
                         {
                             // Extract call arguments
@@ -874,7 +874,7 @@ async fn evaluate_expression(
                     ImportValue::Stub(stub_ref) => {
                         // Extract method name from property path
                         if let Some(path) = &pipeline.property_path {
-                            if let Some(capnweb_core::protocol::LegacyPropertyKey::String(method)) =
+                            if let Some(currentspace_capnweb_core::protocol::LegacyPropertyKey::String(method)) =
                                 path.first()
                             {
                                 // Extract call arguments
@@ -963,7 +963,7 @@ fn value_to_expression(value: Value) -> Expression {
             error_type,
             message,
             stack,
-        } => Expression::Error(capnweb_core::protocol::ErrorExpression {
+        } => Expression::Error(currentspace_capnweb_core::protocol::ErrorExpression {
             error_type: error_type.clone(),
             message: message.clone(),
             stack: stack.clone(),

@@ -1,4 +1,4 @@
-use capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
+use currentspace_capnweb_core::{CallId, CapId, Message, Op, Outcome, Plan, Source, Target};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 

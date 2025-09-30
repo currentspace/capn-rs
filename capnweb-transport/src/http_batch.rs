@@ -1,6 +1,6 @@
 use crate::{RpcTransport, TransportError};
 use async_trait::async_trait;
-use capnweb_core::Message;
+use currentspace_capnweb_core::Message;
 use std::collections::VecDeque;
 
 /// HTTP Batch transport collects messages and sends them as a single HTTP request
@@ -86,7 +86,7 @@ impl RpcTransport for HttpBatchTransport {
 #[cfg(all(test, feature = "http-batch"))]
 mod tests {
     use super::*;
-    use capnweb_core::{CallId, CapId, Target};
+    use currentspace_capnweb_core::{CallId, CapId, Target};
     use serde_json::json;
 
     #[tokio::test]
